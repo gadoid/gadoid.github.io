@@ -4,6 +4,19 @@
   
   
   <entry>
+    <title>Docker容器镜像源</title>
+    <link href="/2025/03/21/Docker%E5%AE%B9%E5%99%A8%E9%95%9C%E5%83%8F%E6%BA%90/"/>
+    <url>/2025/03/21/Docker%E5%AE%B9%E5%99%A8%E9%95%9C%E5%83%8F%E6%BA%90/</url>
+    
+    <content type="html"><![CDATA[<h2 id="关于Docker-容器镜像拉取的问题"><a href="#关于Docker-容器镜像拉取的问题" class="headerlink" title="关于Docker 容器镜像拉取的问题"></a>关于Docker 容器镜像拉取的问题</h2><p>使用docker pull 或者 docker compose up -d 拉取镜像时，经常会遇到以下问题。</p><p>Error response from daemon: Get “<a href="https://registry-1.docker.io/v2/">https://registry-1.docker.io/v2/</a>“: net&#x2F;http: request canceled while waiting for connection (Client.Timeout exceeded while awaiting headers)</p><p>原因是镜像源失效或者速率不够导致超时</p><p>绝大部分的文章都不用看，因为失效很快</p><p>可以在Github上关注这个项目随时更新源</p><p><a href="https://github.com/dongyubin/DockerHub">https://github.com/dongyubin/DockerHub</a></p><p>然后修改本地daemon.json 配置</p><p>cat &#x2F;etc&#x2F;docker&#x2F;daemon.json</p><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;registry-mirrors&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>   <span class="hljs-string">&quot;https://docker.mybacc.com&quot;</span><span class="hljs-punctuation">,</span><br>   <span class="hljs-string">&quot;https://docker.1ms.run&quot;</span><span class="hljs-punctuation">,</span><br>   <span class="hljs-string">&quot;https://dytt.online&quot;</span><br> <span class="hljs-punctuation">]</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure><p>重启daemon和docker 服务</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">systemctl daemon-reload<br>systemctl restart docker <br></code></pre></td></tr></table></figure>]]></content>
+    
+    
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>基于HEXO的博客搭建</title>
     <link href="/2025/03/21/%E5%9F%BA%E4%BA%8EHEXO%E7%9A%84%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/"/>
     <url>/2025/03/21/%E5%9F%BA%E4%BA%8EHEXO%E7%9A%84%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/</url>
