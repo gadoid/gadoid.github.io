@@ -19,15 +19,17 @@
   <meta name="author" content="Codfish">
   <meta name="keywords" content="">
   
-    <meta property="og:type" content="article">
+    <meta name="description" content="基于HEXO+FLUID 样式的博客搭建环境准备 7.3版本的Hexo 要求node.js 的版本在18.0以上，centos7 所能拉取到的node.js 版本在11.0 。考虑到需要处理依赖所以直接换成了alibaba cloud 系统  安装 npm和hexo-cli 命令行工具  12dnf install npmnpm install hexo-cli -g  Github 集成  因为">
+<meta property="og:type" content="article">
 <meta property="og:title" content="基于HEXO的博客搭建">
 <meta property="og:url" content="http://gadoid.io/2025/03/21/%E5%9F%BA%E4%BA%8EHEXO%E7%9A%84%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/index.html">
 <meta property="og:site_name" content="西北有高楼">
+<meta property="og:description" content="基于HEXO+FLUID 样式的博客搭建环境准备 7.3版本的Hexo 要求node.js 的版本在18.0以上，centos7 所能拉取到的node.js 版本在11.0 。考虑到需要处理依赖所以直接换成了alibaba cloud 系统  安装 npm和hexo-cli 命令行工具  12dnf install npmnpm install hexo-cli -g  Github 集成  因为">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2025-03-21T10:15:38.000Z">
-<meta property="article:modified_time" content="2025-03-21T10:28:13.474Z">
+<meta property="article:modified_time" content="2025-03-21T12:11:45.518Z">
 <meta property="article:author" content="Codfish">
-<meta property="article:tag" content="ENV">
+<meta property="article:tag" content="环境搭建">
 <meta name="twitter:card" content="summary_large_image">
   
   
@@ -223,7 +225,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          0 字
+          595 字
         
       </span>
     
@@ -234,7 +236,7 @@
         
         
         
-          1 分钟
+          5 分钟
         
       </span>
     
@@ -276,7 +278,43 @@
             
               <div class="markdown-body">
                 
-                
+                <h1 id="基于HEXO-FLUID-样式的博客搭建"><a href="#基于HEXO-FLUID-样式的博客搭建" class="headerlink" title="基于HEXO+FLUID 样式的博客搭建"></a>基于HEXO+FLUID 样式的博客搭建</h1><h2 id="环境准备"><a href="#环境准备" class="headerlink" title="环境准备"></a>环境准备</h2><ol>
+<li><p>7.3版本的Hexo 要求node.js 的版本在18.0以上，centos7 所能拉取到的node.js 版本在11.0 。考虑到需要处理依赖所以直接换成了alibaba cloud 系统</p>
+</li>
+<li><p>安装 npm和hexo-cli 命令行工具</p>
+ <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">dnf install npm<br>npm install hexo-cli -g<br></code></pre></td></tr></table></figure>
+</li>
+<li><p>Github 集成</p>
+<p> 因为后续需要设置到github page ，所以先配置git和密钥</p>
+ <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs bash"><br>ssh-keygen  <span class="hljs-comment"># 使用ssh-keygen 创建密钥</span><br><span class="hljs-built_in">cat</span> /root/.ssh/id_rsa.pub  <span class="hljs-comment"># 从目录文件夹查询公钥， </span><br><span class="hljs-comment"># 配置到github  -&gt; settings -&gt; SSH and GPG keys -&gt; New SSH key</span><br><br>dnf install git   <span class="hljs-comment"># 安装git</span><br><br>git config --global user.name <span class="hljs-string">&quot;用户名&quot;</span><br>git config --global user.email <span class="hljs-string">&quot;邮箱&quot;</span><br>    <br>ssh -T git@github.com  <span class="hljs-comment"># 测试到github的连接</span><br><br></code></pre></td></tr></table></figure></li>
+</ol>
+<h2 id="HEXO-框架安装"><a href="#HEXO-框架安装" class="headerlink" title="HEXO 框架安装"></a>HEXO 框架安装</h2><p>初始化hexo ：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">hexo init myhexo/  <span class="hljs-comment">#  初始化文件夹</span><br><span class="hljs-built_in">cd</span> myhexo  <span class="hljs-comment"># 移动到博客目录</span><br>npm install hexo-deployer-git --save  <span class="hljs-comment"># 安装并存储hexo项目</span><br></code></pre></td></tr></table></figure>
+
+<p>修改部署方式：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">deploy:</span><br>  <span class="hljs-attr">type:</span> <span class="hljs-string">git</span>         <span class="hljs-comment"># 类型是 git</span><br>  <span class="hljs-attr">repo:</span> <span class="hljs-string">git@github.com:username/username.github.io.git</span>    <br>  <span class="hljs-comment">#在github上创建username.github.io的仓库,确认仓库名是否一致！ </span><br>  <span class="hljs-comment">#这里可以使用ssh的方式，也可以使用https的方式，但是ssh更稳定</span><br>  <span class="hljs-attr">branch:</span> <span class="hljs-string">master</span> <span class="hljs-comment"># 设置分支为master</span><br><br></code></pre></td></tr></table></figure>
+
+<p>修改后 使用 hexo deploy 进行安装，安装过程中会提示输入用户名和密码‘</p>
+<p>用户名就是登录账户的名称</p>
+<p>密码需要通过 settings → Developer Settings → Personal access tokens → Generate new token 创建token  作为密码 </p>
+<p>等待几分钟可以通过访问 <a target="_blank" rel="noopener" href="https://username.github.io/">https://username.github.io</a> 查看是否创建成功</p>
+<h2 id="插件安装"><a href="#插件安装" class="headerlink" title="插件安装"></a>插件安装</h2><p>hexo 支持多种样式风格的插件</p>
+<p>以安装fluid为例 ， 安装插件 ：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-string">npm</span> <span class="hljs-string">install</span> <span class="hljs-string">--save</span> <span class="hljs-string">hexo-theme-fluid</span><br></code></pre></td></tr></table></figure>
+
+<p>这时可以将 下载对应主题文件 放到theme 文件夹，在_config.yml配置theme 为fluid</p>
+<p>或者直接在根目录创建 _config.fluid.yml  来进行配置。 _config.fluid.yml 的配置优先级高于 _config.yml  。 一些基本配置 ：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">title:</span> <span class="hljs-string">&#x27;&#x27;</span> <span class="hljs-comment">#标签页主题</span><br><span class="hljs-attr">language:</span> <span class="hljs-string">&#x27;&#x27;</span> <span class="hljs-comment">#语言</span><br><span class="hljs-attr">timezone:</span> <span class="hljs-string">&#x27;&#x27;</span> <span class="hljs-comment">#时区</span><br><span class="hljs-attr">theme:</span> <span class="hljs-string">&#x27;&#x27;</span> <span class="hljs-comment">#主题</span><br><br></code></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">hexo new page about  <span class="hljs-comment"># 关于页需要自行创建</span><br></code></pre></td></tr></table></figure>
+
+<p>扩展配置可以参考 ： <a target="_blank" rel="noopener" href="https://fluid-dev.github.io/hexo-fluid-docs/">https://fluid-dev.github.io/hexo-fluid-docs/</a></p>
+<p>在调试时 可以通过</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-string">hexo</span> <span class="hljs-string">g</span> <span class="hljs-string">--debug</span> <span class="hljs-string">来查看具体的配置信息</span>  <span class="hljs-string">如归档标签页的配置信息</span><br><br>  <span class="hljs-attr">&quot;archive&quot;:</span> &#123;<br>    <span class="hljs-attr">&quot;banner_img&quot;:</span> <span class="hljs-string">&quot;/img/default.png&quot;</span>,   <span class="hljs-comment"># 指定背景图片</span><br>    <span class="hljs-attr">&quot;banner_img_height&quot;:</span> <span class="hljs-number">60</span>,  <span class="hljs-comment"># 图片占全屏的比例</span><br>    <span class="hljs-attr">&quot;banner_mask_alpha&quot;:</span> <span class="hljs-number">0.3</span>   <span class="hljs-comment"># 不透明度</span><br>  &#125;<span class="hljs-string">,</span><br><br></code></pre></td></tr></table></figure>
+
+<p>每次修改后需要使用hexo clean 再进行 生成和部署。</p>
+<p>然后就可以开始 创建文章了,创建后会提示你md文件的地址，就可以进行编辑了。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-string">hexo</span> <span class="hljs-string">new</span> <span class="hljs-string">&quot;hello world&quot;</span><br></code></pre></td></tr></table></figure>
                 
               </div>
             
@@ -288,7 +326,7 @@
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/ENV/" class="print-no-link">#ENV</a>
+        <a href="/tags/%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" class="print-no-link">#环境搭建</a>
       
     </div>
   
