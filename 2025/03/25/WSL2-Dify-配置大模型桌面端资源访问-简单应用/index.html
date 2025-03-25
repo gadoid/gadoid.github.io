@@ -27,14 +27,14 @@
 <meta property="og:description" content="最近使用WSL2 做了dify的本地化部署。试着使用工作流的方式实现一个工作流来通过和大模型对话完成对本地资源的访问。 预配置WSL2的本地部署12wsl --list  # 查询支持的wsl子系统发行版本wsl --install # 安装默认的wsl子系统  部署完成后，配置安装apt源 ，Docker源（镜像有问题可以查询之前的文章），Git配置，以及 一些基本的命令行工具 Dify 本地部">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="attachment:ffec6e7f-abab-4993-8bad-f3596cc53a35:dify-wsl-architecture.svg">
-<meta property="og:image" content="attachment:a85d4eac-e404-407c-bee1-28e3d4fa9ff1:1742892569228.png">
-<meta property="og:image" content="attachment:49bff2c6-a416-4dd1-9c0e-9a7354d83f2e:image.png">
-<meta property="og:image" content="attachment:18a47369-1b36-40ed-b31a-8dbd37f4b55c:1742895517522.png">
-<meta property="og:image" content="attachment:b98f10c7-1362-4d12-bb93-b53243ce1361:image.png">
-<meta property="og:image" content="attachment:f97d1310-8e51-4eb6-84e8-18de39d4acd1:image.png">
-<meta property="og:image" content="attachment:4a23438d-1106-4795-90c9-d7059e2c66f8:image.png">
+<meta property="og:image" content="https://i.111666.best/image/36KrL8MFwMSB0kHm0M7VGs.png">
+<meta property="og:image" content="https://i.111666.best/image/TmrbwxdMkhWRuygRCXbdGp.png">
+<meta property="og:image" content="https://i.111666.best/image/htD6C2oNrddvAuEyXVdmep.png">
+<meta property="og:image" content="https://i.111666.best/image/2IgA1P69jBp6amaeczz6ZT.png">
+<meta property="og:image" content="https://i.111666.best/image/TUxQf8y6eXGsVkuHSLivNL.png">
+<meta property="og:image" content="https://i.111666.best/image/hdRpQxHTCHkU6fLsuc3BTm.png">
 <meta property="article:published_time" content="2025-03-25T13:44:57.000Z">
-<meta property="article:modified_time" content="2025-03-25T13:49:41.291Z">
+<meta property="article:modified_time" content="2025-03-25T14:01:36.895Z">
 <meta property="article:author" content="Codfish">
 <meta property="article:tag" content="环境搭建">
 <meta name="twitter:card" content="summary_large_image">
@@ -310,13 +310,12 @@
 <p>以tools 类型为例  初始化 插件项目目录</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">dify-plugin-windows-amd64 plugin init <br></code></pre></td></tr></table></figure>
 
-<p><img src="attachment:a85d4eac-e404-407c-bee1-28e3d4fa9ff1:1742892569228.png" srcset="/img/loading.gif" lazyload alt="1742892569228.png"></p>
-<p>name 创建 插件名</p>
+<p><img src="https://i.111666.best/image/36KrL8MFwMSB0kHm0M7VGs.png" srcset="/img/loading.gif" lazyload alt="image"><br>name 创建 插件名</p>
 <p>author 插件作者</p>
 <p>description 插件功能描述</p>
 <p>语言 : python</p>
 <p>工具 : tools  (自定义tools 类型插件</p>
-<p><img src="attachment:49bff2c6-a416-4dd1-9c0e-9a7354d83f2e:image.png" srcset="/img/loading.gif" lazyload alt="image.png"></p>
+<p><img src="https://i.111666.best/image/TmrbwxdMkhWRuygRCXbdGp.png" srcset="/img/loading.gif" lazyload alt="image"></p>
 <p>一些权限的设置</p>
 <p>最终我们得到的是一个这样的工程</p>
 <p>以下是一些比较重要的文件</p>
@@ -336,17 +335,17 @@
 <figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-string">INSTALL_METHOD=remote</span><br><span class="hljs-string">REMOTE_INSTALL_HOST=debug.dify.ai</span><br><span class="hljs-string">REMOTE_INSTALL_PORT=5003</span><br><span class="hljs-string">REMOTE_INSTALL_KEY=some_install_key</span><br></code></pre></td></tr></table></figure>
 
 <p>将dify插件页的调试信息填充到.env中，本地执行main方法，插件会被加载到dify的插件列表中</p>
-<p><img src="attachment:18a47369-1b36-40ed-b31a-8dbd37f4b55c:1742895517522.png" srcset="/img/loading.gif" lazyload alt="1742895517522.png"></p>
-<h2 id="创建CHAT任务流"><a href="#创建CHAT任务流" class="headerlink" title="创建CHAT任务流"></a>创建CHAT任务流</h2><p><img src="attachment:b98f10c7-1362-4d12-bb93-b53243ce1361:image.png" srcset="/img/loading.gif" lazyload alt="image.png"></p>
+<p><img src="https://i.111666.best/image/htD6C2oNrddvAuEyXVdmep.png" srcset="/img/loading.gif" lazyload alt="image"></p>
+<h2 id="创建CHAT任务流"><a href="#创建CHAT任务流" class="headerlink" title="创建CHAT任务流"></a>创建CHAT任务流</h2><p><img src="https://i.111666.best/image/2IgA1P69jBp6amaeczz6ZT.png" srcset="/img/loading.gif" lazyload alt="image"></p>
 <p>创建大模型组件，并填入模型，国内推荐使用硅基流动。</p>
 <p>在大模型组件中填入模型，填入系统提示词，核心目的是预期输出合理且可控，不要有多余的输出，测试的系统提示词如下(并不能很好的获取到目标方法名，需要后期再调试)</p>
 <figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment">## 角色</span><br><span class="hljs-string">你是一位专业的桌面助理</span><br><span class="hljs-comment">## 任务</span><br><span class="hljs-string">当用户发送查询桌面的请求时，你可以根据对话信息检查是否返回一个调用方法</span><br><span class="hljs-comment">## 当前支持的方法表</span><br><span class="hljs-string">发起桌面请求</span> <span class="hljs-string">=</span> <span class="hljs-string">destop_get</span><br><span class="hljs-comment">## 注意</span><br><span class="hljs-string">不需要</span> <span class="hljs-string">直接回答用户请求，只需要返回一个具体的执行方法</span><br></code></pre></td></tr></table></figure>
 
 <p>在后续添加自定义组件作为节点， 接收大模型的返回作为输入的参数，进行后续执行</p>
-<p><img src="attachment:f97d1310-8e51-4eb6-84e8-18de39d4acd1:image.png" srcset="/img/loading.gif" lazyload alt="image.png"></p>
+<p><img src="https://i.111666.best/image/TUxQf8y6eXGsVkuHSLivNL.png" srcset="/img/loading.gif" lazyload alt="image"></p>
 <p>一个基础的工作链条  启动大模型→发起请求→ 根据请求给出需要执行的方法→传递给插件执行方法→返回执行结果</p>
 <p>大模型正确识别方法名，插件解析方法，执行对应方法。向本地启动的服务器发送请求。得到响应返回结果到对话框</p>
-<p><img src="attachment:4a23438d-1106-4795-90c9-d7059e2c66f8:image.png" srcset="/img/loading.gif" lazyload alt="image.png"></p>
+<p><img src="https://i.111666.best/image/hdRpQxHTCHkU6fLsuc3BTm.png" srcset="/img/loading.gif" lazyload alt="image"></p>
 
                 
               </div>
