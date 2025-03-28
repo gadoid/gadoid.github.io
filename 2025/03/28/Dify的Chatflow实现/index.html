@@ -1,0 +1,720 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/bg/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Codfish">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="在上一次的基础上进行一些功能实现。 通过向大模型描述请求来完成一些服务器端的功能 设计流程 Dify Chatflow 任务流 → 自定义插件构建客户端请求 → 服务器端监听请求，解析请求并处理 →插件接收请求响应，传递结果给LLM 进行优化展示。 创建任务流创建空白应用→Chatflow ChatFlow是由多个组件构成的工作流程  在这个工作流程中，每次的对话会被作为输入参数传入到工作流中进行">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Dify的Chatflow实现">
+<meta property="og:url" content="http://gadoid.io/2025/03/28/Dify%E7%9A%84Chatflow%E5%AE%9E%E7%8E%B0/index.html">
+<meta property="og:site_name" content="西北有高楼">
+<meta property="og:description" content="在上一次的基础上进行一些功能实现。 通过向大模型描述请求来完成一些服务器端的功能 设计流程 Dify Chatflow 任务流 → 自定义插件构建客户端请求 → 服务器端监听请求，解析请求并处理 →插件接收请求响应，传递结果给LLM 进行优化展示。 创建任务流创建空白应用→Chatflow ChatFlow是由多个组件构成的工作流程  在这个工作流程中，每次的对话会被作为输入参数传入到工作流中进行">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://i.111666.best/image/4MRRqKxQVG504FjR2SaGTk.png">
+<meta property="og:image" content="https://i.111666.best/image/lgRg7jkIDaRm4Fs8moXWkk.png">
+<meta property="og:image" content="https://i.111666.best/image/PI0vurDrzyzDKmIyPWrGCh.jpg">
+<meta property="og:image" content="https://i.111666.best/image/fY63mSee5VABzV7CFrSHuu.png">
+<meta property="article:published_time" content="2025-03-28T11:08:07.000Z">
+<meta property="article:modified_time" content="2025-03-28T11:10:31.699Z">
+<meta property="article:author" content="Codfish">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://i.111666.best/image/4MRRqKxQVG504FjR2SaGTk.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Dify的Chatflow实现 - 西北有高楼</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"gadoid.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>西北有高楼</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/downloads/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>资源下载</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/bg/img/ice.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Dify的Chatflow实现"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-03-28 19:08" pubdate>
+          2025年3月28日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          10 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Dify的Chatflow实现</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>在上一次的基础上进行一些功能实现。</p>
+<p>通过向大模型描述请求来完成一些服务器端的功能</p>
+<h2 id="设计"><a href="#设计" class="headerlink" title="设计"></a>设计</h2><p>流程 Dify Chatflow 任务流 → 自定义插件构建客户端请求 → 服务器端监听请求，解析请求并处理 →插件接收请求响应，传递结果给LLM 进行优化展示。</p>
+<h2 id="创建任务流"><a href="#创建任务流" class="headerlink" title="创建任务流"></a>创建任务流</h2><p>创建空白应用→Chatflow</p>
+<p>ChatFlow是由多个组件构成的工作流程</p>
+<p><img src="https://i.111666.best/image/4MRRqKxQVG504FjR2SaGTk.png" srcset="/img/loading.gif" lazyload alt="image"></p>
+<p>在这个工作流程中，每次的对话会被作为输入参数传入到工作流中进行处理</p>
+<p>当前实现的功能 ： </p>
+<ol>
+<li>查询服务器允许执行的命令行工具</li>
+<li>由大模型分析用户指令，从提供的命令列表中组织命令流程下发到服务器端执行</li>
+</ol>
+<p>这里的编排</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">开始-问题分类器-情况1(向服务器端请求查询功能)-交由插件向服务器端发送查询请求-处理响应-回复<br>              -情况2(分析用户需求生成对应指令)-由插件构建请求向服务器请求执行-处理响应-回复<br></code></pre></td></tr></table></figure>
+
+<h2 id="自定义插件向服务端发送请求"><a href="#自定义插件向服务端发送请求" class="headerlink" title="自定义插件向服务端发送请求"></a>自定义插件向服务端发送请求</h2><p>由 上一节中的设计流程来看我们至少需要构建两个请求 ：</p>
+<p>1 . Get 请求  向服务端请求应用程序列表</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment">#Desktop_get</span><br><span class="hljs-keyword">import</span> requests<br><span class="hljs-keyword">import</span> json<br><br>FetchKey = <span class="hljs-string">&quot;/key&quot;</span><br>Command = <span class="hljs-string">&quot;/command&quot;</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">DestopHTool</span>(<span class="hljs-title class_ inherited__">Tool</span>):<br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">_invoke</span>(<span class="hljs-params">self, tool_parameters: <span class="hljs-built_in">dict</span>[<span class="hljs-built_in">str</span>, <span class="hljs-type">Any</span>]</span>) -&gt; Generator[ToolInvokeMessage]:<br>        ip = tool_parameters.get(<span class="hljs-string">&quot;ip&quot;</span>,<span class="hljs-string">&quot;&quot;</span>)<br>        port = tool_parameters.get(<span class="hljs-string">&quot;port&quot;</span>,<span class="hljs-string">&quot;&quot;</span>)<br>        key = <span class="hljs-variable language_">self</span>.fetch_key(ip,port)<br>        url = <span class="hljs-string">f&quot;http://<span class="hljs-subst">&#123;ip&#125;</span>:<span class="hljs-subst">&#123;port&#125;</span><span class="hljs-subst">&#123;Command&#125;</span>&quot;</span><br>        headers=&#123;<span class="hljs-string">&quot;X-Api-Key&quot;</span>:key&#125;<br>        res = requests.get(url=url,headers=headers,timeout=<span class="hljs-number">30</span>).json()<br>        <span class="hljs-keyword">yield</span> <span class="hljs-variable language_">self</span>.create_text_message(<span class="hljs-built_in">str</span>(res[<span class="hljs-string">&quot;commands&quot;</span>])<br>        )<br><br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">fetch_key</span>(<span class="hljs-params">self,ip,port</span>) : <br>        url = <span class="hljs-string">f&quot;http://<span class="hljs-subst">&#123;ip&#125;</span>:<span class="hljs-subst">&#123;port&#125;</span><span class="hljs-subst">&#123;FetchKey&#125;</span>&quot;</span><br><br>        js = requests.get(url=url,timeout=<span class="hljs-number">30</span>).json()<br>        <span class="hljs-keyword">return</span> js[<span class="hljs-string">&quot;key&quot;</span>]<br></code></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>Post 请求 向服务端发送命令执行列表，由服务端进行命令执行</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">import</span> requests<br><span class="hljs-keyword">import</span> json<br><br>EXEC=<span class="hljs-string">&quot;/execute&quot;</span><br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">DestopHelperTool</span>(<span class="hljs-title class_ inherited__">Tool</span>):<br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">_invoke</span>(<span class="hljs-params">self, tool_parameters: <span class="hljs-built_in">dict</span>[<span class="hljs-built_in">str</span>, <span class="hljs-type">Any</span>]</span>) -&gt; Generator[ToolInvokeMessage]:<br>        content = tool_parameters.get(<span class="hljs-string">&quot;text&quot;</span>,<span class="hljs-string">&quot;&quot;</span>)<br>        ip = tool_parameters.get(<span class="hljs-string">&quot;ip&quot;</span>,<span class="hljs-string">&quot;&quot;</span>)<br>        port = tool_parameters.get(<span class="hljs-string">&quot;port&quot;</span>,<span class="hljs-string">&quot;&quot;</span>)<br>        url = <span class="hljs-string">f&quot;http://<span class="hljs-subst">&#123;ip&#125;</span>:<span class="hljs-subst">&#123;port&#125;</span><span class="hljs-subst">&#123;EXEC&#125;</span>&quot;</span><br>        <span class="hljs-built_in">print</span>(url)<br>        key = tool_parameters.get(<span class="hljs-string">&quot;key&quot;</span>,<span class="hljs-string">&quot;&quot;</span>)<br>        headers=&#123;<span class="hljs-string">&quot;X-Api-Key&quot;</span>:key,<span class="hljs-string">&quot;Content-Type&quot;</span>:<span class="hljs-string">&quot;application/json&quot;</span>&#125;<br>        <span class="hljs-built_in">print</span>(headers)<br>        res = requests.post(url=url,json=json.loads(content),headers=headers,timeout=<span class="hljs-number">30</span>).text<br>        <span class="hljs-keyword">yield</span> <span class="hljs-variable language_">self</span>.create_text_message(res)<br><br></code></pre></td></tr></table></figure>
+
+<h2 id="构建服务器端接口"><a href="#构建服务器端接口" class="headerlink" title="构建服务器端接口"></a>构建服务器端接口</h2><p>使用flask 构建一个接收以上请求的服务程序。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> flask <span class="hljs-keyword">import</span> Flask, jsonify, request<br><span class="hljs-keyword">from</span> functools <span class="hljs-keyword">import</span> wraps<br><span class="hljs-keyword">import</span> uuid<br><span class="hljs-keyword">import</span> subprocess<br><span class="hljs-keyword">import</span> pexpect<br><br>app = Flask(__name__)<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">require_key</span>(<span class="hljs-params">f</span>):<br><span class="hljs-meta">    @wraps(<span class="hljs-params">f</span>)</span><br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">decorated_function</span>(<span class="hljs-params">*args, **kwargs</span>):<br>        <span class="hljs-built_in">print</span>(request.headers)<br>        key = request.headers.get(<span class="hljs-string">&#x27;X-API-KEY&#x27;</span>)<br>        <span class="hljs-built_in">print</span>(keys)<br>        <span class="hljs-keyword">if</span> key <span class="hljs-keyword">not</span> <span class="hljs-keyword">in</span> keys:<br>            <span class="hljs-keyword">return</span> jsonify(&#123;<span class="hljs-string">&#x27;error&#x27;</span>: <span class="hljs-string">&#x27;Invalid API key&#x27;</span>&#125;), <span class="hljs-number">401</span><br>        <span class="hljs-keyword">return</span> f(*args, **kwargs)<br>    <span class="hljs-keyword">return</span> decorated_function<br><br><span class="hljs-comment"># 密钥创建路由</span><br><span class="hljs-meta">@app.route(<span class="hljs-params"><span class="hljs-string">&#x27;/key&#x27;</span>, methods=[<span class="hljs-string">&#x27;GET&#x27;</span>]</span>)</span><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">create_key</span>():<br>    key = <span class="hljs-built_in">str</span>(uuid.uuid4())<br>    keys[key] = <span class="hljs-literal">True</span><br>    <span class="hljs-built_in">print</span>(keys)<br>    <span class="hljs-keyword">return</span> jsonify(&#123;<span class="hljs-string">&#x27;key&#x27;</span>: key&#125;)<br><br><span class="hljs-comment"># 获取所有功能路由</span><br><span class="hljs-meta">@app.route(<span class="hljs-params"><span class="hljs-string">&#x27;/command&#x27;</span>, methods=[<span class="hljs-string">&#x27;GET&#x27;</span>]</span>)</span><br><span class="hljs-meta">@require_key</span><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">get_functions</span>():<br>    <span class="hljs-keyword">try</span>:<br>        <span class="hljs-comment"># 获取PATH环境变量中的所有可执行文件</span><br>        result = subprocess.run([<span class="hljs-string">&#x27;ls&#x27;</span>, <span class="hljs-string">&#x27;/server/bin&#x27;</span>], capture_output=<span class="hljs-literal">True</span>, text=<span class="hljs-literal">True</span>)<br>        commands = result.stdout.split(<span class="hljs-string">&#x27;\n&#x27;</span>)<br>        <span class="hljs-keyword">return</span> jsonify(&#123;<span class="hljs-string">&#x27;status&#x27;</span>: <span class="hljs-string">&#x27;success&#x27;</span>, <span class="hljs-string">&#x27;commands&#x27;</span>: commands&#125;)<br>    <span class="hljs-keyword">except</span> Exception <span class="hljs-keyword">as</span> e:<br>        <span class="hljs-keyword">return</span> jsonify(&#123;<span class="hljs-string">&#x27;status&#x27;</span>: <span class="hljs-string">&#x27;error&#x27;</span>, <span class="hljs-string">&#x27;message&#x27;</span>: <span class="hljs-built_in">str</span>(e)&#125;)<br><span class="hljs-comment"># 执行命令路由</span><br><span class="hljs-meta">@app.route(<span class="hljs-params"><span class="hljs-string">&#x27;/execute&#x27;</span>, methods=[<span class="hljs-string">&#x27;POST&#x27;</span>]</span>)</span><br><span class="hljs-meta">@require_key</span><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">execute</span>():<br>    <span class="hljs-string">&quot;&quot;&quot;</span><br><span class="hljs-string">    执行传入的命令并返回结果</span><br><span class="hljs-string">    &quot;&quot;&quot;</span><br>    data = request.json<br>    <span class="hljs-built_in">print</span>(data)<br>    commands = data.get(<span class="hljs-string">&#x27;commands&#x27;</span>)<br>    result = []<br>    <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> commands:<br>        <span class="hljs-keyword">return</span> jsonify(&#123;<span class="hljs-string">&#x27;status&#x27;</span>: <span class="hljs-string">&#x27;error&#x27;</span>, <span class="hljs-string">&#x27;message&#x27;</span>: <span class="hljs-string">&#x27;No command provided&#x27;</span>&#125;)<br>    <br>    <span class="hljs-keyword">try</span>:<br>        shell = pexpect.spawn(<span class="hljs-string">&#x27;/bin/bash&#x27;</span>)<br>        <span class="hljs-keyword">for</span> command <span class="hljs-keyword">in</span> commands:<br>            <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> <span class="hljs-built_in">isinstance</span>(command, <span class="hljs-built_in">dict</span>):<br>                <span class="hljs-keyword">return</span> jsonify(&#123;<span class="hljs-string">&#x27;status&#x27;</span>: <span class="hljs-string">&#x27;error&#x27;</span>,<span class="hljs-string">&#x27;message&#x27;</span>: <span class="hljs-string">&#x27;Invalid command format&#x27;</span>&#125;)<br>            command_line = []<br>            command_line.append(command[<span class="hljs-string">&quot;command&quot;</span>])<br>            command_line.extend(command[<span class="hljs-string">&quot;args&quot;</span>])<br>            cmd = <span class="hljs-string">&quot; &quot;</span>.join(command_line)<br>            marker = <span class="hljs-string">f&quot;CMD_END_<span class="hljs-subst">&#123;<span class="hljs-built_in">hash</span>(cmd)&#125;</span>&quot;</span><br>            shell.sendline(<span class="hljs-string">f&quot;<span class="hljs-subst">&#123;cmd&#125;</span>; echo &#x27;<span class="hljs-subst">&#123;marker&#125;</span>&#x27;&quot;</span>)<br>            shell.expect(marker)<br>            <span class="hljs-comment"># 获取输出</span><br>            output = shell.before.decode().strip()<br>            <span class="hljs-built_in">print</span>(output)<br>            result.append( &#123;<br>                <span class="hljs-string">&#x27;command&#x27;</span>: cmd,<br>                <span class="hljs-string">&#x27;status&#x27;</span>:<span class="hljs-string">&#x27;success&#x27;</span>,<br>                <span class="hljs-string">&#x27;stdout&#x27;</span>: output,<br>            &#125;)<br>    <span class="hljs-keyword">except</span> Exception <span class="hljs-keyword">as</span> e:<br>        <span class="hljs-keyword">return</span> jsonify(&#123;<span class="hljs-string">&#x27;status&#x27;</span>: <span class="hljs-string">&#x27;error&#x27;</span>, <span class="hljs-string">&#x27;message&#x27;</span>: <span class="hljs-built_in">str</span>(e)&#125;)<br>    shell.close()<br>    <span class="hljs-built_in">print</span>(result)<br>    <span class="hljs-keyword">return</span> jsonify(&#123;<span class="hljs-string">&quot;result&quot;</span>: result&#125;)<br><br><span class="hljs-keyword">if</span> __name__ == <span class="hljs-string">&#x27;__main__&#x27;</span>:<br>    app.run(host=<span class="hljs-string">&#x27;0.0.0.0&#x27;</span>, port=<span class="hljs-number">5000</span>, debug=<span class="hljs-literal">True</span>)<br></code></pre></td></tr></table></figure>
+
+<p>Get 请求返回的消息体</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;commands&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>        <span class="hljs-string">&quot;hexo&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-string">&quot;ls&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-string">&quot;lscpu&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-string">&quot;python&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-string">&quot;zip&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-string">&quot;&quot;</span><br>    <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;status&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;success&quot;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p>Post请求接收的消息体</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;commands&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>    <span class="hljs-punctuation">&#123;</span><br>      <span class="hljs-attr">&quot;command&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;ls&quot;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;args&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;-l&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-string">&quot;/home/codfish&quot;</span><span class="hljs-punctuation">]</span><br>    <span class="hljs-punctuation">&#125;</span><br>  <span class="hljs-punctuation">]</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p>启动本地插件调试和服务端</p>
+<h2 id="执行工作流"><a href="#执行工作流" class="headerlink" title="执行工作流"></a>执行工作流</h2><p>向机器人请求查看服务端提供的应用列表 ： </p>
+<p><img src="https://i.111666.best/image/lgRg7jkIDaRm4Fs8moXWkk.png" srcset="/img/loading.gif" lazyload alt="image"></p>
+<p>向机器人请求查询某个目录下的文件信息：</p>
+<p><img src="https://i.111666.best/image/PI0vurDrzyzDKmIyPWrGCh.jpg" srcset="/img/loading.gif" lazyload alt="image"></p>
+<p>请求安装python 库：</p>
+<p><img src="https://i.111666.best/image/fY63mSee5VABzV7CFrSHuu.png" srcset="/img/loading.gif" lazyload alt="image"></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>完成了基本功能的实现</p>
+<p>在某些情况下提示词还是会出现异常，需要进一步优化。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Dify的Chatflow实现</div>
+      <div>http://gadoid.io/2025/03/28/Dify的Chatflow实现/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Codfish</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年3月28日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/03/25/WSL2-Dify-%E9%85%8D%E7%BD%AE%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%A1%8C%E9%9D%A2%E7%AB%AF%E8%B5%84%E6%BA%90%E8%AE%BF%E9%97%AE-%E7%AE%80%E5%8D%95%E5%BA%94%E7%94%A8/" title="WSL2+Dify 配置大模型桌面端资源访问(简单应用)">
+                        <span class="hidden-mobile">WSL2+Dify 配置大模型桌面端资源访问(简单应用)</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"lQzCvqmOtewLtpMfvfxKLomU-MdYXbMMI","appKey":"daMNlw5XcjN8TelT6GCHh8RF","path":"window.location.pathname","placeholder":"让灵感在这里发生","avatar":"monsterid","meta":["nick","mail"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":true,"recordIP":true,"serverURLs":"https://lQzCvqmO.api.lncldglobal.com","emojiCDN":null,"emojiMaps":null,"enableQQ":false,"enable":true,"visitor":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      &copy; 2025 - 2025 <a target="_blank" rel="noopener" href="https://github.com/username">CODFISH</a>
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+<!-- hexo injector body_end start --><script src="/js/chatbot-loader.js" defer></script><!-- hexo injector body_end end --></body>
+</html>
