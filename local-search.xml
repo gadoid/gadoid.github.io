@@ -4,25 +4,6 @@
   
   
   <entry>
-    <title>task_struct</title>
-    <link href="/2025/03/31/task-struct/"/>
-    <url>/2025/03/31/task-struct/</url>
-    
-    <content type="html"><![CDATA[<p>🧠 task_struct 的主要组成结构（按功能分类）</p><ol><li>进程标识<br>用于标识进程的唯一性：</li></ol><p>c<br>复制<br>编辑<br>pid_t pid;                      &#x2F;&#x2F; 进程ID<br>pid_t tgid;                     &#x2F;&#x2F; 线程组ID（主线程的pid）<br>struct pid *thread_pid;        &#x2F;&#x2F; 线程ID（每个线程唯一）<br>2. 进程状态与调度相关<br>包括进程状态、优先级、调度器策略等：</p><p>c<br>复制<br>编辑<br>volatile long state;           &#x2F;&#x2F; 当前进程状态（如 TASK_RUNNING 等）<br>unsigned int flags;            &#x2F;&#x2F; 标志位（PF_开头）<br>int prio;                      &#x2F;&#x2F; 动态优先级<br>int static_prio;               &#x2F;&#x2F; 静态优先级<br>int policy;                    &#x2F;&#x2F; 调度策略（如 SCHED_NORMAL）<br>struct sched_entity se;        &#x2F;&#x2F; CFS调度实体<br>3. 父子进程关系<br>记录进程之间的层级关系：</p><p>c<br>复制<br>编辑<br>struct task_struct *real_parent;   &#x2F;&#x2F; 创建它的进程<br>struct task_struct *parent;        &#x2F;&#x2F; 当前父进程<br>struct list_head children;         &#x2F;&#x2F; 子进程链表<br>struct list_head sibling;          &#x2F;&#x2F; 兄弟进程链表<br>4. 内存管理<br>与地址空间和虚拟内存相关的信息：</p><p>c<br>复制<br>编辑<br>struct mm_struct *mm;             &#x2F;&#x2F; 进程的内存描述符（用户态）<br>struct mm_struct *active_mm;      &#x2F;&#x2F; 当前活跃的 mm（内核线程也会设置）<br>5. 文件系统与文件描述符表<br>c<br>复制<br>编辑<br>struct fs_struct *fs;             &#x2F;&#x2F; 文件系统信息（当前目录等）<br>struct files_struct *files;       &#x2F;&#x2F; 打开的文件描述符表<br>struct fs_struct *fs;             &#x2F;&#x2F; 根目录、当前工作目录等信息<br>6. 信号处理<br>c<br>复制<br>编辑<br>struct signal_struct *signal;     &#x2F;&#x2F; 所属线程组的信号处理结构<br>struct sighand_struct *sighand;   &#x2F;&#x2F; 信号处理函数<br>sigset_t blocked;                 &#x2F;&#x2F; 当前屏蔽的信号<br>7. 命名空间（Namespace）<br>c<br>复制<br>编辑<br>struct nsproxy *nsproxy;          &#x2F;&#x2F; 各类命名空间的统一接口<br>8. CPU 和上下文切换相关<br>c<br>复制<br>编辑<br>struct thread_struct thread;      &#x2F;&#x2F; 存储CPU寄存器等上下文信息<br>int on_cpu;                       &#x2F;&#x2F; 是否在CPU上运行<br>struct cpumask *cpus_allowed;     &#x2F;&#x2F; 允许运行在哪些CPU上<br>9. 时间统计<br>c<br>复制<br>编辑<br>u64 utime;                        &#x2F;&#x2F; 用户态运行时间<br>u64 stime;                        &#x2F;&#x2F; 内核态运行时间<br>10. Cgroup 与资源限制<br>c<br>复制<br>编辑<br>struct css_set *cgroups;          &#x2F;&#x2F; 所属的 cgroup 集合<br>11. 调试与追踪<br>c<br>复制<br>编辑<br>unsigned long ptrace;             &#x2F;&#x2F; 是否被 ptrace 追踪<br>12. 内核同步与锁<br>c<br>复制<br>编辑<br>spinlock_t alloc_lock;            &#x2F;&#x2F; 用于保护任务结构中的关键区域<br>13. 其他常用字段<br>c<br>复制<br>编辑<br>char comm[TASK_COMM_LEN];         &#x2F;&#x2F; 进程名（最多16字节）<br>struct task_struct *group_leader; &#x2F;&#x2F; 线程组的 leader<br>int exit_code;                    &#x2F;&#x2F; 退出代码<br>🔧 小结图解（简略）<br>perl<br>复制<br>编辑<br>task_struct<br>├── 进程标识：pid, tgid<br>├── 状态与调度：state, prio, policy, se<br>├── 父子关系：parent, children<br>├── 内存管理：mm, active_mm<br>├── 文件系统：files, fs<br>├── 信号处理：signal, sighand<br>├── 命名空间：nsproxy<br>├── CPU调度：thread, on_cpu<br>├── 时间统计：utime, stime<br>├── Cgroup：cgroups<br>├── 同步锁：alloc_lock<br>├── 调试追踪：ptrace<br>└── 通用信息：comm, exit_code</p>]]></content>
-    
-    
-    
-    <tags>
-      
-      <tag>编程语言_C</tag>
-      
-    </tags>
-    
-  </entry>
-  
-  
-  
-  <entry>
     <title>Dify的Chatflow实现</title>
     <link href="/2025/03/28/Dify%E7%9A%84Chatflow%E5%AE%9E%E7%8E%B0/"/>
     <url>/2025/03/28/Dify%E7%9A%84Chatflow%E5%AE%9E%E7%8E%B0/</url>
