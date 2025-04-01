@@ -1,0 +1,941 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/bg/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Codfish">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="容器实现的原理在Linux系统中，容器的实现本身就是一种资源隔离的方式。它通过控制进程的资源调度，访问权限来确定一项进程可以操作的资源范围，来达到隔离的目的 这其中主要使用到3个技术 ： namespace，unionfs 和cgroups namespacenamespace 是一种控制进程访问范围的结构体。在进程结构体（task_struct）中，通过nsproxy 结构 指向一个包含多种资源">
+<meta property="og:type" content="article">
+<meta property="og:title" content="容器的实现原理">
+<meta property="og:url" content="http://gadoid.io/2025/04/01/%E5%AE%B9%E5%99%A8%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/index.html">
+<meta property="og:site_name" content="西北有高楼">
+<meta property="og:description" content="容器实现的原理在Linux系统中，容器的实现本身就是一种资源隔离的方式。它通过控制进程的资源调度，访问权限来确定一项进程可以操作的资源范围，来达到隔离的目的 这其中主要使用到3个技术 ： namespace，unionfs 和cgroups namespacenamespace 是一种控制进程访问范围的结构体。在进程结构体（task_struct）中，通过nsproxy 结构 指向一个包含多种资源">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-04-01T06:32:41.000Z">
+<meta property="article:modified_time" content="2025-04-01T06:35:16.454Z">
+<meta property="article:author" content="Codfish">
+<meta property="article:tag" content="虚拟化技术">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>容器的实现原理 - 西北有高楼</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"gadoid.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>西北有高楼</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/downloads/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>资源下载</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/bg/img/ice.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="容器的实现原理"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-04-01 14:32" pubdate>
+          2025年4月1日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          19 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">容器的实现原理</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="容器实现的原理"><a href="#容器实现的原理" class="headerlink" title="容器实现的原理"></a>容器实现的原理</h1><p>在Linux系统中，容器的实现本身就是一种资源隔离的方式。它通过控制进程的资源调度，访问权限来确定一项进程可以操作的资源范围，来达到隔离的目的</p>
+<p>这其中主要使用到3个技术 ： namespace，unionfs 和cgroups</p>
+<h1 id="namespace"><a href="#namespace" class="headerlink" title="namespace"></a>namespace</h1><p>namespace 是一种控制进程访问范围的结构体。在进程结构体（task_struct）中，通过nsproxy 结构 指向一个包含多种资源结构指针的结构体。</p>
+<p>struct nsproxy :</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">nsproxy</span> &#123;</span><br>    <span class="hljs-type">atomic_t</span> count;                  <span class="hljs-comment">// 引用计数</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">uts_namespace</span> *<span class="hljs-title">uts_ns</span>;</span>   <span class="hljs-comment">// UTS 命名空间（主机名、域名）</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">ipc_namespace</span> *<span class="hljs-title">ipc_ns</span>;</span>   <span class="hljs-comment">// IPC 命名空间（信号量、共享内存、消息队列）</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">mnt_namespace</span> *<span class="hljs-title">mnt_ns</span>;</span>   <span class="hljs-comment">// 挂载命名空间（文件系统挂载点）</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">pid_namespace</span> *<span class="hljs-title">pid_ns_for_children</span>;</span> <span class="hljs-comment">// PID 命名空间（用于子进程）</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">net</span> *<span class="hljs-title">net_ns</span>;</span>             <span class="hljs-comment">// 网络命名空间</span><br><span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> CONFIG_CGROUPS</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">cgroup_namespace</span> *<span class="hljs-title">cgroup_ns</span>;</span> <span class="hljs-comment">// 控制组命名空间</span><br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">ifdef</span> CONFIG_TIME_NS</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">time_namespace</span> *<span class="hljs-title">time_ns</span>;</span>     <span class="hljs-comment">// 时间命名空间</span><br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br>&#125;;<br><br></code></pre></td></tr></table></figure>
+
+<h2 id="各个字段的含义："><a href="#各个字段的含义：" class="headerlink" title="各个字段的含义："></a>各个字段的含义：</h2><table>
+<thead>
+<tr>
+<th>字段名</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>count</code></td>
+<td>引用计数，避免结构体被过早释放</td>
+</tr>
+<tr>
+<td><code>uts_ns</code></td>
+<td>UTS 命名空间（<code>uname -n</code>、主机名等）</td>
+</tr>
+<tr>
+<td><code>ipc_ns</code></td>
+<td>IPC 命名空间（SysV IPC，如信号量、共享内存）</td>
+</tr>
+<tr>
+<td><code>mnt_ns</code></td>
+<td>挂载命名空间（隔离的挂载视图）</td>
+</tr>
+<tr>
+<td><code>pid_ns_for_children</code></td>
+<td>当前进程的子进程将进入的 PID 命名空间</td>
+</tr>
+<tr>
+<td><code>net_ns</code></td>
+<td>网络命名空间（如网络设备、IP 地址、路由等）</td>
+</tr>
+<tr>
+<td><code>cgroup_ns</code></td>
+<td>控制组命名空间（控制组的名字空间隔离）</td>
+</tr>
+<tr>
+<td><code>time_ns</code></td>
+<td>时间命名空间（每个容器&#x2F;命名空间自己的时间视图）</td>
+</tr>
+</tbody></table>
+<p>当进程被创建时，未定义的命名空间 会默认使用父进程的结构体信息（可以通过clone()来指定子进程需要绑定的命名空间）。所以当新的子进程被创建时，默认直接可以访问父进程所能使用的资源。</p>
+<h2 id="创建新的命名空间"><a href="#创建新的命名空间" class="headerlink" title="创建新的命名空间"></a>创建新的命名空间</h2><p>通过使用 unshare 命令来创建新的命名空间。操作系统会对每种资源进行相应的初始化</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">unshare --fork --pid --mount --uts --ipc --net --user --map-root-user /bin/bash<br></code></pre></td></tr></table></figure>
+
+<p><code>unshare</code> 可以让你为进程单独创建以下命名空间：</p>
+<table>
+<thead>
+<tr>
+<th>命名空间</th>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>UTS</td>
+<td><code>--uts</code></td>
+<td>主机名&#x2F;域名隔离（可以改 hostname）</td>
+</tr>
+<tr>
+<td>PID</td>
+<td><code>--pid</code></td>
+<td>进程号隔离（新的进程树，当前进程是 PID 1）</td>
+</tr>
+<tr>
+<td>Mount</td>
+<td><code>--mount</code></td>
+<td>文件系统挂载点隔离</td>
+</tr>
+<tr>
+<td>Net</td>
+<td><code>--net</code></td>
+<td>网络栈隔离（独立的网络接口）</td>
+</tr>
+<tr>
+<td>IPC</td>
+<td><code>--ipc</code></td>
+<td>进程间通信隔离</td>
+</tr>
+<tr>
+<td>User</td>
+<td><code>--user</code></td>
+<td>用户&#x2F;权限隔离（uid&#x2F;gid 映射）</td>
+</tr>
+<tr>
+<td>Cgroup</td>
+<td><code>--cgroup</code></td>
+<td>控制组隔离</td>
+</tr>
+<tr>
+<td>Time</td>
+<td><code>--time</code></td>
+<td>系统时间命名空间（较新内核）</td>
+</tr>
+</tbody></table>
+<p> 使用 - -mount 会将当前进程的挂载系统视图加载到新的进程中去</p>
+<p>使用  - -mount-proc 会创建一个独立的&#x2F;proc 文件系统</p>
+<p>进入新的命名空间后，进行资源挂载</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs bash">unshare --mount --net --user --map-root-user bash<br><br>mount -t tmpfs tmpfs /mnt/tmp  <span class="hljs-comment">#文件系统挂载</span><br>ip <span class="hljs-built_in">link</span> <span class="hljs-built_in">set</span> lo up <span class="hljs-comment">#网络挂载</span><br>mount -t proc proc /proc <span class="hljs-comment">#虚拟文件系统挂载</span><br><span class="hljs-comment"># --user 要么用 --map-root-user，要么自己写 uid_map</span><br></code></pre></td></tr></table></figure>
+
+<p>我们得到了一个自定义资源预设命名空间的进程</p>
+<h2 id="QA"><a href="#QA" class="headerlink" title="QA"></a>QA</h2><h2 id="unshare-—uts-—pid-bin-bash-需要通过—fork创建新的命名空间"><a href="#unshare-—uts-—pid-bin-bash-需要通过—fork创建新的命名空间" class="headerlink" title="unshare  —uts —pid  &#x2F;bin&#x2F;bash 需要通过—fork创建新的命名空间"></a>unshare  —uts —pid  &#x2F;bin&#x2F;bash 需要通过—fork创建新的命名空间</h2><p>使用 <code>unshare --pid</code> 创建新的 PID 命名空间后，当前进程依然处于旧命名空间，它的 PID 无法更改。因此必须通过 <code>--fork</code> 创建一个新进程，它才能真正运行在新的 PID 命名空间中，并成为该命名空间内的 PID 1。</p>
+<h3 id="如何进入一个命名空间"><a href="#如何进入一个命名空间" class="headerlink" title="如何进入一个命名空间"></a>如何进入一个命名空间</h3><p>Linux 把每个进程当前所在的命名空间暴露在了 <code>/proc/[pid]/ns/</code> 目录下，你可以通过访问它来“进入”命名空间。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">bash<br><span class="hljs-built_in">sudo</span> nsenter --target &lt;PID&gt; --net --uts --pid --mount --ipc /bin/bash<br></code></pre></td></tr></table></figure>
+
+<p>可以通过 <code>bind mount</code> 的方式把 namespace 文件挂到一个路径上，实现“命名空间持久化”：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">mkdir</span> -p /var/run/my_ns<br><span class="hljs-built_in">touch</span> /var/run/my_ns/net<br>mount --<span class="hljs-built_in">bind</span> /proc/&lt;pid&gt;/ns/net /var/run/my_ns/net<br><br></code></pre></td></tr></table></figure>
+
+<h3 id="进程在不同命名空间具有不同的PID信息"><a href="#进程在不同命名空间具有不同的PID信息" class="headerlink" title="进程在不同命名空间具有不同的PID信息"></a>进程在不同命名空间具有不同的PID信息</h3><p>关键结构：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">pid</span> &#123;</span><br><span class="hljs-type">atomic_t</span> count;<br><span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> level;  <span class="hljs-comment">// 命名空间层级（0 = root）</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">hlist_head</span> <span class="hljs-title">tasks</span>[<span class="hljs-title">PIDTYPE_MAX</span>];</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">upid</span> <span class="hljs-title">numbers</span>[1];</span> <span class="hljs-comment">// 实际的 PID 数组（多个命名空间的 PID）</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">upid</span> &#123;</span><br>    <span class="hljs-type">int</span> nr;                      <span class="hljs-comment">// 当前 namespace 下的 PID</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">pid_namespace</span> *<span class="hljs-title">ns</span>;</span>   <span class="hljs-comment">// 属于哪个 namespace</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>由此 我们可以看到 unshare 是一个对进程的资源权限进行创建绑定的过程</p>
+<h1 id="overlayfs"><a href="#overlayfs" class="headerlink" title="overlayfs"></a>overlayfs</h1><p>在实现容器文件系统时，常使用的是 <code>overlayfs</code>（属于 unionfs 类型的聚合文件系统）。用来将容器所需要的文件资源“聚合”在同一个资源目录下。</p>
+<p>通过mount 创建文件系统</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">sudo</span> mount -t overlay overlay \<br>  -o lowerdir=/mnt/lower,upperdir=/mnt/upper,workdir=/mnt/work \<br>  /mnt/merged<br><br></code></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>-t overlay</code></td>
+<td>指定文件系统类型是 <code>overlay</code></td>
+</tr>
+<tr>
+<td><code>overlay</code></td>
+<td>设备名（这里可以随便写，比如也可以写成 <code>none</code>）</td>
+</tr>
+<tr>
+<td><code>-o lowerdir=...</code></td>
+<td>指定只读的底层目录（可多个）</td>
+</tr>
+<tr>
+<td><code>upperdir=...</code></td>
+<td>指定可写的上层目录</td>
+</tr>
+<tr>
+<td><code>workdir=...</code></td>
+<td>overlayfs 需要的工作目录（中间缓存用）</td>
+</tr>
+<tr>
+<td>最后的 <code>rootfs_chat/merged</code></td>
+<td>是挂载点，即最终组合出来的目录视图</td>
+</tr>
+</tbody></table>
+<p>挂载创建好后，因为该挂载存在于父进程之中，所以使用—mount创建后，新的子进程可以访问到该挂载路径</p>
+<p>但是此时的根路径依然继承自父进程，所以需要将新进程的根进程修改为“&#x2F;”</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">chroot</span> rootfs_chat/merged/ <br></code></pre></td></tr></table></figure>
+
+<p><code>chroot</code> 本身并不安全，不能完全隔离文件系统，需要结合 mount namespace 才能保证隔离性。否则进程可以 escape chroot。</p>
+<h2 id="QA-1"><a href="#QA-1" class="headerlink" title="QA"></a>QA</h2><p>chroot 通过修改进程结构体中的“root” 变量，来帮助进程识别对应的根目录的</p>
+<p>{</p>
+<p>struct fs_struct {<br>struct path root;     &#x2F;&#x2F; 当前的根目录（对应 <code>/</code>）<br>struct path pwd;      &#x2F;&#x2F; 当前工作目录（对应 <code>.</code>）<br>};</p>
+<h1 id="cgroups"><a href="#cgroups" class="headerlink" title="cgroups"></a>cgroups</h1><p>cgroup 是一个内核中的“资源控制树结构”，进程“加入”到这个树结构的某个节点下，进而接受控制器的约束。</p>
+<p>结构体定义：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">cgroup</span> &#123;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">kernfs_node</span> *<span class="hljs-title">kn</span>;</span>         <span class="hljs-comment">// 在 cgroupfs 中对应的目录节点</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">cgroup_subsys_state</span> __<span class="hljs-title">rcu</span> *<span class="hljs-title">subsys</span>[<span class="hljs-title">CGROUP_SUBSYS_COUNT</span>];</span> <span class="hljs-comment">// 控制器状态</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">cgroup_parent</span> *<span class="hljs-title">parent</span>;</span>   <span class="hljs-comment">// 父 cgroup</span><br>    ...<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>控制器结构 ：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">cgroup_subsys_state</span> &#123;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">cgroup</span> *<span class="hljs-title">cgroup</span>;</span>       <span class="hljs-comment">// 属于哪个 cgroup 节点</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">cgroup_subsys</span> *<span class="hljs-title">ss</span>;</span>    <span class="hljs-comment">// 属于哪个控制器（memory, cpu等）</span><br>    ...<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>进程结构体中对cgroup的引用 ：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">task_struct</span> &#123;</span><br>    ...<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">css_set</span> *<span class="hljs-title">cgroups</span>;</span>    <span class="hljs-comment">// 进程所属的 cgroup 集合（css_set）</span><br>    ...<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h3 id="cgroups限制写入"><a href="#cgroups限制写入" class="headerlink" title="cgroups限制写入"></a>cgroups限制写入</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">mkdir</span> /sys/fs/cgroup/mygroup<br><span class="hljs-built_in">echo</span> 1234 &gt; /sys/fs/cgroup/mygroup/cgroup.procs  <span class="hljs-comment">#将某个进程加入资源组</span><br><span class="hljs-built_in">echo</span> 50M &gt; /sys/fs/cgroup/mygroup/memory.max  <span class="hljs-comment">#在对应的虚拟文件中设置限制值的大小</span><br><br></code></pre></td></tr></table></figure>
+
+<h2 id="限制方式"><a href="#限制方式" class="headerlink" title="限制方式"></a>限制方式</h2><h3 id="1-内存限制（memory-controller）"><a href="#1-内存限制（memory-controller）" class="headerlink" title="1. 内存限制（memory controller）"></a>1. <strong>内存限制（memory controller）</strong></h3><h3 id="控制文件（cgroups-v2）："><a href="#控制文件（cgroups-v2）：" class="headerlink" title="控制文件（cgroups v2）："></a>控制文件（cgroups v2）：</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs bash">memory.max        <span class="hljs-comment"># 最大内存</span><br>memory.current    <span class="hljs-comment"># 当前内存使用量</span><br>memory.swap.max   <span class="hljs-comment"># 最大 swap 使用</span><br><br></code></pre></td></tr></table></figure>
+
+<h3 id="限制机制："><a href="#限制机制：" class="headerlink" title="限制机制："></a>限制机制：</h3><ul>
+<li>每次进程分配内存（<code>malloc</code> &#x2F; <code>brk</code> &#x2F; <code>mmap</code>），内核会通过 cgroup 追踪它的页数</li>
+<li>内核维护一个“<strong>内存账户</strong>”，记录每个 cgroup 当前使用了多少内存</li>
+<li>当使用超过 <code>memory.max</code>：<ul>
+<li>如果是软限制（memory.high）：内核优先回收缓存页</li>
+<li>如果是硬限制（memory.max）：内核会拒绝分配，或者直接 OOM 杀死进程</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="2-CPU-限制（cpu-controller）"><a href="#2-CPU-限制（cpu-controller）" class="headerlink" title="2. CPU 限制（cpu controller）"></a>2. <strong>CPU 限制（cpu controller）</strong></h3><h3 id="控制文件："><a href="#控制文件：" class="headerlink" title="控制文件："></a>控制文件：</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">cpu.max           <span class="hljs-comment"># 格式为 &quot;quota period&quot;，如 &quot;50000 100000&quot; 表示 50%</span><br>cpu.weight        <span class="hljs-comment"># 比例调度（类似 nice 值）</span><br><br></code></pre></td></tr></table></figure>
+
+<h3 id="限制机制：-1"><a href="#限制机制：-1" class="headerlink" title="限制机制："></a>限制机制：</h3><ul>
+<li>Linux 用 <strong>CFS（完全公平调度器）</strong> 管理 CPU 时间</li>
+<li>cgroups 中每个组都维护一个“虚拟时间”和“实际用量”</li>
+<li>当某个 cgroup 超过分配的 quota，<strong>调度器会“跳过”它的进程，让出 CPU</strong></li>
+<li>实现类似“限速”：比如每 100ms 最多用 50ms，就等于 50% CPU</li>
+</ul>
+<hr>
+<h3 id="3-IO-限制（io-controller）"><a href="#3-IO-限制（io-controller）" class="headerlink" title="3. IO 限制（io controller）"></a>3. <strong>IO 限制（io controller）</strong></h3><h3 id="控制文件：-1"><a href="#控制文件：-1" class="headerlink" title="控制文件："></a>控制文件：</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">o.max            <span class="hljs-comment"># 限制读写速率</span><br>io.weight         <span class="hljs-comment"># 相对优先级</span><br><br></code></pre></td></tr></table></figure>
+
+<h3 id="限制机制：-2"><a href="#限制机制：-2" class="headerlink" title="限制机制："></a>限制机制：</h3><ul>
+<li>当进程访问磁盘（读&#x2F;写）时，内核通过 block 层检查它所在的 cgroup</li>
+<li>如果当前组已达到速率上限，则排队</li>
+<li>用的是<strong>节流算法（token bucket + deadline）</strong>，按比例分发 IO 机会</li>
+</ul>
+<hr>
+<h3 id="4-进程数限制（pids-controller）"><a href="#4-进程数限制（pids-controller）" class="headerlink" title="4. 进程数限制（pids controller）"></a>4. <strong>进程数限制（pids controller）</strong></h3><h3 id="控制文件：-2"><a href="#控制文件：-2" class="headerlink" title="控制文件："></a>控制文件：</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">pids.max         <span class="hljs-comment"># 最大可创建进程数</span><br>pids.current     <span class="hljs-comment"># 当前已创建的进程数</span><br><br></code></pre></td></tr></table></figure>
+
+<h2 id="处理流程"><a href="#处理流程" class="headerlink" title="处理流程"></a>处理流程</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs bash">进程调用系统资源（如内存分配、CPU执行、磁盘读写）  <br>      ↓  <br>内核触发资源控制器的钩子函数（如 memory, cpu, io, pids）  <br>      ↓  <br>内核查找该进程所属的 cgroup 节点  <br>      ↓  <br>读取当前使用统计（如 memory.current、cpu.stat）  <br>      ↓  <br>与配置的限制（如 memory.max、cpu.max）做比较  <br>      ↓  <br>根据控制器的逻辑执行：<br>    ├── ✅ 允许（资源未超限）<br>    ├── 🚫 拒绝（如 fork 被拒绝）<br>    ├── 🧹 触发回收（如内存回收缓存页）<br>    └── 💣 杀死进程（如 OOM killer）<br><br></code></pre></td></tr></table></figure>
+
+<h3 id="不同资源的控制方式示意："><a href="#不同资源的控制方式示意：" class="headerlink" title="不同资源的控制方式示意："></a>不同资源的控制方式示意：</h3><table>
+<thead>
+<tr>
+<th>资源类型</th>
+<th>钩子点（内核行为）</th>
+<th>控制行为</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Memory</td>
+<td>分配页（<code>alloc_pages</code>）</td>
+<td>拒绝分配 &#x2F; 回收 &#x2F; OOM</td>
+</tr>
+<tr>
+<td>CPU</td>
+<td>调度器（<code>schedule</code>）</td>
+<td>跳过调度 &#x2F; 限速</td>
+</tr>
+<tr>
+<td>IO</td>
+<td><code>submit_bio()</code> &#x2F; IO调度</td>
+<td>节流 &#x2F; 排队</td>
+</tr>
+<tr>
+<td>PIDs</td>
+<td>创建进程（<code>fork()</code>）</td>
+<td>直接失败</td>
+</tr>
+<tr>
+<td>NetCls</td>
+<td>发包、Qos 分类</td>
+<td>加标签限流</td>
+</tr>
+<tr>
+<td>Devices</td>
+<td>打开文件（<code>open()</code>）</td>
+<td>拒绝访问设备</td>
+</tr>
+</tbody></table>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>容器的创建过程</p>
+<ol>
+<li>创建聚合文件系统，将容器所需要的文件统一到一个文件路径下</li>
+<li>创建命名空间，初始化命名空间中的资源路径</li>
+<li>将父进程中创建的文件系统挂载到子进程中，将子进程根目录指向挂载目录</li>
+<li>查询进程的PID号，创建cgroup文件，添加对该进程的资源限制。</li>
+</ol>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E8%99%9A%E6%8B%9F%E5%8C%96%E6%8A%80%E6%9C%AF/" class="print-no-link">#虚拟化技术</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>容器的实现原理</div>
+      <div>http://gadoid.io/2025/04/01/容器的实现原理/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Codfish</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年4月1日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/04/01/task-struct/" title="容器的实现原理">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">容器的实现原理</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/03/28/Dify%E7%9A%84Chatflow%E5%AE%9E%E7%8E%B0/" title="Dify的Chatflow实现">
+                        <span class="hidden-mobile">Dify的Chatflow实现</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"lQzCvqmOtewLtpMfvfxKLomU-MdYXbMMI","appKey":"daMNlw5XcjN8TelT6GCHh8RF","path":"window.location.pathname","placeholder":"让灵感在这里发生","avatar":"monsterid","meta":["nick","mail"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":true,"recordIP":true,"serverURLs":"https://lQzCvqmO.api.lncldglobal.com","emojiCDN":null,"emojiMaps":null,"enableQQ":false,"enable":true,"visitor":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      &copy; 2025 - 2025 <a target="_blank" rel="noopener" href="https://github.com/username">CODFISH</a>
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+<!-- hexo injector body_end start --><script src="/js/chatbot-loader.js" defer></script><!-- hexo injector body_end end --></body>
+</html>
