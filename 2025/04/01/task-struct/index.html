@@ -21,22 +21,22 @@
   
     <meta name="description" content="Linux 内核中的 task_struct 结构详解task_struct 是 Linux 内核中用来表示 进程（或者线程） 的核心结构体，是操作系统调度、管理和追踪进程的基础。该结构体非常庞大，包含了大量字段，用于管理进程的各种状态。  🧠 task_struct 的主要组成结构（按功能分类）1. 进程标识用于标识进程的唯一性： 123pid_t pid;">
 <meta property="og:type" content="article">
-<meta property="og:title" content="容器的实现原理">
+<meta property="og:title" content="task-struct">
 <meta property="og:url" content="http://gadoid.io/2025/04/01/task-struct/index.html">
 <meta property="og:site_name" content="西北有高楼">
 <meta property="og:description" content="Linux 内核中的 task_struct 结构详解task_struct 是 Linux 内核中用来表示 进程（或者线程） 的核心结构体，是操作系统调度、管理和追踪进程的基础。该结构体非常庞大，包含了大量字段，用于管理进程的各种状态。  🧠 task_struct 的主要组成结构（按功能分类）1. 进程标识用于标识进程的唯一性： 123pid_t pid;">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2025-04-01T06:32:41.000Z">
-<meta property="article:modified_time" content="2025-04-01T06:34:55.757Z">
+<meta property="article:modified_time" content="2025-04-01T06:36:40.033Z">
 <meta property="article:author" content="Codfish">
-<meta property="article:tag" content="虚拟化技术">
+<meta property="article:tag" content="操作系统">
 <meta name="twitter:card" content="summary_large_image">
   
   
     <meta name="referrer" content="no-referrer-when-downgrade">
   
   
-  <title>容器的实现原理 - 西北有高楼</title>
+  <title>task-struct - 西北有高楼</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -202,7 +202,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="容器的实现原理"></span>
+            <span id="subtitle" data-typed-text="task-struct"></span>
           
         </div>
 
@@ -273,7 +273,7 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">容器的实现原理</h1>
+            <h1 id="seo-header">task-struct</h1>
             
             
               <div class="markdown-body">
@@ -339,7 +339,7 @@
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/%E8%99%9A%E6%8B%9F%E5%8C%96%E6%8A%80%E6%9C%AF/" class="print-no-link">#虚拟化技术</a>
+        <a href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" class="print-no-link">#操作系统</a>
       
     </div>
   
@@ -351,7 +351,7 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>容器的实现原理</div>
+      <div>task-struct</div>
       <div>http://gadoid.io/2025/04/01/task-struct/</div>
     </div>
     <div class="license-meta">

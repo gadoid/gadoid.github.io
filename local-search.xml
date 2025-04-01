@@ -4,7 +4,7 @@
   
   
   <entry>
-    <title>容器的实现原理</title>
+    <title>task-struct</title>
     <link href="/2025/04/01/task-struct/"/>
     <url>/2025/04/01/task-struct/</url>
     
@@ -14,7 +14,7 @@
     
     <tags>
       
-      <tag>虚拟化技术</tag>
+      <tag>操作系统</tag>
       
     </tags>
     
