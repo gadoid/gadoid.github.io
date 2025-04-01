@@ -27,7 +27,7 @@
 <meta property="og:description" content="容器实现的原理在Linux系统中，容器的实现本身就是一种资源隔离的方式。它通过控制进程的资源调度，访问权限来确定一项进程可以操作的资源范围，来达到隔离的目的 这其中主要使用到3个技术 ： namespace，unionfs 和cgroups namespacenamespace 是一种控制进程访问范围的结构体。在进程结构体（task_struct）中，通过nsproxy 结构 指向一个包含多种资源">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2025-04-01T06:32:41.000Z">
-<meta property="article:modified_time" content="2025-04-01T06:35:16.454Z">
+<meta property="article:modified_time" content="2025-04-01T06:39:49.761Z">
 <meta property="article:author" content="Codfish">
 <meta property="article:tag" content="虚拟化技术">
 <meta name="twitter:card" content="summary_large_image">
@@ -384,7 +384,7 @@
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs bash">unshare --mount --net --user --map-root-user bash<br><br>mount -t tmpfs tmpfs /mnt/tmp  <span class="hljs-comment">#文件系统挂载</span><br>ip <span class="hljs-built_in">link</span> <span class="hljs-built_in">set</span> lo up <span class="hljs-comment">#网络挂载</span><br>mount -t proc proc /proc <span class="hljs-comment">#虚拟文件系统挂载</span><br><span class="hljs-comment"># --user 要么用 --map-root-user，要么自己写 uid_map</span><br></code></pre></td></tr></table></figure>
 
 <p>我们得到了一个自定义资源预设命名空间的进程</p>
-<h2 id="QA"><a href="#QA" class="headerlink" title="QA"></a>QA</h2><h2 id="unshare-—uts-—pid-bin-bash-需要通过—fork创建新的命名空间"><a href="#unshare-—uts-—pid-bin-bash-需要通过—fork创建新的命名空间" class="headerlink" title="unshare  —uts —pid  &#x2F;bin&#x2F;bash 需要通过—fork创建新的命名空间"></a>unshare  —uts —pid  &#x2F;bin&#x2F;bash 需要通过—fork创建新的命名空间</h2><p>使用 <code>unshare --pid</code> 创建新的 PID 命名空间后，当前进程依然处于旧命名空间，它的 PID 无法更改。因此必须通过 <code>--fork</code> 创建一个新进程，它才能真正运行在新的 PID 命名空间中，并成为该命名空间内的 PID 1。</p>
+<h2 id="QA"><a href="#QA" class="headerlink" title="QA"></a>QA</h2><h3 id="unshare-—uts-—pid-bin-bash-需要通过—fork创建新的命名空间"><a href="#unshare-—uts-—pid-bin-bash-需要通过—fork创建新的命名空间" class="headerlink" title="unshare  —uts —pid  &#x2F;bin&#x2F;bash 需要通过—fork创建新的命名空间"></a>unshare  —uts —pid  &#x2F;bin&#x2F;bash 需要通过—fork创建新的命名空间</h3><p>使用 <code>unshare --pid</code> 创建新的 PID 命名空间后，当前进程依然处于旧命名空间，它的 PID 无法更改。因此必须通过 <code>--fork</code> 创建一个新进程，它才能真正运行在新的 PID 命名空间中，并成为该命名空间内的 PID 1。</p>
 <h3 id="如何进入一个命名空间"><a href="#如何进入一个命名空间" class="headerlink" title="如何进入一个命名空间"></a>如何进入一个命名空间</h3><p>Linux 把每个进程当前所在的命名空间暴露在了 <code>/proc/[pid]/ns/</code> 目录下，你可以通过访问它来“进入”命名空间。</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">bash<br><span class="hljs-built_in">sudo</span> nsenter --target &lt;PID&gt; --net --uts --pid --mount --ipc /bin/bash<br></code></pre></td></tr></table></figure>
 
