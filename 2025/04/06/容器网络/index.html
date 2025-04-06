@@ -28,7 +28,7 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://i.111666.best/image/cd1vfax0o2HRKQWO1OAGwY.png">
 <meta property="article:published_time" content="2025-04-06T07:52:37.000Z">
-<meta property="article:modified_time" content="2025-04-06T07:55:22.318Z">
+<meta property="article:modified_time" content="2025-04-06T07:58:11.422Z">
 <meta property="article:author" content="Codfish">
 <meta property="article:tag" content="虚拟化技术">
 <meta property="article:tag" content="网络">
@@ -305,7 +305,7 @@
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">sudo</span> iptables -A FORWARD -j ACCEPT<br>置位  /proc/sys/net/ipv4/ip_forward<br></code></pre></td></tr></table></figure>
 
 <p>Docker 通过向iptables写入规则 来控制 端口映射转发</p>
-<h2 id="NAT（network-address-translation）"><a href="#NAT（network-address-translation）" class="headerlink" title="NAT（network address translation）"></a>NAT（network address translation）</h2><p>NAT (Network Address Translation) 是一种网络技术，它允许多台设备通过单个公共 IP 地址访问互联网。通过一张映射表完成内网和外网IP，端口间的转换</p>
+<h3 id="NAT（network-address-translation）"><a href="#NAT（network-address-translation）" class="headerlink" title="NAT（network address translation）"></a>NAT（network address translation）</h3><p>NAT (Network Address Translation) 是一种网络技术，它允许多台设备通过单个公共 IP 地址访问互联网。通过一张映射表完成内网和外网IP，端口间的转换</p>
 <p>NAT 的主要功能和特点：</p>
 <ol>
 <li>地址转换：NAT 将内部网络中的私有 IP 地址转换为公共 IP 地址，使得内部网络的设备能够访问互联网</li>
@@ -318,7 +318,7 @@
 <li>动态 NAT：从公共 IP 地址池中动态分配地址</li>
 <li>网络地址端口转换（NAPT&#x2F;PAT）：最常用的类型，多个私有 IP 地址共享一个公共 IP 地址，通过不同的端口号区分不同的连接</li>
 </ol>
-<h2 id="filter表"><a href="#filter表" class="headerlink" title="filter表"></a>filter表</h2><p>filter包含3个内置链用于过滤数据包，包含三个内置链：</p>
+<h3 id="1-filter表"><a href="#1-filter表" class="headerlink" title="1.filter表"></a>1.filter表</h3><p>filter包含3个内置链用于过滤数据包，包含三个内置链：</p>
 <ul>
 <li>INPUT：处理发往本机的数据包</li>
 <li>FORWARD：处理经过本机转发的数据包</li>
@@ -326,7 +326,7 @@
 </ul>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># 允许已建立的连接</span><br>iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT<br><span class="hljs-comment"># 允许本地回环接口</span><br>iptables -A INPUT -i lo -j ACCEPT<br><span class="hljs-comment"># 允许 SSH 连接</span><br>iptables -A INPUT -p tcp --dport 22 -j ACCEPT<br><span class="hljs-comment"># 默认拒绝其他所有入站连接</span><br>iptables -P INPUT DROP<br><span class="hljs-comment"># 查询表结构</span><br>iptables -L -v<br><span class="hljs-comment"># 指定filter表查询</span><br>iptables -t filter -L -v<br></code></pre></td></tr></table></figure>
 
-<h2 id="2-nat-表"><a href="#2-nat-表" class="headerlink" title="2. nat 表"></a>2. nat 表</h2><p>nat 表用于网络地址转换，包含三个内置链：</p>
+<h3 id="2-nat-表"><a href="#2-nat-表" class="headerlink" title="2. nat 表"></a>2. nat 表</h3><p>nat 表用于网络地址转换，包含三个内置链：</p>
 <ul>
 <li>PREROUTING：在路由决策前处理数据包</li>
 <li>OUTPUT：处理本机产生的数据包</li>
@@ -334,7 +334,7 @@
 </ul>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># 将内网主机的流量 NAT 到公网 IP</span><br>iptables -t nat -A POSTROUTING -s 192.168.1.0/24 -o eth0 -j MASQUERADE<br><span class="hljs-comment"># 端口转发</span><br>iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 80 -j DNAT --to-destination 192.168.1.100:8080<br><span class="hljs-comment"># 查询nat表</span><br>iptables -t nat -L -v<br></code></pre></td></tr></table></figure>
 
-<h2 id="3-mangle-表"><a href="#3-mangle-表" class="headerlink" title="3. mangle 表"></a>3. mangle 表</h2><p>mangle 表用于特殊的数据包修改，包含五个内置链：</p>
+<h3 id="3-mangle-表"><a href="#3-mangle-表" class="headerlink" title="3. mangle 表"></a>3. mangle 表</h3><p>mangle 表用于特殊的数据包修改，包含五个内置链：</p>
 <ul>
 <li>PREROUTING：数据包进入系统时</li>
 <li>INPUT：数据包被路由到本地时</li>
@@ -344,14 +344,14 @@
 </ul>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># 修改数据包的 TTL 值</span><br>iptables -t mangle -A POSTROUTING -o eth0 -j TTL --ttl-set 64<br><span class="hljs-comment"># 设置数据包的优先级</span><br>iptables -t mangle -A PREROUTING -p tcp --dport 22 -j TOS --set-tos 0x10<br><span class="hljs-comment"># 查询mangle表</span><br>iptables -t mangle -L -v<br></code></pre></td></tr></table></figure>
 
-<h2 id="4-raw-表"><a href="#4-raw-表" class="headerlink" title="4. raw 表"></a>4. raw 表</h2><p>raw 表用于配置免于连接跟踪的例外，包含两个内置链：</p>
+<h3 id="4-raw-表"><a href="#4-raw-表" class="headerlink" title="4. raw 表"></a>4. raw 表</h3><p>raw 表用于配置免于连接跟踪的例外，包含两个内置链：</p>
 <ul>
 <li>PREROUTING：处理刚到达的数据包</li>
 <li>OUTPUT：处理本地生成的数据包</li>
 </ul>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># 对 DNS 查询免除连接跟踪</span><br>iptables -t raw -A OUTPUT -p udp --dport 53 -j NOTRACK<br><span class="hljs-comment"># 对某些 IP 免除连接跟踪</span><br>iptables -t raw -A PREROUTING -s 192.168.1.100 -j NOTRACK<br><span class="hljs-comment"># 查询raw表</span><br>iptables -t raw -L -v<br></code></pre></td></tr></table></figure>
 
-<h2 id="5-security-表"><a href="#5-security-表" class="headerlink" title="5. security 表"></a>5. security 表</h2><p>security 表用于强制访问控制网络规则（如 SELinux），包含三个内置链：</p>
+<h3 id="5-security-表"><a href="#5-security-表" class="headerlink" title="5. security 表"></a>5. security 表</h3><p>security 表用于强制访问控制网络规则（如 SELinux），包含三个内置链：</p>
 <ul>
 <li>INPUT：处理入站数据包</li>
 <li>OUTPUT：处理出站数据包</li>
