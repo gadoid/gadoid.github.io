@@ -4,6 +4,75 @@
   
   
   <entry>
+    <title>C 编程</title>
+    <link href="/2025/04/10/C-%E7%BC%96%E7%A8%8B/"/>
+    <url>/2025/04/10/C-%E7%BC%96%E7%A8%8B/</url>
+    
+    <content type="html"><![CDATA[]]></content>
+    
+    
+    <categories>
+      
+      <category>C</category>
+      
+    </categories>
+    
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>Java 编程</title>
+    <link href="/2025/04/10/Java-%E7%BC%96%E7%A8%8B/"/>
+    <url>/2025/04/10/Java-%E7%BC%96%E7%A8%8B/</url>
+    
+    <content type="html"><![CDATA[]]></content>
+    
+    
+    <categories>
+      
+      <category>Java</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>Java</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>Python 编程</title>
+    <link href="/2025/04/10/Python-%E7%BC%96%E7%A8%8B/"/>
+    <url>/2025/04/10/Python-%E7%BC%96%E7%A8%8B/</url>
+    
+    <content type="html"><![CDATA[]]></content>
+    
+    
+    <categories>
+      
+      <category>Python</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>Python</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>挖坑</title>
     <link href="/2025/04/10/%E6%8C%96%E5%9D%91/"/>
     <url>/2025/04/10/%E6%8C%96%E5%9D%91/</url>
@@ -109,7 +178,7 @@
     <link href="/2025/04/09/Shell-VII-VIM/"/>
     <url>/2025/04/09/Shell-VII-VIM/</url>
     
-    <content type="html"><![CDATA[]]></content>
+    <content type="html"><![CDATA[<h1 id="Shell-VII-VIM-md"><a href="#Shell-VII-VIM-md" class="headerlink" title="Shell-VII-VIM.md"></a>Shell-VII-VIM.md</h1><h1 id="VIM"><a href="#VIM" class="headerlink" title="VIM"></a>VIM</h1><p><strong>Vim</strong> 是一个高度可定制的 <strong>文本编辑器</strong></p><h1 id="启动与退出"><a href="#启动与退出" class="headerlink" title="启动与退出"></a>启动与退出</h1><h2 id="VIM支持三种模式-："><a href="#VIM支持三种模式-：" class="headerlink" title="VIM支持三种模式 ："></a>VIM支持三种模式 ：</h2><ul><li>**普通模式 (Normal)**：默认模式，用于浏览和操作文本。</li><li>**插入模式 (Insert)**：输入文本，按 <code>i</code> 进入。</li><li>**命令模式 (Command-line)**：输入冒号 <code>:</code> 命令。</li></ul><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs bash">bash<br>复制编辑<br>vim filename        <span class="hljs-comment"># 打开文件</span><br>vim +n filename     <span class="hljs-comment"># 打开文件并跳转到第n行</span><br><br><span class="hljs-comment"># 退出:</span><br><span class="hljs-comment">#- `:q`：退出</span><br><span class="hljs-comment">#- `:q!`：强制退出不保存</span><br><span class="hljs-comment">#- `:w`：保存</span><br><span class="hljs-comment">#- `:wq` 或 `ZZ`：保存并退出</span><br><span class="hljs-comment">#- `:x`：与 `:wq` 相同</span><br><span class="hljs-comment">#- `:e!`：放弃修改并重新加载</span><br></code></pre></td></tr></table></figure><h1 id="移动"><a href="#移动" class="headerlink" title="移动"></a>移动</h1><h3 id="1-基本移动"><a href="#1-基本移动" class="headerlink" title="1. 基本移动"></a>1. 基本移动</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">`h`：左，`l`：右，`j`：下，`k`：上<br>`0`：行首，`^`：首个非空字符，`$`：行尾<br>`w`：下一个词，`b`：前一个词，`e`：词尾<br></code></pre></td></tr></table></figure><h3 id="2-高速移动"><a href="#2-高速移动" class="headerlink" title="2. 高速移动"></a>2. 高速移动</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs bash">`gg`：跳转到文件开头<br>`G`：跳转到文件末尾<br>`nG`：跳到第 n 行<br>`H`/`M`/`L`：屏幕顶部/中部/底部<br>`Ctrl-d`/`Ctrl-u`：向下/向上滚动半页<br>`%`：匹配括号跳转<br></code></pre></td></tr></table></figure><h1 id="插入与删除"><a href="#插入与删除" class="headerlink" title="插入与删除"></a>插入与删除</h1><h3 id="插入"><a href="#插入" class="headerlink" title="插入"></a>插入</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs bash">`i`：当前字符前<br>`I`：行首<br>`a`：当前字符后<br>`A`：行尾<br>`o`：当前行下方新开一行<br>`O`：当前行上方新开一行<br></code></pre></td></tr></table></figure><h3 id="删除"><a href="#删除" class="headerlink" title="删除"></a>删除</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs bash">`x`：删除当前字符<br>`<span class="hljs-built_in">dd</span>`：删除当前行<br>`dw`：删除一个词<br>`d$`：删除至行尾<br>`d0`：删除至行首<br></code></pre></td></tr></table></figure><h1 id="复制、粘贴、撤销"><a href="#复制、粘贴、撤销" class="headerlink" title="复制、粘贴、撤销"></a>复制、粘贴、撤销</h1><h3 id="复制（Yank）"><a href="#复制（Yank）" class="headerlink" title="复制（Yank）"></a>复制（Yank）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs bash">`yy`：复制当前行<br>`yw`：复制一个词<br>`y$`：复制至行尾<br>`v`：进入可视模式，选择后 `y`<br></code></pre></td></tr></table></figure><h3 id="粘贴"><a href="#粘贴" class="headerlink" title="粘贴"></a>粘贴</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">`p` ：粘贴<br></code></pre></td></tr></table></figure><h3 id="撤销与重做"><a href="#撤销与重做" class="headerlink" title="撤销与重做"></a>撤销与重做</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">`u`：撤销<br>`Ctrl-r`：重做<br></code></pre></td></tr></table></figure><h1 id="查找与替换"><a href="#查找与替换" class="headerlink" title="查找与替换"></a>查找与替换</h1><h3 id="查找"><a href="#查找" class="headerlink" title="查找"></a>查找</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">`/pattern`：向下查找<br>`?pattern`：向上查找<br>`n`/`N`：下一个/上一个匹配<br></code></pre></td></tr></table></figure><h3 id="替换"><a href="#替换" class="headerlink" title="替换"></a>替换</h3><figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs elixir">vim<br>复制编辑<br><span class="hljs-symbol">:%s/old/new/g</span>        <span class="hljs-comment"># 替换整篇文件中所有匹配</span><br><span class="hljs-symbol">:</span><span class="hljs-number">1</span>,<span class="hljs-number">10</span>s/old/new/g     <span class="hljs-comment"># 替换第1至10行</span><br><span class="hljs-symbol">:%s/old/new/gc</span>       <span class="hljs-comment"># 替换前确认</span><br><br></code></pre></td></tr></table></figure><h1 id="窗口与标签页"><a href="#窗口与标签页" class="headerlink" title="窗口与标签页"></a>窗口与标签页</h1><h3 id="分屏"><a href="#分屏" class="headerlink" title="分屏"></a>分屏</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs bash">`:<span class="hljs-built_in">split</span>` 或 `:sp`：水平分屏<br>`:vsplit` 或 `:vsp`：垂直分屏<br>`Ctrl-w w`：在窗口间切换<br>`Ctrl-w h/j/k/l`：方向切换<br>`Ctrl-w q`：关闭当前窗口<br></code></pre></td></tr></table></figure><h3 id="标签页"><a href="#标签页" class="headerlink" title="标签页"></a>标签页</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">`:tabnew filename`：新建标签页<br>`:tabn` / `:tabp`：下一个/上一个标签页<br>`gt` / `gT`：标签页切换<br></code></pre></td></tr></table></figure>]]></content>
     
     
     <categories>
