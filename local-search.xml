@@ -4,6 +4,25 @@
   
   
   <entry>
+    <title>Bash 快捷指令清单</title>
+    <link href="/2025/04/10/Bash-%E5%BF%AB%E6%8D%B7%E6%8C%87%E4%BB%A4%E6%B8%85%E5%8D%95/"/>
+    <url>/2025/04/10/Bash-%E5%BF%AB%E6%8D%B7%E6%8C%87%E4%BB%A4%E6%B8%85%E5%8D%95/</url>
+    
+    <content type="html"><![CDATA[<h1 id="光标移动类"><a href="#光标移动类" class="headerlink" title="光标移动类"></a>光标移动类</h1><table><thead><tr><th>快捷键</th><th>说明</th></tr></thead><tbody><tr><td><code>Ctrl + A</code></td><td>移动光标到行首</td></tr><tr><td><code>Ctrl + E</code></td><td>移动光标到行尾</td></tr><tr><td><code>Alt + B</code></td><td>向左移动一个单词</td></tr><tr><td><code>Alt + F</code></td><td>向右移动一个单词</td></tr><tr><td><code>Ctrl + B</code></td><td>向左移动一个字符</td></tr><tr><td><code>Ctrl + F</code></td><td>向右移动一个字符</td></tr><tr><td><code>Ctrl + XX</code></td><td>在行首与当前位置之间跳转</td></tr></tbody></table><h1 id="编辑命令类"><a href="#编辑命令类" class="headerlink" title="编辑命令类"></a>编辑命令类</h1><table><thead><tr><th>快捷键</th><th>说明</th></tr></thead><tbody><tr><td><code>Ctrl + U</code></td><td>删除从光标到行首的内容</td></tr><tr><td><code>Ctrl + K</code></td><td>删除从光标到行尾的内容</td></tr><tr><td><code>Ctrl + W</code></td><td>删除光标前一个“词”</td></tr><tr><td><code>Alt + D</code></td><td>删除光标后的一个“词”</td></tr><tr><td><code>Ctrl + D</code></td><td>删除光标所在字符（或退出 shell）</td></tr><tr><td><code>Ctrl + H</code></td><td>删除光标前一个字符（退格）</td></tr><tr><td><code>Ctrl + T</code></td><td>交换光标前的两个字符</td></tr><tr><td><code>Alt + T</code></td><td>交换光标前后两个词</td></tr></tbody></table><h1 id="剪切与粘贴"><a href="#剪切与粘贴" class="headerlink" title="剪切与粘贴"></a>剪切与粘贴</h1><table><thead><tr><th>快捷键</th><th>说明</th></tr></thead><tbody><tr><td><code>Ctrl + U/K/W</code></td><td>剪切内容，会保存在剪贴板中</td></tr><tr><td><code>Ctrl + Y</code></td><td>粘贴（插入）刚才剪切的内容</td></tr><tr><td><code>Alt + Y</code></td><td>粘贴历史中更早的剪切内容（循环）</td></tr></tbody></table><h1 id="历史命令操作"><a href="#历史命令操作" class="headerlink" title="历史命令操作"></a>历史命令操作</h1><table><thead><tr><th>快捷键</th><th>说明</th></tr></thead><tbody><tr><td><code>Ctrl + R</code></td><td>反向搜索历史命令</td></tr><tr><td><code>Ctrl + S</code></td><td>正向搜索历史命令（可能需配置）</td></tr><tr><td><code>Ctrl + P</code></td><td>上一条历史命令（等同 ↑）</td></tr><tr><td><code>Ctrl + N</code></td><td>下一条历史命令（等同 ↓）</td></tr><tr><td><code>Alt + .</code></td><td>插入上一条命令的最后一个参数</td></tr></tbody></table><h1 id="命令行组合操作"><a href="#命令行组合操作" class="headerlink" title="命令行组合操作"></a>命令行组合操作</h1><table><thead><tr><th>快捷键</th><th>说明</th></tr></thead><tbody><tr><td><code>Ctrl + O</code></td><td>执行当前命令并加载下一条历史命令</td></tr><tr><td><code>Ctrl + L</code></td><td>清屏（等同 <code>clear</code> 命令）</td></tr><tr><td><code>Ctrl + G</code></td><td>退出当前操作（如搜索、粘贴等）</td></tr></tbody></table><h1 id="补全与自动化"><a href="#补全与自动化" class="headerlink" title="补全与自动化"></a>补全与自动化</h1><table><thead><tr><th>快捷键</th><th>说明</th></tr></thead><tbody><tr><td><code>Tab</code></td><td>补全命令、文件或路径</td></tr><tr><td><code>Alt + ?</code></td><td>显示所有可能的补全项</td></tr></tbody></table>]]></content>
+    
+    
+    <categories>
+      
+      <category>Shell</category>
+      
+    </categories>
+    
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>C 编程</title>
     <link href="/2025/04/10/C-%E7%BC%96%E7%A8%8B/"/>
     <url>/2025/04/10/C-%E7%BC%96%E7%A8%8B/</url>
