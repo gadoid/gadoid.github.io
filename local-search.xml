@@ -101,29 +101,7 @@
     
     <categories>
       
-      <category>TCP/IP</category>
-      
-      <category>Python</category>
-      
-      <category>Java</category>
-      
-      <category>数据结构</category>
-      
-      <category>操作系统</category>
-      
-      <category>测试技术</category>
-      
-      <category>HTTP</category>
-      
-      <category>C</category>
-      
-      <category>技术书籍</category>
-      
-      <category>经济学</category>
-      
-      <category>文学</category>
-      
-      <category>哲学</category>
+      <category>TCP/IP 数据结构 操作系统 测试技术 HTTP 技术书籍 经济学 文学 哲学</category>
       
     </categories>
     
