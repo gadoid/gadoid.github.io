@@ -21,13 +21,13 @@
   
     <meta name="description" content="Python中用于对对象进行的一些控制和通用处理 是通过魔术方法来实现 什么是魔术方法通过__function_name__ 来定义魔术方法，但是需要注意通常的魔术方法是python预置的，所以function_name通常是python中定义过的魔术方法名。 Python的魔术方法如果没有在类中进行定义，则是被隐式定义的（或者说由基类继承而来） 如最常见的__init__ 也是一个魔术方法。它发">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Python 编程 III 魔术方法">
+<meta property="og:title" content="Python编程 III 魔术方法">
 <meta property="og:url" content="http://gadoid.io/2025/04/15/Python-%E7%BC%96%E7%A8%8B-III-%E9%AD%94%E6%9C%AF%E6%96%B9%E6%B3%95/index.html">
 <meta property="og:site_name" content="西北有高楼">
 <meta property="og:description" content="Python中用于对对象进行的一些控制和通用处理 是通过魔术方法来实现 什么是魔术方法通过__function_name__ 来定义魔术方法，但是需要注意通常的魔术方法是python预置的，所以function_name通常是python中定义过的魔术方法名。 Python的魔术方法如果没有在类中进行定义，则是被隐式定义的（或者说由基类继承而来） 如最常见的__init__ 也是一个魔术方法。它发">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2025-04-15T07:56:13.000Z">
-<meta property="article:modified_time" content="2025-04-15T08:03:00.733Z">
+<meta property="article:modified_time" content="2025-04-15T11:02:41.147Z">
 <meta property="article:author" content="Codfish">
 <meta property="article:tag" content="Python">
 <meta name="twitter:card" content="summary_large_image">
@@ -36,7 +36,7 @@
     <meta name="referrer" content="no-referrer-when-downgrade">
   
   
-  <title>Python 编程 III 魔术方法 - 西北有高楼</title>
+  <title>Python编程 III 魔术方法 - 西北有高楼</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -214,7 +214,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="Python 编程 III 魔术方法"></span>
+            <span id="subtitle" data-typed-text="Python编程 III 魔术方法"></span>
           
         </div>
 
@@ -285,7 +285,7 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">Python 编程 III 魔术方法</h1>
+            <h1 id="seo-header">Python编程 III 魔术方法</h1>
             
             
               <div class="markdown-body">
@@ -310,10 +310,11 @@
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">class</span> <span class="hljs-title class_">person</span> :<br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self,name,age</span>):<br>        <span class="hljs-variable language_">self</span>.name = name <br>        <span class="hljs-variable language_">self</span>.age = age<br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__len__</span>(<span class="hljs-params">self</span>):<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">0</span><br>np = person(<span class="hljs-string">&quot;zhao&quot;</span>,<span class="hljs-string">&quot;27&quot;</span>)<br><span class="hljs-built_in">print</span>(<span class="hljs-built_in">len</span>(np))    <span class="hljs-comment">#重新定义了__len__ ,会根据方法的返回值返回，这里打印0</span><br><br></code></pre></td></tr></table></figure>
 
 <h1 id="“enter-“-“-exit-”"><a href="#“enter-“-“-exit-”" class="headerlink" title="“enter “ &#x2F; “ __exit__”"></a>“<strong>enter</strong> “ &#x2F; “ __exit__”</h1><p>“<strong>enter</strong> ”&#x2F; “__exit__” 主要在使用with语句 时的会触发</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">class</span> <span class="hljs-title class_">MyResource</span>:<br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__enter__</span>(<span class="hljs-params">self</span>):<br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;打开资源&quot;</span>)<br>        <span class="hljs-keyword">return</span> <span class="hljs-variable language_">self</span><br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__exit__</span>(<span class="hljs-params">self, exc_type, exc_val, exc_tb</span>):<br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;释放资源&quot;</span>)<br><br><span class="hljs-keyword">with</span> MyResource() <span class="hljs-keyword">as</span> r:<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;处理中...&quot;</span>)<br>    <br><span class="hljs-comment"># 输出结果</span><br><span class="hljs-comment"># 打开资源</span><br><span class="hljs-comment"># 处理中...</span><br><span class="hljs-comment"># 释放资源</span><br></code></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">class</span> <span class="hljs-title class_">MyResource</span>:<br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__enter__</span>(<span class="hljs-params">self</span>):<br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;打开资源&quot;</span>)<br>        <span class="hljs-keyword">return</span> <span class="hljs-variable language_">self</span><br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__exit__</span>(<span class="hljs-params">self, exc_type, exc_val, exc_tb</span>):<br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;释放资源&quot;</span>)<br><br><span class="hljs-keyword">with</span> MyResource() <span class="hljs-keyword">as</span> r:<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;处理中...&quot;</span>)<br>  <br><span class="hljs-comment"># 输出结果</span><br><span class="hljs-comment"># 打开资源</span><br><span class="hljs-comment"># 处理中...</span><br><span class="hljs-comment"># 释放资源</span><br></code></pre></td></tr></table></figure>
 
 <h1 id="“-call-”"><a href="#“-call-”" class="headerlink" title="“__call__”"></a>“__call__”</h1><p>“<strong>call__” 方法允许对象创建的实例变为可调用的，即允许向实例传入参数，使实例也可以进行一些功能的处理。__call</strong> 和 函数在传入参数执行的行为上是一致的，但是在调用和查询方面的具体实现不同</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">class</span> <span class="hljs-title class_">button</span> :<br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self,status=<span class="hljs-literal">False</span></span>):<br>        <span class="hljs-variable language_">self</span>.status = status<br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__call__</span>(<span class="hljs-params">self</span>):<br>        <span class="hljs-keyword">if</span> <span class="hljs-variable language_">self</span>.status :<br>            <span class="hljs-variable language_">self</span>.status = <span class="hljs-literal">False</span> <br>            <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;the light is closed&quot;</span>)<br>        <span class="hljs-keyword">else</span> : <br>            <span class="hljs-variable language_">self</span>.status =<span class="hljs-literal">True</span><br>            <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;the light is on&quot;</span>)<br><br>light_button =button()        <span class="hljs-comment"># 创建button 实例</span><br>light_button()                <span class="hljs-comment"># 执行实例 status : False -&gt; True</span><br>light_button()                <span class="hljs-comment"># 执行实例 status : True -&gt; False</span><br><span class="hljs-comment"># 输出</span><br><span class="hljs-comment"># the light is on</span><br><span class="hljs-comment"># the light is closed</span><br><br></code></pre></td></tr></table></figure>
+
                 
               </div>
             
@@ -358,7 +359,7 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>Python 编程 III 魔术方法</div>
+      <div>Python编程 III 魔术方法</div>
       <div>http://gadoid.io/2025/04/15/Python-编程-III-魔术方法/</div>
     </div>
     <div class="license-meta">
@@ -402,6 +403,12 @@
                 <div class="post-prevnext my-3">
                   <article class="post-prev col-6">
                     
+                    
+                      <a href="/2025/04/15/Python%E7%BC%96%E7%A8%8B-IV-%E6%95%B0%E6%8D%AE%E4%B8%8E%E5%87%BD%E6%95%B0%E6%89%A9%E5%B1%95/" title="Python编程 IV 数据与函数扩展">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Python编程 IV 数据与函数扩展</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
                     
                   </article>
                   <article class="post-next col-6">
