@@ -1,0 +1,749 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/bg/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Codfish">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="模块在Python中，是以模块进行代码组织的。单独的python文件，由多个python文件组成的文件夹。都可以作为模块导入其他文件中，这样在其他文件中定义的函数或者类就可以在当前文件中进行使用，方便程序设计人员更好的组织整个工程的结构。 一些导入模块的方式 ： 1234from Person import Person                    #从Person.py模块中导入Per">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Python编程 V 模块与库">
+<meta property="og:url" content="http://gadoid.io/2025/04/16/Python%E7%BC%96%E7%A8%8B-V-%E6%A8%A1%E5%9D%97%E4%B8%8E%E5%BA%93/index.html">
+<meta property="og:site_name" content="西北有高楼">
+<meta property="og:description" content="模块在Python中，是以模块进行代码组织的。单独的python文件，由多个python文件组成的文件夹。都可以作为模块导入其他文件中，这样在其他文件中定义的函数或者类就可以在当前文件中进行使用，方便程序设计人员更好的组织整个工程的结构。 一些导入模块的方式 ： 1234from Person import Person                    #从Person.py模块中导入Per">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-04-15T16:07:00.000Z">
+<meta property="article:modified_time" content="2025-04-15T16:07:39.780Z">
+<meta property="article:author" content="Codfish">
+<meta property="article:tag" content="Python">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Python编程 V 模块与库 - 西北有高楼</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"gadoid.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>西北有高楼</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/downloads/" target="_self">
+                <i class="iconfont icon-books-fill"></i>
+                <span>资源下载</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/bg/img/ice.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Python编程 V 模块与库"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-04-16 00:07" pubdate>
+          2025年4月16日 凌晨
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          9 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Python编程 V 模块与库</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="模块"><a href="#模块" class="headerlink" title="模块"></a>模块</h1><p>在Python中，是以模块进行代码组织的。单独的python文件，由多个python文件组成的文件夹。都可以作为模块导入其他文件中，这样在其他文件中定义的函数或者类就可以在当前文件中进行使用，方便程序设计人员更好的组织整个工程的结构。</p>
+<p>一些导入模块的方式 ：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> Person <span class="hljs-keyword">import</span> Person                    <span class="hljs-comment">#从Person.py模块中导入Person类</span><br><span class="hljs-keyword">from</span> Anmial <span class="hljs-keyword">import</span> Dog                       <span class="hljs-comment">#从Anmial文件夹中导入Dog模块</span><br><span class="hljs-keyword">from</span> Anmial.Dog <span class="hljs-keyword">import</span> dog                   <span class="hljs-comment">#从Anmial文件夹的Dog模块中导入dog类</span><br><span class="hljs-keyword">from</span> Anmial.Cat <span class="hljs-keyword">import</span> cat <span class="hljs-keyword">as</span> mimi           <span class="hljs-comment">#从Anmial文件夹的cat模块中导入cat类,并设计别名 mimi</span><br></code></pre></td></tr></table></figure>
+
+<h1 id="库"><a href="#库" class="headerlink" title="库"></a>库</h1><p>一些被设计好的Python文件模块被称为库，即一个提供特定功能的python 函数&#x2F;类仓库</p>
+<p>库通常分为两种:</p>
+<p>随Python一起安装的，提供了一些核心功能的库 被称为官方库，通常存储在</p>
+<p>Python\Python313\Lib</p>
+<p>一些优秀的，可以提供扩展功能的 被称为第三方库，通常存储在</p>
+<p>Python\Python313\Lib\site-packages</p>
+<h2 id="第三方库可以通过pip-的python库管理工具来安装"><a href="#第三方库可以通过pip-的python库管理工具来安装" class="headerlink" title="第三方库可以通过pip 的python库管理工具来安装"></a>第三方库可以通过pip 的python库管理工具来安装</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs python">pip install requests                      <span class="hljs-comment"># 安装requests库</span><br>pip uninstall requests                    <span class="hljs-comment"># 卸载requests库</span><br>pip <span class="hljs-built_in">list</span>                                  <span class="hljs-comment"># 查询已安装的python第三方库</span><br></code></pre></td></tr></table></figure>
+
+<h1 id="官方库"><a href="#官方库" class="headerlink" title="官方库"></a>官方库</h1><p>介绍一些比较常用的官方库</p>
+<h2 id="time"><a href="#time" class="headerlink" title="time"></a>time</h2><p>time库主要用来获取unix时间，以及执行暂停</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">import</span> time<br>time.time()                               <span class="hljs-comment"># 获取当前的unix时间</span><br>time.strftime(<span class="hljs-string">&quot;%Y %m %d -%H:%M:%S&quot;</span>)  <span class="hljs-comment"># 按照给定的字符串格式输出时间，默认将当前unix时间按格式输出</span><br>time.strptime(<span class="hljs-string">&quot;2017-12-08:5-32-11&quot;</span>,<span class="hljs-string">&quot;%Y-%m-%d:%H-%M-%S&quot;</span>)) <span class="hljs-comment"># 将接收到的时间字符拆分位元组</span><br>time.sleep(<span class="hljs-number">1</span>)                         <span class="hljs-comment"># 休眠时间 传入秒</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="os"><a href="#os" class="headerlink" title="os"></a>os</h2><p>os库提供了一些基于当前操作系统的操作，也提供了多种向系统终端执行命令的方法</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">import</span> os<br>os.mkdir()               <span class="hljs-comment">#创建文件夹</span><br>os.chdir()               <span class="hljs-comment">#修改当前路径</span><br>os.getcwd()              <span class="hljs-comment">#获取当前的路径</span><br>os.system(<span class="hljs-string">&quot;dir&quot;</span>)         <span class="hljs-comment">#向系统发送命令</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="Json"><a href="#Json" class="headerlink" title="Json"></a>Json</h2><p>json 库是用于json文件的处理。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">import</span> json<br><span class="hljs-keyword">with</span> <span class="hljs-built_in">open</span>(<span class="hljs-string">&quot;hello.json&quot;</span>,<span class="hljs-string">&#x27;r&#x27;</span>,encoding=<span class="hljs-string">&quot;utf-8&quot;</span>) <span class="hljs-keyword">as</span> f :<br>    content1 = json.load(f)<br><span class="hljs-comment"># 直接加载文件到python</span><br><span class="hljs-keyword">with</span> <span class="hljs-built_in">open</span>(<span class="hljs-string">&quot;hello.json&quot;</span>,<span class="hljs-string">&#x27;r&#x27;</span>,encoding=<span class="hljs-string">&quot;utf-8&quot;</span>) <span class="hljs-keyword">as</span> f :<br>    content2 = f.read()<br>    content2 = json.loads(content2)<br><span class="hljs-comment"># 将字符串解析为dict </span><br><span class="hljs-keyword">with</span> <span class="hljs-built_in">open</span>(<span class="hljs-string">&quot;goodbye.json&quot;</span>,<span class="hljs-string">&quot;w&quot;</span>,encoding=<span class="hljs-string">&quot;utf-8&quot;</span>) <span class="hljs-keyword">as</span> f :<br>    json.dump(content1, f)<br><span class="hljs-comment"># 将字符串解析为json写入文件</span><br><span class="hljs-keyword">with</span> <span class="hljs-built_in">open</span>(<span class="hljs-string">&quot;goodby2e.json&quot;</span>,<span class="hljs-string">&quot;w&quot;</span>,encoding=<span class="hljs-string">&quot;utf-8&quot;</span>) <span class="hljs-keyword">as</span> f :<br>    json.dump(content2,f,indent=<span class="hljs-number">4</span>)<br> <span class="hljs-comment"># 直接向文件对象中写入</span><br></code></pre></td></tr></table></figure>
+
+<h1 id="re"><a href="#re" class="headerlink" title="re"></a>re</h1><p>re是用于对文本进行正则表达式匹配</p>
+<p>正则表达式是一种字符匹配规则，通过一些通配符的组合来达成筛选符合结构规则的数据</p>
+<p>一些常用的通配规则</p>
+<p>[0-9] [\d]  匹配所有0-9的整数字符</p>
+<p>. 匹配任意字符</p>
+<p>.*匹配一个到多个任意字符</p>
+<p>[a-z] 匹配小写字符</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">import</span> re<br>a = <span class="hljs-string">&quot;456jaoijgeio123feqagvbjm&quot;</span><br><br><span class="hljs-built_in">print</span>(re.<span class="hljs-keyword">match</span>(<span class="hljs-string">&quot;[1-9]&#123;3&#125;&quot;</span>,a ).group(<span class="hljs-number">0</span>))  <span class="hljs-comment"># 通过.group 获取匹配到的文本</span><br>d = re.finditer(<span class="hljs-string">&quot;[1-9]&#123;3&#125;&quot;</span>,a )           <span class="hljs-comment"># 使用finditer会会的一个匹配对象的可迭代对象</span><br><span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> d :<br>    <span class="hljs-built_in">print</span>(i.group())                     <span class="hljs-comment"># 访问可迭代对象</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="argparse"><a href="#argparse" class="headerlink" title="argparse"></a>argparse</h2><p>argpare 库 允许自定义参数，并对传入的参数进行解析</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">import</span> argparse<br><br><span class="hljs-comment"># 创建 ArgumentParser 对象</span><br>parser = argparse.ArgumentParser(description=<span class="hljs-string">&quot;Simple calculator&quot;</span>)<br><br><span class="hljs-comment"># 添加参数</span><br>parser.add_argument(<span class="hljs-string">&quot;--x&quot;</span>, <span class="hljs-built_in">type</span>=<span class="hljs-built_in">int</span>, required=<span class="hljs-literal">True</span>, <span class="hljs-built_in">help</span>=<span class="hljs-string">&quot;First integer&quot;</span>)<br>parser.add_argument(<span class="hljs-string">&quot;--y&quot;</span>, <span class="hljs-built_in">type</span>=<span class="hljs-built_in">int</span>, required=<span class="hljs-literal">True</span>, <span class="hljs-built_in">help</span>=<span class="hljs-string">&quot;Second integer&quot;</span>)<br>parser.add_argument(<span class="hljs-string">&quot;--op&quot;</span>, <span class="hljs-built_in">type</span>=<span class="hljs-built_in">str</span>, default=<span class="hljs-string">&quot;add&quot;</span>, choices=[<span class="hljs-string">&quot;add&quot;</span>, <span class="hljs-string">&quot;sub&quot;</span>, <span class="hljs-string">&quot;mul&quot;</span>, <span class="hljs-string">&quot;div&quot;</span>], <span class="hljs-built_in">help</span>=<span class="hljs-string">&quot;Operation&quot;</span>)<br><br><span class="hljs-comment"># 解析参数</span><br>args = parser.parse_args()<br><br><span class="hljs-comment"># 执行运算</span><br><span class="hljs-keyword">if</span> args.op == <span class="hljs-string">&quot;add&quot;</span>:<br>    result = args.x + args.y<br><span class="hljs-keyword">elif</span> args.op == <span class="hljs-string">&quot;sub&quot;</span>:<br>    result = args.x - args.y<br><span class="hljs-keyword">elif</span> args.op == <span class="hljs-string">&quot;mul&quot;</span>:<br>    result = args.x * args.y<br><span class="hljs-keyword">elif</span> args.op == <span class="hljs-string">&quot;div&quot;</span>:<br>    result = args.x / args.y<br><br><span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;Result: <span class="hljs-subst">&#123;result&#125;</span>&quot;</span>)<br><br><span class="hljs-comment">#示例</span><br><br>python calc.py --x <span class="hljs-number">3</span> --y <span class="hljs-number">5</span> --op add <br><span class="hljs-comment"># 执行3+5 ，并返回结果</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="configparser"><a href="#configparser" class="headerlink" title="configparser"></a>configparser</h2><p>configparser库用于对 配置文件（.ini）进行读写</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><code class="hljs python">例如 ：<br>[database]<br>host = localhost<br>port = <span class="hljs-number">3306</span><br>user = root<br>password = <span class="hljs-number">123456</span><br><br>[logging]<br>level = DEBUG<br>logfile = app.log<br><br><span class="hljs-keyword">import</span> configparser<br><br><span class="hljs-comment"># 创建配置解析器</span><br>config = configparser.ConfigParser()<br><br><span class="hljs-comment"># 读取配置文件</span><br>config.read(<span class="hljs-string">&quot;config.ini&quot;</span>)<br><br><span class="hljs-comment"># 获取具体值</span><br>host = config.get(<span class="hljs-string">&quot;database&quot;</span>, <span class="hljs-string">&quot;host&quot;</span>)<br>port = config.getint(<span class="hljs-string">&quot;database&quot;</span>, <span class="hljs-string">&quot;port&quot;</span>)<br>log_level = config.get(<span class="hljs-string">&quot;logging&quot;</span>, <span class="hljs-string">&quot;level&quot;</span>)<br><br><span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;Database host: <span class="hljs-subst">&#123;host&#125;</span>&quot;</span>)       <span class="hljs-comment"># localhost</span><br><span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;Database port: <span class="hljs-subst">&#123;port&#125;</span>&quot;</span>)       <span class="hljs-comment"># 3306</span><br><span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;Log level: <span class="hljs-subst">&#123;log_level&#125;</span>&quot;</span>)      <span class="hljs-comment"># DEBUG</span><br></code></pre></td></tr></table></figure>
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Python/" class="category-chain-item">Python</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Python/" class="print-no-link">#Python</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Python编程 V 模块与库</div>
+      <div>http://gadoid.io/2025/04/16/Python编程-V-模块与库/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Codfish</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年4月16日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/04/15/Python%E7%BC%96%E7%A8%8B-IV-%E6%95%B0%E6%8D%AE%E4%B8%8E%E5%87%BD%E6%95%B0%E6%89%A9%E5%B1%95/" title="Python编程 IV 数据与函数扩展">
+                        <span class="hidden-mobile">Python编程 IV 数据与函数扩展</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"lQzCvqmOtewLtpMfvfxKLomU-MdYXbMMI","appKey":"daMNlw5XcjN8TelT6GCHh8RF","path":"window.location.pathname","placeholder":"让灵感在这里发生","avatar":"monsterid","meta":["nick","mail"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":true,"recordIP":true,"serverURLs":"https://lQzCvqmO.api.lncldglobal.com","emojiCDN":null,"emojiMaps":null,"enableQQ":false,"enable":true,"visitor":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      &copy; 2025 - 2025 <a target="_blank" rel="noopener" href="https://github.com/username">CODFISH</a>
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+<!-- hexo injector body_end start --><script src="/js/chatbot-loader.js" defer></script><!-- hexo injector body_end end --></body>
+</html>
