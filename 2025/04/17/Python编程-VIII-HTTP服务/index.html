@@ -19,15 +19,15 @@
   <meta name="author" content="Codfish">
   <meta name="keywords" content="">
   
-    <meta name="description" content="什么是网络？是OSI的7层模型？ 还是TCP&#x2F;IP 协议簇？wifi&#x2F;移动通信的空口互联？ 又或者是内核进程的虚拟数据转发？  网络的本质基于预定义的通信协议通过物理介质（或虚拟物理介质如虚拟端口，虚拟mac地址）在设备间进行数据传输的一种组织结构。 网络是“有层次”的，无论是固网通信还是空口通信。数据包的传输都在进行一个“封装-解封装”的过程 网络是“动态”的，端到端的网络通">
+    <meta name="description" content="网络与应用层从服务处理的角度来看，网络的核心目的在于通过协议控制，实现请求端与服务端之间数据的完整交互。 对请求端和服务端而言，中间层的报文封装、转发、路由等行为是不可感知的。网络层和传输层共同构建了一个抽象的“一致交互环境”，使得远端传输的数据能够被“原封不动地”接收并存储到本地缓存，供应用逻辑处理。 正因为中间网络的不可见性与“穿透性”，网络层与传输层的协议设计更强调通用性与可靠性。它们的关注">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Python编程 VII 网络编程">
-<meta property="og:url" content="http://gadoid.io/2025/04/17/Python%E7%BC%96%E7%A8%8B-VII-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/index.html">
+<meta property="og:title" content="Python编程 VIII HTTP服务">
+<meta property="og:url" content="http://gadoid.io/2025/04/17/Python%E7%BC%96%E7%A8%8B-VIII-HTTP%E6%9C%8D%E5%8A%A1/index.html">
 <meta property="og:site_name" content="西北有高楼">
-<meta property="og:description" content="什么是网络？是OSI的7层模型？ 还是TCP&#x2F;IP 协议簇？wifi&#x2F;移动通信的空口互联？ 又或者是内核进程的虚拟数据转发？  网络的本质基于预定义的通信协议通过物理介质（或虚拟物理介质如虚拟端口，虚拟mac地址）在设备间进行数据传输的一种组织结构。 网络是“有层次”的，无论是固网通信还是空口通信。数据包的传输都在进行一个“封装-解封装”的过程 网络是“动态”的，端到端的网络通">
+<meta property="og:description" content="网络与应用层从服务处理的角度来看，网络的核心目的在于通过协议控制，实现请求端与服务端之间数据的完整交互。 对请求端和服务端而言，中间层的报文封装、转发、路由等行为是不可感知的。网络层和传输层共同构建了一个抽象的“一致交互环境”，使得远端传输的数据能够被“原封不动地”接收并存储到本地缓存，供应用逻辑处理。 正因为中间网络的不可见性与“穿透性”，网络层与传输层的协议设计更强调通用性与可靠性。它们的关注">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2025-04-16T16:24:40.000Z">
-<meta property="article:modified_time" content="2025-04-16T16:25:24.797Z">
+<meta property="article:published_time" content="2025-04-17T06:31:34.000Z">
+<meta property="article:modified_time" content="2025-04-17T06:51:56.185Z">
 <meta property="article:author" content="Codfish">
 <meta property="article:tag" content="Python">
 <meta name="twitter:card" content="summary_large_image">
@@ -36,7 +36,7 @@
     <meta name="referrer" content="no-referrer-when-downgrade">
   
   
-  <title>Python编程 VII 网络编程 - 西北有高楼</title>
+  <title>Python编程 VIII HTTP服务 - 西北有高楼</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -214,7 +214,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="Python编程 VII 网络编程"></span>
+            <span id="subtitle" data-typed-text="Python编程 VIII HTTP服务"></span>
           
         </div>
 
@@ -225,8 +225,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2025-04-17 00:24" pubdate>
-          2025年4月17日 凌晨
+        <time datetime="2025-04-17 14:31" pubdate>
+          2025年4月17日 下午
         </time>
       </span>
     
@@ -237,7 +237,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          2k 字
+          1.4k 字
         
       </span>
     
@@ -248,7 +248,7 @@
         
         
         
-          17 分钟
+          12 分钟
         
       </span>
     
@@ -285,59 +285,44 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">Python编程 VII 网络编程</h1>
+            <h1 id="seo-header">Python编程 VIII HTTP服务</h1>
             
             
               <div class="markdown-body">
                 
-                <h1 id="什么是网络？"><a href="#什么是网络？" class="headerlink" title="什么是网络？"></a>什么是网络？</h1><p>是OSI的7层模型？ 还是TCP&#x2F;IP 协议簇？wifi&#x2F;移动通信的空口互联？ 又或者是内核进程的虚拟数据转发？</p>
-<ul>
-<li>网络的本质基于预定义的通信协议通过物理介质（或虚拟物理介质如虚拟端口，虚拟mac地址）在设备间进行数据传输的一种组织结构。<ul>
-<li>网络是“有层次”的，无论是固网通信还是空口通信。数据包的传输都在进行一个“封装-解封装”的过程</li>
-<li>网络是“动态”的，端到端的网络通信，需要网卡持续监听外部网络接收到的数据包，并通过中断触发内核来对数据包进行处理</li>
-</ul>
-</li>
-</ul>
-<h1 id="TCP-IP协议栈"><a href="#TCP-IP协议栈" class="headerlink" title="TCP&#x2F;IP协议栈"></a>TCP&#x2F;IP协议栈</h1><p>在其他的网络内容会具体介绍网络的转发和传输。这里只是简单讲解下TCP&#x2F;IP 协议</p>
-<p>网络是一种基于多层通信的数据传输模式</p>
-<p>网络模型一开始由OSI 预先定义 即7层网络结构 ：</p>
-<p>物理层：                                                   比特流的传输、电气特性、机械特性</p>
-<p>数据链路层：                                          将比特率转换为物理信号。并进行基础的网络设备控制</p>
-<p>网络层：                                                   提供数据的转发，寻址。以及基础的网络质量检测</p>
-<p>传输层：                                                   封装，承载数据。与对端设备建立连接通道。进行数据传输</p>
-<p>会话层：                                                   管理会话连接的建立、维护和终止</p>
-<p>表示层：                                                   处理数据格式转换、加密解密、压缩解压缩</p>
-<p>应用层：                                                   设计应用数据结构如何在设备间进行连接，处理，解析                                                </p>
-<p>在实现层面上应用较多的是TCP&#x2F;IP协议栈，设计了4层网络结构 ：</p>
-<p>链路层：                                                   数据到介质的转换，通常由网卡等硬件进行。</p>
-<p>网络层：                                                   进行数据的转发，寻址。以及基础的网络质量检测</p>
-<p>传输层：                                                   封装，承载数据。与对端建立连接。进行数据传输</p>
-<p>应用层：                                                   设计应用数据结构如何在设备间进行连接，处理，解析 </p>
-<p>在数据传输过程中，每一层都具备对应的头部，来更好的控制数据的转发和对应协议的识别。</p>
-<p>通过这种设计，允许将一端的信息&#x2F;代码&#x2F;数据传输到另外一端，并被解析执行。</p>
-<h1 id="socket"><a href="#socket" class="headerlink" title="socket"></a>socket</h1><p>socket 起源于linux概念，国内一般称为套接字。它实际上是一种linux内核网络协议栈上的描述符资源。也可以理解为一种网络协议接口，通过socket,我们可以创建多种不同的网络协议，并将数据使用各种网络协议传输到对端，而不需要去考虑每种协议的具体实现。</p>
-<h1 id="socket-底层实现的简单描述"><a href="#socket-底层实现的简单描述" class="headerlink" title="socket 底层实现的简单描述"></a>socket 底层实现的简单描述</h1><p>上面我们已经说明了socket是一种网络协议接口，它对上提供了数据层，网络层数据传输的功能。对下提供了发送数据包所必须的IP，端口，协议头设计。</p>
-<p>在实现上。网络协议栈中，在这一层定义了sock接口。然后定义了通用的C函数指针，再在不同的传输层协议上根据不同的协议描述进行不同的实现。在收发包时，在sock层拆封网络层协议头，识别网络层中的协议号，将数据包转发给对应的结构去处理。转发到对应结构后，通过强制转换，转换为对应的协议数据包来进行进一步的数据解析</p>
-<h2 id="传输层协议"><a href="#传输层协议" class="headerlink" title="传输层协议"></a>传输层协议</h2><p>通常使用的比较多的是UDP协议和TCP协议</p>
-<h3 id="UDP（协议号17）"><a href="#UDP（协议号17）" class="headerlink" title="UDP（协议号17）"></a>UDP（协议号17）</h3><p>UDP协议，通常被认为是无连接的，因为协议本身只定义了原，目端口号信息。将应用层数据写入UDP数据包中，传输到对端的设备的目的端口，不存在连接过程和保活，重传等用来保证数据完整性的设计。但是可以在其上层进行这些可靠性设计。所以UDP优点是传输效率高，无论是数据发送层面还是包信息利用率上。而缺点是无连接，当发送掉包时，会导致整个数据不完整，需要在应用层再进行完整性确认。</p>
-<h3 id="TCP（协议号6）"><a href="#TCP（协议号6）" class="headerlink" title="TCP（协议号6）"></a>TCP（协议号6）</h3><p>TCP协议，与UDP不同，TCP中定义了复杂的控制字段，并设计了状态机来标识TCP传输过程中的每一个阶段，它提供了连接过程，重传，保活等机制来在传输层保护数据的完整性。在TCP中，数据是流式传输的。它并非UDP那样进行用户的写入-打包-发送。而是存在两个 接收&#x2F;发送的缓存队列，每次从其中获取一定量的字符发送到对端。</p>
-<h1 id="Python中的socket"><a href="#Python中的socket" class="headerlink" title="Python中的socket"></a>Python中的socket</h1><p>python中同样提供了socket的标准库用于进行网络编程</p>
-<p>一个最简单的UDP echo server 实现 ：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs python">sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)                 <br><span class="hljs-comment">#创建socket对象，AF_INET 指定了使用IP协议，SOCK_DGRAM指定是UDP</span><br>sock.bind((<span class="hljs-string">&quot;127.0.0.1&quot;</span>,<span class="hljs-number">5560</span>))<br><span class="hljs-comment">#绑定IP地址和端口号 本地主机使用127.0.0.1</span><br>buffer = <span class="hljs-number">10240</span><br><span class="hljs-comment">#设置接收缓存块的大小，接收到的数据包会被存放在缓存中</span><br><span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;server start&quot;</span>)<br><span class="hljs-keyword">while</span> <span class="hljs-literal">True</span> : <span class="hljs-comment">#设置接收/发送循环</span><br>    message,addr = sock.recvfrom(buffer)      <span class="hljs-comment">#从socket中接收数据，返回值为一个接收到的信息和ip地址和端口的元组</span><br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;recevie message <span class="hljs-subst">&#123;message.decode(<span class="hljs-string">&#x27;utf-8&#x27;</span>)&#125;</span> from <span class="hljs-subst">&#123;addr&#125;</span>&quot;</span>)      <span class="hljs-comment">#从数据包解码字符串并打印</span><br>    send_message = <span class="hljs-string">f&quot;recevie message <span class="hljs-subst">&#123;message.decode(<span class="hljs-string">&#x27;utf-8&#x27;</span>)&#125;</span> from <span class="hljs-subst">&#123;addr&#125;</span>&quot;</span>.encode()<br>    sock.sendto(send_message,addr)      <span class="hljs-comment">#将收到的信息发送回原地址</span><br><br></code></pre></td></tr></table></figure>
+                <h1 id="网络与应用层"><a href="#网络与应用层" class="headerlink" title="网络与应用层"></a>网络与应用层</h1><p>从服务处理的角度来看，网络的核心目的在于<strong>通过协议控制，实现请求端与服务端之间数据的完整交互</strong>。</p>
+<p>对请求端和服务端而言，中间层的报文封装、转发、路由等行为是不可感知的。<strong>网络层和传输层共同构建了一个抽象的“一致交互环境”</strong>，使得远端传输的数据能够被“原封不动地”接收并存储到本地缓存，供应用逻辑处理。</p>
+<p>正因为中间网络的不可见性与“穿透性”，网络层与传输层的协议设计更强调<strong>通用性与可靠性</strong>。它们的关注点在于数据的可靠传递与顺序控制，而不是数据的具体内容，因此协议结构通常具有<strong>严格的头部格式与字段定义</strong>，以保证设备间的互通与协议的一致性。</p>
+<p>相较之下，<strong>应用层协议更关注的是“如何处理数据”</strong>。它所需考虑的，是服务需要哪些输入字段、输出以何种格式表达。因而，应用层协议具备更强的<strong>灵活性与语义扩展性</strong>，核心是围绕字段的<strong>定义、解析与业务映射</strong>，完成服务端与请求端的语义协同。</p>
+<p>网络层和传输层协议通常强调<strong>字段的控制意义和状态管理功能</strong>，例如通过设置特定位（如 TCP 的 SYN、ACK、FIN）来标识连接状态或数据传输的阶段，以及通过 IP 层的 TTL、标志位等控制报文的转发行为。</p>
+<p>相比之下，应用层协议更强调<strong>字段的语义描述性</strong>，即字段用于表达请求的操作类型、参数内容或格式要求，具体的状态（如会话是否有效、登录是否成功）通常由客户端和服务端通过各自的逻辑来维护。应用层字段本身通常<strong>不维护传输状态</strong>，而是作为触发状态变化或状态校验的依据。</p>
+<h1 id="HTTP"><a href="#HTTP" class="headerlink" title="HTTP"></a>HTTP</h1><h2 id="HTTP协议是什么？"><a href="#HTTP协议是什么？" class="headerlink" title="HTTP协议是什么？"></a>HTTP协议是什么？</h2><p>HTTP 是一种基于请求-响应模式的应用层协议，客户端通过构建结构化的请求报文（包括请求方法、资源路径、请求头和可选的请求体）来描述其访问意图，服务端根据这些信息进行解析、路由、处理，并生成结构化的响应返回。</p>
+<h2 id="请求"><a href="#请求" class="headerlink" title="请求"></a>请求</h2><p>HTTP请求包含三部分</p>
+<p>1.请求行：说明请求类型（GET、POST 等）、资源路径和协议版本。</p>
+<p>请求行描述了 请求的资源对象，以及请求的方法。</p>
+<p>2.请求头：携带客户端环境、请求意图、身份验证、缓存规则等元数据。</p>
+<p>请求头描述了一些交互的控制信息，</p>
+<p>3.请求体（可选）：例如 POST 请求中发送的数据。</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs html">请求示例<br><br>GET /index.html HTTP/1.1<br>Host: [www.example.com](http://www.example.com/)<br>User-Agent: MyBrowser/2.0<br>Connection: keep-alive<br>Accept: text/html<br></code></pre></td></tr></table></figure>
 
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 客户端</span><br><span class="hljs-keyword">import</span> socket <br>buff = <span class="hljs-number">10240</span><br>sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)<br><span class="hljs-keyword">while</span> <span class="hljs-literal">True</span> :<br>    message = <span class="hljs-built_in">input</span>(<span class="hljs-string">&quot;输入消息:&quot;</span>)<br>    sock.sendto(message.encode(),(<span class="hljs-string">&quot;127.0.0.1&quot;</span>,<span class="hljs-number">5560</span>))<br>    message,addr = sock.recvfrom(buff)<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;receive message <span class="hljs-subst">&#123;message&#125;</span> from <span class="hljs-subst">&#123;addr&#125;</span>&quot;</span>)<br></code></pre></td></tr></table></figure>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs html">响应示例 <br><br>HTTP/1.1 200 OK<br>Content-Type: text/html<br>Content-Length: 75<br>Cache-Control: max-age=3600<br>Connection: keep-alive<br><br><span class="hljs-tag">&lt;<span class="hljs-name">html</span>&gt;</span><br><span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span><br><span class="hljs-tag">&lt;<span class="hljs-name">h1</span>&gt;</span>Hello, HTTP/1.1!<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span><br><span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span><br><span class="hljs-tag">&lt;/<span class="hljs-name">html</span>&gt;</span><br></code></pre></td></tr></table></figure>
 
-<p>这其中有几个主要过程 ： </p>
-<p>1.调用socket函数，传入协议族，数据类型，返回 socket结构体。它本身是一种多态实现，帮助我们屏蔽了UDP，TCP甚至网络层协议的差异性，根据我们传递的参数创建对应的UDP或者TCP套接字实例</p>
-<p>2.当我们传入的是AF_INET，SOCK_DGRAM时，返回的是一个UDP 套接字对象。</p>
-<p>3.将套接字对象与对应的网卡进行绑定，（端口号是内核用于转发数据报的逻辑标识。当服务器收到目的地址为127.0.0.1 端口号为5560的 UDP包时，会将数据包转发给对应的上层应用程序处理，实际上就是将拆除协议头的数据报文写入 socket 接收缓冲区中）</p>
-<p>4.设置了接收数据所使用的缓存大小</p>
-<p>5.设置while 循环 使用 recvfrom 获取数据，接收到的是对端传来的字节数据和对端的地址端口信息</p>
-<ol start="6">
-<li>使用sendto 向目标地址发送数据。</li>
+<p>Python的HTTP实现示例</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">import</span> socket<br><br>HOST = <span class="hljs-string">&#x27;127.0.0.1&#x27;</span>   <span class="hljs-comment"># 监听所有地址</span><br>PORT = <span class="hljs-number">4623</span>       <span class="hljs-comment"># 监听端口</span><br>PATH_ROUTE = &#123;&#125;<br><span class="hljs-keyword">def</span> <span class="hljs-title function_">path_add</span>(<span class="hljs-params">path_name</span>):<br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">wapper</span>(<span class="hljs-params">func</span>) :<br>        PATH_ROUTE[path_name] = func<br>    <span class="hljs-keyword">return</span> wapper<br><br><span class="hljs-meta">@path_add(<span class="hljs-params"><span class="hljs-string">&quot;/home&quot;</span></span>)</span><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">get_home_method</span>(<span class="hljs-params">conn</span>):<br>    response_body = <span class="hljs-string">&quot;&lt;html&gt;&lt;body&gt;&lt;h1&gt;Hello, World! Here is home page&lt;/h1&gt;&lt;/body&gt;&lt;/html&gt;&quot;</span><br>    response = (<br>        <span class="hljs-string">&quot;HTTP/1.1 200 OK\r\n&quot;</span><br>        <span class="hljs-string">f&quot;Content-Length: <span class="hljs-subst">&#123;<span class="hljs-built_in">len</span>(response_body.encode())&#125;</span>\r\n&quot;</span><br>        <span class="hljs-string">&quot;Content-Type: text/html\r\n&quot;</span><br>        <span class="hljs-string">&quot;Connection: close\r\n&quot;</span><br>        <span class="hljs-string">&quot;\r\n&quot;</span><br>        <span class="hljs-string">f&quot;<span class="hljs-subst">&#123;response_body&#125;</span>&quot;</span><br>    )<br><br>    conn.sendall(response.encode())<br>    conn.close()<br><br><span class="hljs-meta">@path_add(<span class="hljs-params"><span class="hljs-string">&quot;/index&quot;</span></span>)</span><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">get_index_method</span>(<span class="hljs-params">conn</span>):<br>    response_body = <span class="hljs-string">&quot;&lt;html&gt;&lt;body&gt;&lt;h1&gt;Hello, World! Here is index page&lt;/h1&gt;&lt;/body&gt;&lt;/html&gt;&quot;</span><br>    response = (<br>        <span class="hljs-string">&quot;HTTP/1.1 200 OK\r\n&quot;</span><br>        <span class="hljs-string">f&quot;Content-Length: <span class="hljs-subst">&#123;<span class="hljs-built_in">len</span>(response_body.encode())&#125;</span>\r\n&quot;</span><br>        <span class="hljs-string">&quot;Content-Type: text/html\r\n&quot;</span><br>        <span class="hljs-string">&quot;Connection: close\r\n&quot;</span><br>        <span class="hljs-string">&quot;\r\n&quot;</span><br>        <span class="hljs-string">f&quot;<span class="hljs-subst">&#123;response_body&#125;</span>&quot;</span><br>    )<br><br>    conn.sendall(response.encode())<br>    conn.close()<br><br><span class="hljs-comment"># 创建 socket</span><br>server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)<br>server_socket.bind((HOST, PORT))<br>server_socket.listen(<span class="hljs-number">5</span>)<br><br><span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;HTTP Server running at http://<span class="hljs-subst">&#123;HOST&#125;</span>:<span class="hljs-subst">&#123;PORT&#125;</span>&quot;</span>)<br><br><span class="hljs-keyword">while</span> <span class="hljs-literal">True</span>:<br>    client_conn, client_addr = server_socket.accept()<br>    request = client_conn.recv(<span class="hljs-number">1024</span>).decode()<br><br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;\n----- Received request from <span class="hljs-subst">&#123;client_addr&#125;</span> -----&quot;</span>)<br>    <span class="hljs-built_in">print</span>(request.strip())<br>    <br>    content = request.splitlines()<br>    method,path,protocol = content[<span class="hljs-number">0</span>].split(<span class="hljs-string">&quot; &quot;</span>)<br>    rout_name = path.split(<span class="hljs-string">&quot;.&quot;</span>)[<span class="hljs-number">0</span>]<br>    <span class="hljs-keyword">if</span> rout_name <span class="hljs-keyword">in</span> PATH_ROUTE :<br>        PATH_ROUTE[rout_name]()<br>        <span class="hljs-keyword">continue</span><br>    <span class="hljs-keyword">else</span> :<br><br>        <span class="hljs-comment"># 构造 HTTP 响应内容</span><br>        response_body = <span class="hljs-string">&quot;&lt;html&gt;&lt;body&gt;&lt;h1&gt;Hello, World!&lt;/h1&gt;&lt;/body&gt;&lt;/html&gt;&quot;</span><br>        response = (<br>            <span class="hljs-string">&quot;HTTP/1.1 200 OK\r\n&quot;</span><br>            <span class="hljs-string">f&quot;Content-Length: <span class="hljs-subst">&#123;<span class="hljs-built_in">len</span>(response_body.encode())&#125;</span>\r\n&quot;</span><br>            <span class="hljs-string">&quot;Content-Type: text/html\r\n&quot;</span><br>            <span class="hljs-string">&quot;Connection: close\r\n&quot;</span><br>            <span class="hljs-string">&quot;\r\n&quot;</span><br>            <span class="hljs-string">f&quot;<span class="hljs-subst">&#123;response_body&#125;</span>&quot;</span><br>        )<br><br>        client_conn.sendall(response.encode())<br>        client_conn.close()<br><br></code></pre></td></tr></table></figure>
+
+<p>可以看到 其工作流程：</p>
+<ol>
+<li>创建TCP 服务器，绑定网卡地址和端口地址</li>
 </ol>
-<p>socket 过程常用函数</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs python">server = socket.socket()  <span class="hljs-comment"># 定义协议族和协议信息，返回对应的协议套接字实例</span><br>server.bind((ip,port))  <span class="hljs-comment"># 将套接字与网卡进行绑定</span><br>server.recvfrom(buffer_size) <span class="hljs-comment">#接收经过buffer_size限制大小的数据，返回字节消息和远端的IP 端口信息</span><br>server.sendto(message,addr) <span class="hljs-comment">#向目标网络发送数据，传入待发送的字符和远端的IP 端口信息</span><br>server.listen() <span class="hljs-comment">#用于TCP,执行后打开对应的网络端口监听</span><br>server.accept() <span class="hljs-comment">#当创建的TCP接收到连接请求后，通过这个方法返回一个socket的子链接公用底层的端口和IP信息</span><br>sock.recv()     <span class="hljs-comment">#因为TCP 是有连接的，确认绑定关系后，不需要再指定IP和端口信息</span><br>sock.send()     <span class="hljs-comment">#同上</span><br>client.connect((ip,port)) <span class="hljs-comment">#TCP客户端的调用，指定对端地址和端口进行TCP连接</span><br></code></pre></td></tr></table></figure>
+<p>2.开始监听外部请求</p>
+<p>3.定义循环来处理接收到的消息</p>
+<p>4.接收到的http请求被处理成字符串 请求头一般包含 方法，路径，协议版本 和一些头控制信息</p>
+<ol start="5">
+<li>可以通过请求头解析出对应的路径，这里设计了一个装饰器，将被装饰的函数添加到整体的路由字典中，当请求头中的字段存在于字典中时执行对应的函数，否则执行默认函数。默认函数会将默认的响应头和HTML字段，对http请求做出响应。</li>
+</ol>
+<p>整体上HTTP的工作流程是 ：</p>
+<p>服务器监听→ 服务端发起请求→ 服务端分析文本信息，路由到请求的目标资源，执行对应的函数，将数据返回给请求端，关闭socket。</p>
+<h1 id=""><a href="#" class="headerlink" title=""></a></h1>
                 
               </div>
             
@@ -382,8 +367,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>Python编程 VII 网络编程</div>
-      <div>http://gadoid.io/2025/04/17/Python编程-VII-网络编程/</div>
+      <div>Python编程 VIII HTTP服务</div>
+      <div>http://gadoid.io/2025/04/17/Python编程-VIII-HTTP服务/</div>
     </div>
     <div class="license-meta">
       
@@ -427,18 +412,12 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2025/04/17/Python%E7%BC%96%E7%A8%8B-VIII-HTTP%E6%9C%8D%E5%8A%A1/" title="Python编程 VIII HTTP服务">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">Python编程 VIII HTTP服务</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2025/04/16/Python%E7%BC%96%E7%A8%8B-VI-%E5%A4%9A%E4%BB%BB%E5%8A%A1%E5%A4%84%E7%90%86/" title="Python编程 VI 多任务处理">
-                        <span class="hidden-mobile">Python编程 VI 多任务处理</span>
+                      <a href="/2025/04/17/Python%E7%BC%96%E7%A8%8B-VII-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/" title="Python编程 VII 网络编程">
+                        <span class="hidden-mobile">Python编程 VII 网络编程</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
