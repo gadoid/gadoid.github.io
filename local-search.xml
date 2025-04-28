@@ -13,14 +13,14 @@
     
     <categories>
       
-      <category>Python</category>
+      <category>Java</category>
       
     </categories>
     
     
     <tags>
       
-      <tag>Python</tag>
+      <tag>Java</tag>
       
     </tags>
     
@@ -304,31 +304,6 @@
   
   
   <entry>
-    <title>技术书籍</title>
-    <link href="/2025/04/15/%E6%8A%80%E6%9C%AF%E4%B9%A6%E7%B1%8D/"/>
-    <url>/2025/04/15/%E6%8A%80%E6%9C%AF%E4%B9%A6%E7%B1%8D/</url>
-    
-    <content type="html"><![CDATA[]]></content>
-    
-    
-    <categories>
-      
-      <category>技术书籍</category>
-      
-    </categories>
-    
-    
-    <tags>
-      
-      <tag>技术书籍</tag>
-      
-    </tags>
-    
-  </entry>
-  
-  
-  
-  <entry>
     <title>测试技术</title>
     <link href="/2025/04/15/%E6%B5%8B%E8%AF%95%E6%8A%80%E6%9C%AF/"/>
     <url>/2025/04/15/%E6%B5%8B%E8%AF%95%E6%8A%80%E6%9C%AF/</url>
@@ -346,56 +321,6 @@
     <tags>
       
       <tag>测试技术</tag>
-      
-    </tags>
-    
-  </entry>
-  
-  
-  
-  <entry>
-    <title>哲学</title>
-    <link href="/2025/04/15/%E5%93%B2%E5%AD%A6/"/>
-    <url>/2025/04/15/%E5%93%B2%E5%AD%A6/</url>
-    
-    <content type="html"><![CDATA[]]></content>
-    
-    
-    <categories>
-      
-      <category>哲学</category>
-      
-    </categories>
-    
-    
-    <tags>
-      
-      <tag>哲学</tag>
-      
-    </tags>
-    
-  </entry>
-  
-  
-  
-  <entry>
-    <title>经济学</title>
-    <link href="/2025/04/15/%E7%BB%8F%E6%B5%8E%E5%AD%A6/"/>
-    <url>/2025/04/15/%E7%BB%8F%E6%B5%8E%E5%AD%A6/</url>
-    
-    <content type="html"><![CDATA[]]></content>
-    
-    
-    <categories>
-      
-      <category>经济学</category>
-      
-    </categories>
-    
-    
-    <tags>
-      
-      <tag>经济学</tag>
       
     </tags>
     
