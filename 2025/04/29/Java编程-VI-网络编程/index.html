@@ -1,0 +1,750 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/bg/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Codfish">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="Socketsocket提供了与外部网络通信的网络接口 InetAddressInetAddress 提供了一些获取ip地址信息的方法 123456static InetAddress getByName(String host)     static InetAddress[] getAllByName(String host)  &#x2F;&#x2F; 为给定主机名创建一个InetAddress对象static">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java编程 VI 网络编程">
+<meta property="og:url" content="http://gadoid.io/2025/04/29/Java%E7%BC%96%E7%A8%8B-VI-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/index.html">
+<meta property="og:site_name" content="西北有高楼">
+<meta property="og:description" content="Socketsocket提供了与外部网络通信的网络接口 InetAddressInetAddress 提供了一些获取ip地址信息的方法 123456static InetAddress getByName(String host)     static InetAddress[] getAllByName(String host)  &#x2F;&#x2F; 为给定主机名创建一个InetAddress对象static">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-04-29T15:47:53.000Z">
+<meta property="article:modified_time" content="2025-04-29T15:48:55.066Z">
+<meta property="article:author" content="Codfish">
+<meta property="article:tag" content="Java">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Java编程 VI 网络编程 - 西北有高楼</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"gadoid.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>西北有高楼</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/downloads/" target="_self">
+                <i class="iconfont icon-books-fill"></i>
+                <span>资源下载</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/bg/img/ice.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Java编程 VI 网络编程"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-04-29 23:47" pubdate>
+          2025年4月29日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          11 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Java编程 VI 网络编程</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="Socket"><a href="#Socket" class="headerlink" title="Socket"></a>Socket</h1><p>socket提供了与外部网络通信的网络接口</p>
+<h2 id="InetAddress"><a href="#InetAddress" class="headerlink" title="InetAddress"></a>InetAddress</h2><p>InetAddress 提供了一些获取ip地址信息的方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">static</span> InetAddress <span class="hljs-title function_">getByName</span><span class="hljs-params">(String host)</span>     <br><span class="hljs-keyword">static</span> InetAddress[] getAllByName(String host)  <span class="hljs-comment">// 为给定主机名创建一个InetAddress对象</span><br><span class="hljs-keyword">static</span> InetAddress <span class="hljs-title function_">getLocalHost</span><span class="hljs-params">()</span>  <span class="hljs-comment">// 为本地主机创建一个InetAddress对象</span><br><span class="hljs-type">byte</span>[] getAddress()         <span class="hljs-comment">// 获取数字型地址的字节数组</span><br>String <span class="hljs-title function_">getHostAddress</span><span class="hljs-params">()</span>     <span class="hljs-comment">// 以字符串返回主机地址</span><br>String <span class="hljs-title function_">getHostName</span><span class="hljs-params">()</span>        <span class="hljs-comment">// 返回主机名</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="创建一个Socket-Server"><a href="#创建一个Socket-Server" class="headerlink" title="创建一个Socket Server"></a>创建一个Socket Server</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">import</span> java.io.* ;<br><span class="hljs-keyword">import</span> java.net.*;<br><span class="hljs-keyword">import</span> java.nio.charset.StandardCharsets;<br><span class="hljs-keyword">import</span> java.util.*;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Echoserver</span>&#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> <span class="hljs-keyword">throws</span> Exception&#123; <br>        <span class="hljs-keyword">try</span>(<span class="hljs-type">var</span> <span class="hljs-variable">s</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ServerSocket</span>(<span class="hljs-number">8189</span>))&#123;<br>            <span class="hljs-keyword">try</span>(<span class="hljs-type">Socket</span> <span class="hljs-variable">incoming</span> <span class="hljs-operator">=</span> s.accept())&#123;<br>                <span class="hljs-type">InputStream</span> <span class="hljs-variable">inStream</span> <span class="hljs-operator">=</span> incoming.getInputStream();<br>                <span class="hljs-type">OutputStream</span> <span class="hljs-variable">outStream</span> <span class="hljs-operator">=</span> incoming.getOutputStream();<br>                <span class="hljs-keyword">try</span>(<span class="hljs-type">var</span> <span class="hljs-variable">in</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Scanner</span>(inStream, StandardCharsets.UTF_8))&#123;<br>                    <span class="hljs-type">var</span> <span class="hljs-variable">out</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">PrintWriter</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">OutputStreamWriter</span>(outStream,StandardCharsets.UTF_8),<span class="hljs-literal">true</span>);<br>                    out.println(<span class="hljs-string">&quot;Hello! Enter BYE to exit.&quot;</span>);<br>                    <span class="hljs-type">var</span> <span class="hljs-variable">done</span> <span class="hljs-operator">=</span> <span class="hljs-literal">false</span>;<br>                    <span class="hljs-keyword">while</span>(!done&amp;&amp;in.hasNextLine())&#123;<br>                        <span class="hljs-type">String</span> <span class="hljs-variable">line</span> <span class="hljs-operator">=</span> in.nextLine();<br>                        out.println(<span class="hljs-string">&quot;Echo:&quot;</span>+line);<br>                        <span class="hljs-keyword">if</span>(line.trim().equals(<span class="hljs-string">&quot;BYE&quot;</span>))<br>                            done = <span class="hljs-literal">true</span>;<br>                    &#125;<br>                &#125;<br>            &#125;<br>      <br>        &#125;;<br>    &#125;<br><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>当前的服务器 只能接受一个用户请求，使用 多线程将它改造为接受多个用户请求</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">import</span> java.io.* ;<br><span class="hljs-keyword">import</span> java.net.*;<br><span class="hljs-keyword">import</span> java.nio.charset.StandardCharsets;<br><span class="hljs-keyword">import</span> java.util.*;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Echoserver</span>&#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> <span class="hljs-keyword">throws</span> Exception&#123; <br>        <span class="hljs-keyword">try</span>(<span class="hljs-type">var</span> <span class="hljs-variable">s</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ServerSocket</span>(<span class="hljs-number">8189</span>))&#123;<br>            <span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>;<br>            <span class="hljs-keyword">while</span>(<span class="hljs-literal">true</span>)&#123;<br>                <span class="hljs-type">Socket</span> <span class="hljs-variable">incoming</span> <span class="hljs-operator">=</span> s.accept();<br>                <span class="hljs-type">Runnable</span> <span class="hljs-variable">thread_mission</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ThreadedHandler</span>(incoming);<br>                <span class="hljs-type">Thread</span> <span class="hljs-variable">t</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Thread</span>(thread_mission);<br>                t.start();<br>            &#125;<br>        &#125;<br>    &#125;<br><br>&#125;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">ThreadedHandler</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Runnable</span> &#123;<br>    <span class="hljs-keyword">private</span> Socket incoming;<br>    ThreadedHandler(Socket incoming)&#123;<br>        <span class="hljs-built_in">this</span>.incoming = incoming;<br>    &#125;<br>    <span class="hljs-meta">@Override</span> <br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">run</span><span class="hljs-params">()</span>&#123;<br>        <span class="hljs-keyword">try</span> &#123;<br>            <span class="hljs-type">InputStream</span> <span class="hljs-variable">inStream</span> <span class="hljs-operator">=</span> incoming.getInputStream();<br>            <span class="hljs-type">OutputStream</span> <span class="hljs-variable">outStream</span> <span class="hljs-operator">=</span> incoming.getOutputStream();<br>            <span class="hljs-keyword">try</span>(<span class="hljs-type">var</span> <span class="hljs-variable">in</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Scanner</span>(inStream, StandardCharsets.UTF_8))&#123;<br>                <span class="hljs-type">var</span> <span class="hljs-variable">out</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">PrintWriter</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">OutputStreamWriter</span>(outStream,StandardCharsets.UTF_8),<span class="hljs-literal">true</span>);<br>                <span class="hljs-comment">//flush 强制将缓存区数据发送出去。</span><br>                out.println(<span class="hljs-string">&quot;Hello! Enter BYE to exit.&quot;</span>);<br>                <span class="hljs-type">var</span> <span class="hljs-variable">done</span> <span class="hljs-operator">=</span> <span class="hljs-literal">false</span>;<br>                <span class="hljs-keyword">while</span>(!done&amp;&amp;in.hasNextLine())&#123;<br>                    <span class="hljs-type">String</span> <span class="hljs-variable">line</span> <span class="hljs-operator">=</span> in.nextLine();<br>                    out.println(<span class="hljs-string">&quot;Echo:&quot;</span>+line);<br>                    <span class="hljs-keyword">if</span>(line.trim().equals(<span class="hljs-string">&quot;BYE&quot;</span>))<br>                        done = <span class="hljs-literal">true</span>;<br>                &#125;<br>            &#125;<span class="hljs-keyword">catch</span>(Exception e)&#123;<br>                e.printStackTrace();<br>            &#125;<br>        &#125; <span class="hljs-keyword">catch</span> (Exception e) &#123;<br>        &#125;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>从这里可以看出TCP端口虽然是固定的，但操作系统通过为每个连接分配唯一的 socket（基于四元组标识）来实现多个连接共用一个监听端口。应用程序通常为每个 socket 启动一个线程或事件循环进行数据处理，从而实现高并发连接的处理。</p>
+<h2 id="半关闭"><a href="#半关闭" class="headerlink" title="半关闭"></a>半关闭</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs java">tar (<span class="hljs-type">var</span> <span class="hljs-variable">socket</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Socket</span>(host,port))&#123;<br>		<span class="hljs-type">var</span> <span class="hljs-variable">in</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Scanner</span>(socket.getInputStream(),StandardCharsets.UTF_8);<br>		<span class="hljs-type">var</span> <span class="hljs-variable">writer</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">PrintWriter</span>(socket.getOutputStream());<br>		writer.print(...);<br>		writer.flush();<br>		socket.shutdownOutput();<br>		<span class="hljs-keyword">while</span>(in.hasNextLine() !=<span class="hljs-literal">null</span> )<br>		&#123;<br>			<span class="hljs-type">String</span> <span class="hljs-variable">line</span> <span class="hljs-operator">=</span> in.next.line;<br>			...<br>		&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="URL"><a href="#URL" class="headerlink" title="URL"></a>URL</h2><p>java提供了url 对象来对web 数据的访问地址进行封装</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">InputStream</span> <span class="hljs-variable">inStream</span> <span class="hljs-operator">=</span> url.OpenStream();<br><span class="hljs-type">var</span> <span class="hljs-variable">in</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Scanner</span>(inStream,StandardCharsets.UTF-<span class="hljs-number">8</span>);<br></code></pre></td></tr></table></figure>
+
+<p>urlconnection</p>
+<p>从url中获取更多的内容</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">URLConnection</span> <span class="hljs-variable">connection</span> <span class="hljs-operator">=</span> url.openConnecton();<br></code></pre></td></tr></table></figure>
+
+<p>URL</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs java">InputStream <span class="hljs-title function_">openStream</span><span class="hljs-params">()</span><br>URLConnection <span class="hljs-title function_">openConnection</span><span class="hljs-params">()</span><br></code></pre></td></tr></table></figure>
+
+<p>URLConnection</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">void</span> <span class="hljs-title function_">setDoInput</span><span class="hljs-params">()</span><br><span class="hljs-comment">// 设置接收数据状态</span><br><span class="hljs-type">boolean</span> <span class="hljs-title function_">getDoInput</span><span class="hljs-params">()</span><br><span class="hljs-comment">// 获取接收护数据的状态</span><br><span class="hljs-keyword">void</span> <span class="hljs-title function_">setDoOutput</span><span class="hljs-params">()</span><br><span class="hljs-comment">// 设置创建发送流</span><br><span class="hljs-type">boolean</span> <span class="hljs-title function_">getDoOutput</span><span class="hljs-params">()</span><br><span class="hljs-comment">// 获取发送流的状态</span><br><span class="hljs-keyword">void</span> <span class="hljs-title function_">setIfModifiedSince</span><span class="hljs-params">(<span class="hljs-type">long</span> time)</span><br><span class="hljs-comment">// 获取某个时间点依赖修改的数据</span><br><span class="hljs-type">long</span> <span class="hljs-title function_">getIfModifiedSince</span><span class="hljs-params">()</span><br><br><span class="hljs-keyword">void</span> <span class="hljs-title function_">setConnectTimeout</span><span class="hljs-params">()</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">getConnectTimeout</span><span class="hljs-params">()</span><br><span class="hljs-comment">// 设置连接的超时时间</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">getReadTimeout</span><span class="hljs-params">()</span><br><span class="hljs-keyword">void</span> <span class="hljs-title function_">setReadTimeout</span><span class="hljs-params">()</span><br><span class="hljs-comment">// 设置读取数据的超时时间</span><br><span class="hljs-keyword">void</span> <span class="hljs-title function_">setRequestProperty</span><span class="hljs-params">(String key ,String value)</span><br>Map&lt;String,List&lt;String&gt;&gt; <span class="hljs-title function_">getRequestProperties</span><span class="hljs-params">()</span><br><span class="hljs-comment">// 设置 /读取 请求头中的属性</span><br><span class="hljs-keyword">void</span> <span class="hljs-title function_">connect</span><span class="hljs-params">()</span><br><span class="hljs-comment">// 连接远程资源并获取头部信息</span><br>Map&lt;String, List&lt;String&gt;&gt; <span class="hljs-title function_">getHeaderFields</span><span class="hljs-params">()</span><br><span class="hljs-comment">// 获取响应头映射表</span><br>String <span class="hljs-title function_">getHeaderFileKey</span><span class="hljs-params">(<span class="hljs-type">int</span> n)</span><br>String <span class="hljs-title function_">getHeaderField</span><span class="hljs-params">(<span class="hljs-type">int</span> n)</span><br><span class="hljs-comment">// 获取第n个响应头的键/值信息</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">getContentLength</span><span class="hljs-params">()</span><br><span class="hljs-comment">// 获取内容长度</span><br>String <span class="hljs-title function_">getConnentType</span><span class="hljs-params">()</span><br><span class="hljs-comment">// 获取内容的类型</span><br>String <span class="hljs-title function_">getContentEncoding</span><span class="hljs-params">()</span><br><span class="hljs-comment">// 获取编码信息</span><br><span class="hljs-type">long</span> <span class="hljs-title function_">getDate</span><span class="hljs-params">()</span><br><span class="hljs-type">long</span> <span class="hljs-title function_">getExpiration</span><span class="hljs-params">()</span><br><span class="hljs-type">long</span> <span class="hljs-title function_">getLastModifed</span><span class="hljs-params">()</span><br><span class="hljs-comment">// 获取创建日期，超时日期和最后一次修改的日期</span><br>InputStream <span class="hljs-title function_">getInputStream</span><span class="hljs-params">()</span><br><span class="hljs-comment">// 获取一个输入流</span><br>OutputStream <span class="hljs-title function_">getOutputStream</span><span class="hljs-params">()</span><br><span class="hljs-comment">// 获取一个输出流</span><br>Object <span class="hljs-title function_">getContent</span><span class="hljs-params">()</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="HTTP-客户端"><a href="#HTTP-客户端" class="headerlink" title="HTTP 客户端"></a>HTTP 客户端</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">HttpClient</span> <span class="hljs-variable">client</span> <span class="hljs-operator">=</span> HttpClient.newHttpClient()<br><span class="hljs-type">HttpClient</span> <span class="hljs-variable">client</span> <span class="hljs-operator">=</span> HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).build()<br><span class="hljs-type">HttpClient</span> <span class="hljs-variable">client</span> <span class="hljs-operator">=</span> HttpClient.newBuilder().uri(<span class="hljs-keyword">new</span> <span class="hljs-title class_">URI</span>(<span class="hljs-string">&quot;&lt;http://horstmann.com&gt;&quot;</span>)).GET().build()<br><span class="hljs-comment">// 创建 get请求</span><br><span class="hljs-type">HttpClient</span> <span class="hljs-variable">client</span> <span class="hljs-operator">=</span> HttpClient.newBuilder().uri(<span class="hljs-keyword">new</span> <span class="hljs-title class_">URL</span>(url)).POST(HttpRequest.BodyPublishers.ofString(jsonString)).build())<br><span class="hljs-comment">// 创建 post请求</span><br></code></pre></td></tr></table></figure>
+
+<p>通过 HttpResponse 接收客户端响应</p>
+<p>HttpResponse<code>&lt;T&gt;</code> 类 接收一个 经过响应处理器（HttpResponse.BodyHandlers.ofString()）处理的响应对象</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java">HttpResponse&lt;String&gt; response = client.send(request,HttpResponse.BodyHandlers.ofString());<br></code></pre></td></tr></table></figure>
+
+<p>通过HttpResponses 还可以获取头信息和状态码</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">int</span> <span class="hljs-variable">status</span> <span class="hljs-operator">=</span> response.statusCode();       <span class="hljs-comment">// 获取状态码信息</span><br><span class="hljs-type">HttpHeaders</span> <span class="hljs-variable">responseHeaders</span> <span class="hljs-operator">=</span> response.headers();   <span class="hljs-comment">// 获取响应头</span><br>Map&lt;String,List&lt;String&gt;&gt; headerMap = responseHeaders.map();  <span class="hljs-comment">// 获取响应头的映射信息</span><br>Optional&lt;String&gt; lastModified = responseHeaders.firstValue(<span class="hljs-string">&quot;Last-Modified&quot;</span>); <span class="hljs-comment">// 获取具体的字段</span><br><br><span class="hljs-type">ExecutorSevice</span> <span class="hljs-variable">executor</span> <span class="hljs-operator">=</span> Executor.newCachedThreadPool();  <span class="hljs-comment">//创建线程池</span><br><span class="hljs-type">HttpClient</span> <span class="hljs-variable">client</span> <span class="hljs-operator">=</span> HttpClient.newBuilder().executor(executor).build();  <span class="hljs-comment">// 创建client放入线程池</span><br><br><span class="hljs-type">HttpRequest</span> <span class="hljs-variable">request</span> <span class="hljs-operator">=</span> HttpRequest.newBuilder().uri(uri).GET().build();<br>client.sendAsync(request, HttpResponse.BodyHandlers.ofString())  <br>	.thenAccept(response-&gt;);  <span class="hljs-comment">// 创建异步响应，创建请求，使用client 发送该请求，并通过thenAccept</span><br>	<span class="hljs-comment">//  来处理得到响应后的任务</span><br></code></pre></td></tr></table></figure>
+
+<p>方法签名</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><code class="hljs java">HttpClient <br><span class="hljs-keyword">static</span> HttpClient <span class="hljs-title function_">newHttpClient</span><span class="hljs-params">()</span><br><span class="hljs-comment">// 创建一个默认的HttpClient对象</span><br><span class="hljs-keyword">static</span> HttpClient.Builder <span class="hljs-title function_">newBuilder</span><span class="hljs-params">()</span><br><span class="hljs-comment">// 在流中创建一个HttpClient 对象</span><br>&lt;T&gt; HttpResponse&lt;T&gt; <span class="hljs-title function_">send</span><span class="hljs-params">(HttpRequest request , HttpResponse.BodyHandler&lt;T&gt; responseBodyHandler)</span><br><span class="hljs-comment">// client 发送一个请求，返回一个HttpResponse对象</span><br>&lt;T&gt; CompletableFuture&lt;HttpResponse&lt;T&gt;&gt; <span class="hljs-title function_">sendAsync</span><span class="hljs-params">(HttpRequest request, HttpResponse.BodyHandler </span><br><span class="hljs-params">// 使用sendAsync 发送一个异步请求， 后续使用thenAccept接收异步响应的处理</span><br><span class="hljs-params">&lt;T&gt; responseBodyHandler )</span><br><br>HttpClient.Builder<br>HttpClient <span class="hljs-title function_">build</span><span class="hljs-params">()</span><br><span class="hljs-comment">// 创建一个HttpClient 实例（终结方法）</span><br>HttpClient.Builder <span class="hljs-title function_">followRedirects</span><span class="hljs-params">(HttpClient.Redirect policy(ALWAYS, NEVR,NORMAL)</span>)<br><span class="hljs-comment">// 设置客户端接收重定向的策略</span><br>HttpClient.Builder <span class="hljs-title function_">executor</span><span class="hljs-params">(Executor executor)</span><br><span class="hljs-comment">// 将客户端加入指定的执行器</span><br><br>HttpRequest<br>HttpRequest.Builder <span class="hljs-title function_">newBuilder</span><span class="hljs-params">()</span><br><span class="hljs-comment">// 流式调用创建一个request请求</span><br>HttpRequest.Builder<br>HttpRequest <span class="hljs-title function_">build</span><span class="hljs-params">()</span><br><span class="hljs-comment">// 创建一个HttpRequest 实例 （终结方法）</span><br>HttpRequest.Builder <span class="hljs-title function_">uri</span><span class="hljs-params">(URI uri)</span><br><span class="hljs-comment">// 流式调用中指定uri</span><br>HttpRequest.Builder <span class="hljs-title function_">GET</span><span class="hljs-params">()</span><br><span class="hljs-comment">// 指定http get方法</span><br>HttpRequest.Builder <span class="hljs-title function_">DELETE</span><span class="hljs-params">()</span><br><span class="hljs-comment">// 指定 http delete 方法</span><br>HttpRequest.Builder <span class="hljs-title function_">POST</span><span class="hljs-params">(HttpRequest.BodyPublisher bodyPublisher)</span><br><span class="hljs-comment">// 指定 http post 方法 接收一个请求体</span><br>HttpRequest.Builder <span class="hljs-title function_">PUT</span><span class="hljs-params">(HttpRequest.BodyPublisher bodyPublisher)</span><br><span class="hljs-comment">// 指定 http put 方法 接收一个请求头</span><br>HttpResponse<br>T <span class="hljs-title function_">body</span><span class="hljs-params">()</span><br><span class="hljs-comment">// 产生响应体</span><br><span class="hljs-type">int</span> <span class="hljs-title function_">statusCode</span><span class="hljs-params">()</span><br><span class="hljs-comment">// 状态码</span><br>HttpHeaders <span class="hljs-title function_">headers</span><span class="hljs-params">()</span><br><span class="hljs-comment">// 响应头</span><br><br>HttpHeaders<br>Map&lt;String , List&lt;String&gt;&gt; <span class="hljs-title function_">map</span><span class="hljs-params">()</span><br><span class="hljs-comment">// 通过map 获取 httpheaders 的映射</span><br>Optional&lt;String&gt; <span class="hljs-title function_">firstValue</span><span class="hljs-params">(String name)</span><br><span class="hljs-comment">// 获取 头中属性的第一个值</span><br></code></pre></td></tr></table></figure>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Java/" class="category-chain-item">Java</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Java/" class="print-no-link">#Java</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Java编程 VI 网络编程</div>
+      <div>http://gadoid.io/2025/04/29/Java编程-VI-网络编程/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Codfish</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年4月29日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/04/29/Java%E7%BC%96%E7%A8%8B-V-%E5%B9%B6%E5%8F%91/" title="Java编程 V 并发">
+                        <span class="hidden-mobile">Java编程 V 并发</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"lQzCvqmOtewLtpMfvfxKLomU-MdYXbMMI","appKey":"daMNlw5XcjN8TelT6GCHh8RF","path":"window.location.pathname","placeholder":"让灵感在这里发生","avatar":"monsterid","meta":["nick","mail"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":true,"recordIP":true,"serverURLs":"https://lQzCvqmO.api.lncldglobal.com","emojiCDN":null,"emojiMaps":null,"enableQQ":false,"enable":true,"visitor":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      &copy; 2025 - 2025 <a target="_blank" rel="noopener" href="https://github.com/username">CODFISH</a>
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+<!-- hexo injector body_end start --><script src="/js/chatbot-loader.js" defer></script><!-- hexo injector body_end end --></body>
+</html>
