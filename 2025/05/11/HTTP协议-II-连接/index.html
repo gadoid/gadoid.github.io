@@ -19,15 +19,15 @@
   <meta name="author" content="Codfish">
   <meta name="keywords" content="">
   
-    <meta name="description" content="HTTPHTTP（超文本传输协议）是 Web 应用最基础的应用层通信协议，用于客户端与服务器之间传输文本、图像、视频等信息。 HTTP协议内容与字段定义 资源 ： Web服务器是Web资源（Web resource）的宿主。Web资源是Web内容的源头。最简单的Web资源就是Web服务器文件系统中的静态文件。 媒体类型 ：当Web浏览器从服务器中取回一个对象时，会去查看相关的MIME类型，看看它是">
+    <meta name="description" content="基于TCP协议的“可靠”连接HTTP 是基于传输层的TCP协议而构建。 TCP的待发送数据会被放入SOCKET的缓冲区，并且通过一些标记位和指针字段来控制所有缓冲区中的数据有序可靠的被发送到对端。 12345678910111213141516171819202122232425262728293031323334353637┌──────────────────────────── IP 报文头">
 <meta property="og:type" content="article">
-<meta property="og:title" content="HTTP协议 I 定义">
-<meta property="og:url" content="http://gadoid.io/2025/05/11/HTTP%E5%8D%8F%E8%AE%AE-I-%E5%AE%9A%E4%B9%89/index.html">
+<meta property="og:title" content="HTTP协议 II 连接">
+<meta property="og:url" content="http://gadoid.io/2025/05/11/HTTP%E5%8D%8F%E8%AE%AE-II-%E8%BF%9E%E6%8E%A5/index.html">
 <meta property="og:site_name" content="西北有高楼">
-<meta property="og:description" content="HTTPHTTP（超文本传输协议）是 Web 应用最基础的应用层通信协议，用于客户端与服务器之间传输文本、图像、视频等信息。 HTTP协议内容与字段定义 资源 ： Web服务器是Web资源（Web resource）的宿主。Web资源是Web内容的源头。最简单的Web资源就是Web服务器文件系统中的静态文件。 媒体类型 ：当Web浏览器从服务器中取回一个对象时，会去查看相关的MIME类型，看看它是">
+<meta property="og:description" content="基于TCP协议的“可靠”连接HTTP 是基于传输层的TCP协议而构建。 TCP的待发送数据会被放入SOCKET的缓冲区，并且通过一些标记位和指针字段来控制所有缓冲区中的数据有序可靠的被发送到对端。 12345678910111213141516171819202122232425262728293031323334353637┌──────────────────────────── IP 报文头">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2025-05-11T06:29:28.000Z">
-<meta property="article:modified_time" content="2025-05-11T06:31:08.551Z">
+<meta property="article:published_time" content="2025-05-11T07:43:41.000Z">
+<meta property="article:modified_time" content="2025-05-11T07:44:26.611Z">
 <meta property="article:author" content="Codfish">
 <meta property="article:tag" content="HTTP">
 <meta name="twitter:card" content="summary_large_image">
@@ -36,7 +36,7 @@
     <meta name="referrer" content="no-referrer-when-downgrade">
   
   
-  <title>HTTP协议 I 定义 - 西北有高楼</title>
+  <title>HTTP协议 II 连接 - 西北有高楼</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -214,7 +214,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="HTTP协议 I 定义"></span>
+            <span id="subtitle" data-typed-text="HTTP协议 II 连接"></span>
           
         </div>
 
@@ -225,7 +225,7 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2025-05-11 14:29" pubdate>
+        <time datetime="2025-05-11 15:43" pubdate>
           2025年5月11日 下午
         </time>
       </span>
@@ -237,7 +237,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          2.6k 字
+          382 字
         
       </span>
     
@@ -248,7 +248,7 @@
         
         
         
-          22 分钟
+          4 分钟
         
       </span>
     
@@ -285,112 +285,18 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">HTTP协议 I 定义</h1>
+            <h1 id="seo-header">HTTP协议 II 连接</h1>
             
             
               <div class="markdown-body">
                 
-                <h1 id="HTTP"><a href="#HTTP" class="headerlink" title="HTTP"></a>HTTP</h1><p>HTTP（超文本传输协议）是 Web 应用最基础的应用层通信协议，用于客户端与服务器之间传输文本、图像、视频等信息。</p>
-<h2 id="HTTP协议内容与字段定义"><a href="#HTTP协议内容与字段定义" class="headerlink" title="HTTP协议内容与字段定义"></a>HTTP协议内容与字段定义</h2><ul>
-<li>资源 ： Web服务器是Web资源（Web resource）的宿主。Web资源是Web内容的源头。最简单的Web资源就是Web服务器文件系统中的静态文件。</li>
-<li>媒体类型 ：当Web浏览器从服务器中取回一个对象时，会去查看相关的MIME类型，看看它是否知道应该如何处理这个对象</li>
-<li>URI ： 服务器资源名被称为统一资源标识符（Uniform Resource Identifier, URI）。URI就像因特网上的邮政地址一样，在世界范围内唯一标识并定位信息资源。</li>
-<li>URL :  URL描述了一台特定服务器上某资源的特定位置，一般包含三部分 ： 1.协议类型 2.网络地址 3.资源地址</li>
-<li>事务 ： 一个HTTP事务由一条（从客户端发往服务器的）请求命令和一个（从服务器发回客户端的）响应结果组成</li>
-<li>方法 ：HTTP支持几种不同的请求命令，这些命令被称为HTTP方法（HTTP method）。</li>
-<li>状态码 ：每条HTTP响应报文返回时都会携带一个状态码。状态码是一个三位数字的代码，告知客户端请求是否成功，或者是否需要采取其他动作。</li>
-</ul>
-<h3 id="报文结构"><a href="#报文结构" class="headerlink" title="报文结构"></a>报文结构</h3><ul>
-<li>起始行 ： 起始行报文的第一行就是起始行，在请求报文中用来说明要做些什么，在响应报文中说明出现了什么情况。</li>
-<li>首部字段 ：起始行后面有零个或多个首部字段。每个首部字段都包含一个名字和一个值，为了便于解析，两者之间用冒号（:）来分隔。首部以一个空行结束。添加一个首部字段和添加新行一样简单。</li>
-<li>主题 ： 空行之后就是可选的报文主体了，其中包含了所有类型的数据。请求主体中包括了要发送给Web服务器的数据；响应主体中装载了要返回给客户端的数据。起始行和首部都是文本形式且都是结构化的，而主体则不同，主体中可以包含任意的二进制数据（比如图片、视频、音轨、软件程序）。当然，主体中也可以包含文本。</li>
-</ul>
-<h3 id="连接"><a href="#连接" class="headerlink" title="连接"></a>连接</h3><p>HTTP是定义在TCP&#x2F;IP 协议栈之上的。</p>
-<p>在TCP层 ，TCP协议提供了</p>
-<ul>
-<li>无差错的数据传输</li>
-<li>按序传输（数据总是会按照发送的顺序到达）</li>
-<li>未分段的数据流（可以在任意时刻以任意尺寸将数据发送出去）</li>
-</ul>
-<p>再从网络协议栈层面考虑</p>
-<p>IP （网络层） ： 提供了服务端和客户端的路由寻址（如何对服务器进行访问）</p>
-<p>TCP （传输层） ： 提供了服务端和客户端之间的可靠通信</p>
-<p>HTTP （应用层） ： 提供了内容传递的路径和方法</p>
-<h3 id="HTTP-寻址访问传输的过程"><a href="#HTTP-寻址访问传输的过程" class="headerlink" title="HTTP 寻址访问传输的过程"></a>HTTP 寻址访问传输的过程</h3><ol>
-<li>客户端输入待访问的URL地址</li>
-<li>浏览器发出DNS请求，解释URL地址为IP地址</li>
-<li>得到IP地址后与服务器建立TCP连接</li>
-<li>客户端浏览器发送HTTP请求报文</li>
-<li>服务端响应HTTP响应报文</li>
-<li>关闭链接，浏览器渲染HTTP响应报文</li>
-</ol>
-<h3 id="协议版本"><a href="#协议版本" class="headerlink" title="协议版本"></a>协议版本</h3><p>0.9  协议只支持get方法</p>
-<p>1.0  添加了额外的请求方法</p>
-<p>1.1</p>
-<h3 id="结构组件"><a href="#结构组件" class="headerlink" title="结构组件"></a>结构组件</h3><ul>
-<li>代理</li>
-</ul>
-<p>代理位于客户端和服务器之间，接收所有客户端的HTTP请求，并将这些请求转发给服务器（可能会对请求进行修改之后转发）。</p>
-<ul>
-<li>缓存</li>
-</ul>
-<p>Web缓存（Web cache）或代理缓存（proxy cache）是一种特殊的HTTP代理服务器，可以将经过代理传送的常用文档复制保存起来</p>
-<ul>
-<li>网关</li>
-</ul>
-<p>网关（gateway）是一种特殊的服务器，作为其他服务器的中间实体使用。通常用于将HTTP流量转换成其他的协议</p>
-<ul>
-<li>隧道</li>
-</ul>
-<p>隧道（tunnel）是建立起来之后，就会在两条连接之间对原始数据进行盲转发的HTTP应用程序。HTTP隧道通常用来在一条或多条HTTP连接上转发非HTTP数据，转发时不会窥探数据。</p>
-<ul>
-<li>Agent代理</li>
-</ul>
-<p>用户Agent代理（或者简称为Agent代理）是代表用户发起HTTP请求的客户端程序。所有发布Web请求的应用程序都是HTTP Agent代理。到目前为止，我们只提到过一种HTTP Agent代理：Web浏览器，但用户Agent代理还有很多其他类型。</p>
-<h2 id="格式"><a href="#格式" class="headerlink" title="格式"></a>格式</h2><p>所有的URL 访问方式均符合</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java">&lt;scheme&gt;:<span class="hljs-comment">//&lt;user&gt;:&lt;password&gt;@&lt;host&gt;:&lt;port&gt;/&lt;path&gt;; &lt;params&gt;? &lt;query&gt;#&lt;frag&gt;</span><br></code></pre></td></tr></table></figure>
+                <h1 id="基于TCP协议的“可靠”连接"><a href="#基于TCP协议的“可靠”连接" class="headerlink" title="基于TCP协议的“可靠”连接"></a>基于TCP协议的“可靠”连接</h1><p>HTTP 是基于传输层的TCP协议而构建。</p>
+<p>TCP的待发送数据会被放入SOCKET的缓冲区，并且通过一些标记位和指针字段来控制所有缓冲区中的数据有序可靠的被发送到对端。</p>
+<figure class="highlight coq"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><code class="hljs coq">┌──────────────────────────── IP 报文头（IPv4） ─────────────────────────────┐<br>│ 版本 (<span class="hljs-number">4</span>b) | <span class="hljs-type">首部长度 (4b</span>) | <span class="hljs-type">区分服务(8b</span>) | <span class="hljs-type">总长度(16b</span>)                   <br>│ 标识 (<span class="hljs-number">16</span>b)                | <span class="hljs-type">标志(3b</span>) | <span class="hljs-type">片偏移(13b</span>)                       <br>│ 生存时间 TTL(<span class="hljs-number">8</span>b)         | <span class="hljs-type">协议 (8b</span>: <span class="hljs-number">0x06</span> 表示 TCP)                      <br>│ 首部校验和 (<span class="hljs-number">16</span>b)                                                         <br>│ 源 IP 地址 (<span class="hljs-number">32</span>b)                                                         <br>│ 目的 IP 地址 (<span class="hljs-number">32</span>b)                                                       <br>│ （+ 可选项）                                                             <br>└────────────────────────────────────────────────────────────────────────────┘<br>                                ↓<br>┌──────────────────────────── TCP 段头 ──────────────────────────────────────┐<br>│ 源端口 (<span class="hljs-number">16</span>b)                | <span class="hljs-type">目标端口 (16b</span>)                    <br>│ 序列号 (<span class="hljs-number">32</span>b)                                                  <br>│ 确认号 (<span class="hljs-number">32</span>b)                                                  <br>│ 数据偏移(<span class="hljs-number">4</span>b) | <span class="hljs-type">保留(3b</span>) | <span class="hljs-type">标志位(9b</span>: SYN, ACK, etc.)          <br>│ 窗口大小 (<span class="hljs-number">16</span>b)                                               <br>│ 校验和 (<span class="hljs-number">16</span>b)                                                 <br>│ 紧急指针 (<span class="hljs-number">16</span>b)                                               <br>│ （+ 可选项，如MSS、窗口缩放、SACK等）                        <br>└────────────────────────────────────────────────────────────────────────────┘<br>                                ↓<br>┌────────────────────── HTTP 请求报文（以 GET 为例） ─────────────────────────┐<br>│ 起始行（Request Line）                                              <br>│   GET /index.html HTTP/<span class="hljs-number">1.1</span>   ← 方法(变量长) 路径(变量长) 协议版本   <br>│                                                                  <br>│ 首部字段（Headers）                                              <br>│   Host: www.example.com             ← Key:Value，每行为一字段       <br>│   User-Agent: curl/<span class="hljs-number">7.64</span><span class="hljs-number">.1</span>                                         <br>│   Accept: */*                                                     <br>│   ...                                                             <br>│                                                                  <br>│ 空行（\\r\\n）表示首部结束                                          <br>│                                                                  <br>│ 实体主体（Body，可选）                                           <br>│   （如POST中的表单数据，如 x-www-form-urlencoded 格式）          <br>└─────────────────────────────────────────────────────────────────────────────┘<br><br></code></pre></td></tr></table></figure>
 
-<p>请求报文：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs java">&lt;method&gt; &lt;request-URL&gt; &lt;version&gt;<br>&lt;headers&gt;<br><br>&lt;entity-body&gt;<br></code></pre></td></tr></table></figure>
-
-<p>响应报文：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs java">&lt;version&gt; &lt;status&gt; &lt;reason-phrase&gt;<br>&lt;headers&gt;<br><br>&lt;entity-body&gt;<br></code></pre></td></tr></table></figure>
-
-<ul>
-<li>方法（method）客户端希望服务器对资源执行的动作。是一个单独的词，比如GET、HEAD或POST。本章稍后将详细介绍方法。·</li>
-<li>请求URL（request-URL）命名了所请求资源，或者URL路径组件的完整URL。如果直接与服务器进行对话，只要URL的路径组件是资源的绝对路径，通常就不会有什么问题——服务器可以假定自己是URL的主机&#x2F;端口。第2章详细地介绍了URL的语法。·</li>
-<li>版本（version）报文所使用的HTTP版本，其格式看起来是这样的：<br>HTTP&#x2F;<code>&lt;major&gt;</code>.<code>&lt;minor&gt;</code></li>
-<li>状态码（status-code）这三位数字描述了请求过程中所发生的情况。每个状态码的第一位数字都用于描述状态的一般类别（“成功”、“出错”等）。</li>
-<li>首部（header）可以有零个或多个首部，每个首部都包含一个名字，后面跟着一个冒号（:），然后是一个可选的空格，接着是一个值，最后是一个CRLF。首部是由一个空行（CRLF）结束的，表示了首部列表的结束和实体主体部分的开始。有些HTTP版本，比如HTTP&#x2F;1.1，要求有效的请求或响应报文中必须包含特定的首部。</li>
-<li>实体的主体部分（entity-body）实体的主体部分包含一个由任意数据组成的数据块</li>
-</ul>
-<h2 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h2><h3 id="GET"><a href="#GET" class="headerlink" title="GET"></a>GET</h3><p>GET是最常用的方法。通常用于请求服务器发送某个资源。</p>
-<h3 id="HEAD"><a href="#HEAD" class="headerlink" title="HEAD"></a>HEAD</h3><p>HEAD方法与GET方法的行为很类似，但服务器在响应中只返回首部。不会返回实体的主体部分。</p>
-<h3 id="PUT"><a href="#PUT" class="headerlink" title="PUT"></a>PUT</h3><p>与GET从服务器读取文档相反，PUT方法会向服务器写入文档。有些发布系统允许用户创建Web页面，并用PUT直接将其安装到Web服务器上去</p>
-<h3 id="POST"><a href="#POST" class="headerlink" title="POST"></a>POST</h3><p>表单中填好的数据通常会被送给服务器，然后由服务器将其发送到它要去的地方</p>
-<h3 id="TRACE"><a href="#TRACE" class="headerlink" title="TRACE"></a>TRACE</h3><p>TRACE方法允许客户端在最终将请求发送给服务器时，看看它变成了什么样子。</p>
-<h3 id="OPTIONS"><a href="#OPTIONS" class="headerlink" title="OPTIONS"></a>OPTIONS</h3><p>OPTIONS方法请求Web服务器告知其支持的各种功能。可以询问服务器通常支持哪些方法，或者对某些特殊资源支持哪些方法</p>
-<h3 id="DELETE"><a href="#DELETE" class="headerlink" title="DELETE"></a>DELETE</h3><p>请服务器删除请求URL所指定的资源</p>
-<h2 id="状态码"><a href="#状态码" class="headerlink" title="状态码"></a>状态码</h2><p>状态码用来标记 响应报文对请求结果的处理方式</p>
-<p>100 -  199 继续传输，表示客户端需要分段发送一段较长的消息数据。</p>
-<p>200 - 299 成功，表示服务器成功接收到客户端的请求。</p>
-<p>300 - 399 重定向，通常是资源变更后通知客户端访问另一个URL地址。</p>
-<p>400 - 499 客户端异常，通常是由来自客户端的请求消息不符合服务端的要求所导致。</p>
-<p>500 - 599 服务端异常。</p>
-<h2 id="头部字段"><a href="#头部字段" class="headerlink" title="头部字段"></a>头部字段</h2><p>头部字段用于描述 请求端的资源请求信息和服务端所能提供的应用服务信息，分为5种类型</p>
-<p>通用首部 ：服务端和客户端都可以携带，描述一些通用的功能信息</p>
-<p>请求首部 ：请求端特有的，一般是一些基于自身请求的描述信息</p>
-<p>响应首部 ：相应端特有的，一般是描述服务端的状态信息和功能信息</p>
-<p>实体首部 ：用于描述消息体的一些字段，用于描述消息体的文件类型，读取编码格式等</p>
-<p>扩展首部 ：作用于HTTP协议之上的一些协议自定义字段，用于为功能开发者提供更上层的应用构建</p>
-<h3 id="通用首部"><a href="#通用首部" class="headerlink" title="通用首部"></a>通用首部</h3><figure class="highlight pgsql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs pgsql"><span class="hljs-keyword">Connection</span>        允许客户端与服务器指定与请求/响应有关的选项<br><span class="hljs-type">Date</span>              时间/日期标志<br>MIME-<span class="hljs-keyword">Version</span>      MIME版本信息<br></code></pre></td></tr></table></figure>
-
-<h3 id="请求首部"><a href="#请求首部" class="headerlink" title="请求首部"></a>请求首部</h3><figure class="highlight pgsql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs pgsql">Host              给出接收的服务器的主机名和端口号<br>Referer           描述当前请求的URL<br><span class="hljs-keyword">User</span>-Agent        发起请求的应用程序<br><br>Accept            告知服务器能够发送哪种媒体类型<br>Accept-Charset    告知服务器能够发送哪种字符集<br>Accept-<span class="hljs-keyword">Encoding</span>   告知服务器能够发送哪种字符编码方式<br>Accept-<span class="hljs-keyword">Language</span>   告知服务器能够发送哪种语言<br><br><span class="hljs-keyword">Authorization</span>     描述一些授权信息<br>Cookie            描述一些本地存储信息<br><br>Proxy-<span class="hljs-keyword">Authorization</span> 与代理进行认证时使用<br>Proxy-<span class="hljs-keyword">Connection</span>    与代理进行连接时使用<br></code></pre></td></tr></table></figure>
-
-<h3 id="响应首部"><a href="#响应首部" class="headerlink" title="响应首部"></a>响应首部</h3><figure class="highlight gams"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs gams">Age              响应持续时间<br>Server           响应程序的软件名称和版本信息<br>Accept-Ranges    服务端可接收的范围类型<br>Proxy-Authenticate  代理对客户端的质询列表<br><span class="hljs-keyword">Set</span>-Cookie          向客户端设置本地存储<br>WWW-Authenticate    服务端对客户端的质询列表<br></code></pre></td></tr></table></figure>
-
-<h3 id="实体首部"><a href="#实体首部" class="headerlink" title="实体首部"></a>实体首部</h3><figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs css">Allow            列出了可以对此实体执行的方法<br>Location         列出资源的实际位置<br><br><span class="hljs-attribute">Content</span>-Base     相对URL使用的基础URL<br><span class="hljs-attribute">Content</span>-Encoding 对主体执行的编码方式<br><span class="hljs-attribute">Content</span>-Language 理解主体时最适宜使用的自然语言<br><span class="hljs-attribute">Content</span>-Length   主体的长度或尺寸<br><span class="hljs-attribute">Content</span>-Location 资源所处的位置<br><span class="hljs-attribute">Content</span>-MD5      校验和<br><span class="hljs-attribute">Content</span>-Range    在整个资源中此实体表示的字节范围<br><span class="hljs-attribute">Content</span>-Type     这个主体的对象类型<br><br>Expires          实体的过期时间<br>Last-Modified    最后一次被修改的日期和时间<br></code></pre></td></tr></table></figure>
-
+<h2 id="Socket"><a href="#Socket" class="headerlink" title="Socket"></a>Socket</h2><p>socket是协议栈在操作系统上的具体实现。设计为一种通用网络接口，通过定义具体的协议和响应的地址，端口信息来实现服务端与客户端的连接。</p>
+<h2 id="传输性能"><a href="#传输性能" class="headerlink" title="传输性能"></a>传输性能</h2><h3 id="DNS-到-IP-的地址转换"><a href="#DNS-到-IP-的地址转换" class="headerlink" title="DNS 到 IP 的地址转换"></a>DNS 到 IP 的地址转换</h3><p>DNS解析时间</p>
+<h3 id="TCP-连接时延"><a href="#TCP-连接时延" class="headerlink" title="TCP 连接时延"></a>TCP 连接时延</h3><h3 id="请求报文处理"><a href="#请求报文处理" class="headerlink" title="请求报文处理"></a>请求报文处理</h3><h3 id="构造响应报文"><a href="#构造响应报文" class="headerlink" title="构造响应报文"></a>构造响应报文</h3><h3 id="网络扰动"><a href="#网络扰动" class="headerlink" title="网络扰动"></a>网络扰动</h3>
                 
               </div>
             
@@ -435,8 +341,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>HTTP协议 I 定义</div>
-      <div>http://gadoid.io/2025/05/11/HTTP协议-I-定义/</div>
+      <div>HTTP协议 II 连接</div>
+      <div>http://gadoid.io/2025/05/11/HTTP协议-II-连接/</div>
     </div>
     <div class="license-meta">
       
@@ -480,18 +386,12 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2025/05/11/HTTP%E5%8D%8F%E8%AE%AE-II-%E8%BF%9E%E6%8E%A5/" title="HTTP协议 II 连接">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">HTTP协议 II 连接</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2025/05/10/Java%E7%BC%96%E7%A8%8B-VIIII-%E8%AF%BB%E5%8F%96%E4%B8%8E%E5%BA%8F%E5%88%97%E5%8C%96/" title="Java编程 VIIII 读取与序列化">
-                        <span class="hidden-mobile">Java编程 VIIII 读取与序列化</span>
+                      <a href="/2025/05/11/HTTP%E5%8D%8F%E8%AE%AE-I-%E5%AE%9A%E4%B9%89/" title="HTTP协议 I 定义">
+                        <span class="hidden-mobile">HTTP协议 I 定义</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>

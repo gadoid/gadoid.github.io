@@ -4,6 +4,31 @@
   
   
   <entry>
+    <title>HTTP协议 II 连接</title>
+    <link href="/2025/05/11/HTTP%E5%8D%8F%E8%AE%AE-II-%E8%BF%9E%E6%8E%A5/"/>
+    <url>/2025/05/11/HTTP%E5%8D%8F%E8%AE%AE-II-%E8%BF%9E%E6%8E%A5/</url>
+    
+    <content type="html"><![CDATA[<h1 id="基于TCP协议的“可靠”连接"><a href="#基于TCP协议的“可靠”连接" class="headerlink" title="基于TCP协议的“可靠”连接"></a>基于TCP协议的“可靠”连接</h1><p>HTTP 是基于传输层的TCP协议而构建。</p><p>TCP的待发送数据会被放入SOCKET的缓冲区，并且通过一些标记位和指针字段来控制所有缓冲区中的数据有序可靠的被发送到对端。</p><figure class="highlight coq"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><code class="hljs coq">┌──────────────────────────── IP 报文头（IPv4） ─────────────────────────────┐<br>│ 版本 (<span class="hljs-number">4</span>b) | <span class="hljs-type">首部长度 (4b</span>) | <span class="hljs-type">区分服务(8b</span>) | <span class="hljs-type">总长度(16b</span>)                   <br>│ 标识 (<span class="hljs-number">16</span>b)                | <span class="hljs-type">标志(3b</span>) | <span class="hljs-type">片偏移(13b</span>)                       <br>│ 生存时间 TTL(<span class="hljs-number">8</span>b)         | <span class="hljs-type">协议 (8b</span>: <span class="hljs-number">0x06</span> 表示 TCP)                      <br>│ 首部校验和 (<span class="hljs-number">16</span>b)                                                         <br>│ 源 IP 地址 (<span class="hljs-number">32</span>b)                                                         <br>│ 目的 IP 地址 (<span class="hljs-number">32</span>b)                                                       <br>│ （+ 可选项）                                                             <br>└────────────────────────────────────────────────────────────────────────────┘<br>                                ↓<br>┌──────────────────────────── TCP 段头 ──────────────────────────────────────┐<br>│ 源端口 (<span class="hljs-number">16</span>b)                | <span class="hljs-type">目标端口 (16b</span>)                    <br>│ 序列号 (<span class="hljs-number">32</span>b)                                                  <br>│ 确认号 (<span class="hljs-number">32</span>b)                                                  <br>│ 数据偏移(<span class="hljs-number">4</span>b) | <span class="hljs-type">保留(3b</span>) | <span class="hljs-type">标志位(9b</span>: SYN, ACK, etc.)          <br>│ 窗口大小 (<span class="hljs-number">16</span>b)                                               <br>│ 校验和 (<span class="hljs-number">16</span>b)                                                 <br>│ 紧急指针 (<span class="hljs-number">16</span>b)                                               <br>│ （+ 可选项，如MSS、窗口缩放、SACK等）                        <br>└────────────────────────────────────────────────────────────────────────────┘<br>                                ↓<br>┌────────────────────── HTTP 请求报文（以 GET 为例） ─────────────────────────┐<br>│ 起始行（Request Line）                                              <br>│   GET /index.html HTTP/<span class="hljs-number">1.1</span>   ← 方法(变量长) 路径(变量长) 协议版本   <br>│                                                                  <br>│ 首部字段（Headers）                                              <br>│   Host: www.example.com             ← Key:Value，每行为一字段       <br>│   User-Agent: curl/<span class="hljs-number">7.64</span><span class="hljs-number">.1</span>                                         <br>│   Accept: */*                                                     <br>│   ...                                                             <br>│                                                                  <br>│ 空行（\\r\\n）表示首部结束                                          <br>│                                                                  <br>│ 实体主体（Body，可选）                                           <br>│   （如POST中的表单数据，如 x-www-form-urlencoded 格式）          <br>└─────────────────────────────────────────────────────────────────────────────┘<br><br></code></pre></td></tr></table></figure><h2 id="Socket"><a href="#Socket" class="headerlink" title="Socket"></a>Socket</h2><p>socket是协议栈在操作系统上的具体实现。设计为一种通用网络接口，通过定义具体的协议和响应的地址，端口信息来实现服务端与客户端的连接。</p><h2 id="传输性能"><a href="#传输性能" class="headerlink" title="传输性能"></a>传输性能</h2><h3 id="DNS-到-IP-的地址转换"><a href="#DNS-到-IP-的地址转换" class="headerlink" title="DNS 到 IP 的地址转换"></a>DNS 到 IP 的地址转换</h3><p>DNS解析时间</p><h3 id="TCP-连接时延"><a href="#TCP-连接时延" class="headerlink" title="TCP 连接时延"></a>TCP 连接时延</h3><h3 id="请求报文处理"><a href="#请求报文处理" class="headerlink" title="请求报文处理"></a>请求报文处理</h3><h3 id="构造响应报文"><a href="#构造响应报文" class="headerlink" title="构造响应报文"></a>构造响应报文</h3><h3 id="网络扰动"><a href="#网络扰动" class="headerlink" title="网络扰动"></a>网络扰动</h3>]]></content>
+    
+    
+    <categories>
+      
+      <category>HTTP</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>HTTP</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>HTTP协议 I 定义</title>
     <link href="/2025/05/11/HTTP%E5%8D%8F%E8%AE%AE-I-%E5%AE%9A%E4%B9%89/"/>
     <url>/2025/05/11/HTTP%E5%8D%8F%E8%AE%AE-I-%E5%AE%9A%E4%B9%89/</url>
