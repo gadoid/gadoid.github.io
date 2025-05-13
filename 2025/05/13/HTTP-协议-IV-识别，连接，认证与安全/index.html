@@ -19,15 +19,15 @@
   <meta name="author" content="Codfish">
   <meta name="keywords" content="">
   
-    <meta name="description" content="基于HTTP协议，技术上进行了多种技术实现 Web服务器web服务器是基于Http协议的最基础实现：用户通过浏览器代理 发送HTTP请求，服务端解析请求提供对应服务。 一个基础的web服务器具备以下流程 ： (1) 建立连接——接受一个客户端连接，或者如果不希望与这个客户端建立连接，就将其关闭。 123服务器使用 socket 创建监听端口（如 TCP 80&#x2F;443），并通过 accept 接收客">
+    <meta name="description" content="声明的，无状态的HTTP 本身是一种声明式的，不负责状态存储的协议。 其构造本身只提供了简单的控制&#x2F;访问流程 （方法，路径，协议号，以及首部的控制字段 → 状态码，响应首部，以及可能存在的响应内容）。 这个过程中的所有内容都是描述性的，需要外部的介质（一般是一些中间设备如客户端代理，网关，防火墙，服务端等）根据其描述来完成保活，存储，状态保存等一系列扩展功能。 状态存储在面向应用的协议中">
 <meta property="og:type" content="article">
-<meta property="og:title" content="HTTP协议 III 服务类型">
-<meta property="og:url" content="http://gadoid.io/2025/05/12/HTTP%E5%8D%8F%E8%AE%AE-III-%E6%9C%8D%E5%8A%A1%E7%B1%BB%E5%9E%8B/index.html">
+<meta property="og:title" content="HTTP协议 IV 识别，连接，认证与安全">
+<meta property="og:url" content="http://gadoid.io/2025/05/13/HTTP-%E5%8D%8F%E8%AE%AE-IV-%E8%AF%86%E5%88%AB%EF%BC%8C%E8%BF%9E%E6%8E%A5%EF%BC%8C%E8%AE%A4%E8%AF%81%E4%B8%8E%E5%AE%89%E5%85%A8/index.html">
 <meta property="og:site_name" content="西北有高楼">
-<meta property="og:description" content="基于HTTP协议，技术上进行了多种技术实现 Web服务器web服务器是基于Http协议的最基础实现：用户通过浏览器代理 发送HTTP请求，服务端解析请求提供对应服务。 一个基础的web服务器具备以下流程 ： (1) 建立连接——接受一个客户端连接，或者如果不希望与这个客户端建立连接，就将其关闭。 123服务器使用 socket 创建监听端口（如 TCP 80&#x2F;443），并通过 accept 接收客">
+<meta property="og:description" content="声明的，无状态的HTTP 本身是一种声明式的，不负责状态存储的协议。 其构造本身只提供了简单的控制&#x2F;访问流程 （方法，路径，协议号，以及首部的控制字段 → 状态码，响应首部，以及可能存在的响应内容）。 这个过程中的所有内容都是描述性的，需要外部的介质（一般是一些中间设备如客户端代理，网关，防火墙，服务端等）根据其描述来完成保活，存储，状态保存等一系列扩展功能。 状态存储在面向应用的协议中">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2025-05-12T03:30:42.000Z">
-<meta property="article:modified_time" content="2025-05-12T03:33:48.953Z">
+<meta property="article:published_time" content="2025-05-13T06:24:10.000Z">
+<meta property="article:modified_time" content="2025-05-13T06:25:42.530Z">
 <meta property="article:author" content="Codfish">
 <meta property="article:tag" content="HTTP">
 <meta name="twitter:card" content="summary_large_image">
@@ -36,7 +36,7 @@
     <meta name="referrer" content="no-referrer-when-downgrade">
   
   
-  <title>HTTP协议 III 服务类型 - 西北有高楼</title>
+  <title>HTTP协议 IV 识别，连接，认证与安全 - 西北有高楼</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -214,7 +214,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="HTTP协议 III 服务类型"></span>
+            <span id="subtitle" data-typed-text="HTTP协议 IV 识别，连接，认证与安全"></span>
           
         </div>
 
@@ -225,8 +225,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2025-05-12 11:30" pubdate>
-          2025年5月12日 中午
+        <time datetime="2025-05-13 14:24" pubdate>
+          2025年5月13日 下午
         </time>
       </span>
     
@@ -237,7 +237,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          2.2k 字
+          1.4k 字
         
       </span>
     
@@ -248,7 +248,7 @@
         
         
         
-          19 分钟
+          12 分钟
         
       </span>
     
@@ -285,77 +285,170 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">HTTP协议 III 服务类型</h1>
+            <h1 id="seo-header">HTTP协议 IV 识别，连接，认证与安全</h1>
             
             
               <div class="markdown-body">
                 
-                <p>基于HTTP协议，技术上进行了多种技术实现</p>
-<h1 id="Web服务器"><a href="#Web服务器" class="headerlink" title="Web服务器"></a>Web服务器</h1><p>web服务器是基于Http协议的最基础实现：用户通过浏览器代理 发送HTTP请求，服务端解析请求提供对应服务。</p>
-<p>一个基础的web服务器具备以下流程 ：</p>
-<p>(1) 建立连接——接受一个客户端连接，或者如果不希望与这个客户端建立连接，就将其关闭。</p>
-<figure class="highlight perl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs perl">服务器使用 <span class="hljs-keyword">socket</span> 创建监听端口（如 TCP <span class="hljs-number">80</span>/<span class="hljs-number">443</span>），并通过 <span class="hljs-keyword">accept</span> 接收客户端连接请求。<br>客户端发起 TCP 三次握手，连接成功后，服务器进入请求处理阶段。<br>连接建立后，可以根据客户端 IP 或报文字段判断是否拒绝继续服务（例如黑名单、Header 校验）。<br></code></pre></td></tr></table></figure>
+                <h1 id="声明的，无状态的"><a href="#声明的，无状态的" class="headerlink" title="声明的，无状态的"></a>声明的，无状态的</h1><p>HTTP 本身是一种声明式的，不负责状态存储的协议。</p>
+<p>其构造本身只提供了简单的控制&#x2F;访问流程 （方法，路径，协议号，以及首部的控制字段 → 状态码，响应首部，以及可能存在的响应内容）。 这个过程中的所有内容都是描述性的，需要外部的介质（一般是一些中间设备如客户端代理，网关，防火墙，服务端等）根据其描述来完成保活，存储，状态保存等一系列扩展功能。</p>
+<h1 id="状态存储"><a href="#状态存储" class="headerlink" title="状态存储"></a>状态存储</h1><p>在面向应用的协议中，状态存储是一个很重要的属性。通过对状态的存储，可以为用户和服务端提供许多有用的扩展，如用户的个性化定制，会话的管理等。</p>
+<h2 id="HTTP首部"><a href="#HTTP首部" class="headerlink" title="HTTP首部"></a>HTTP首部</h2><p>From   一般会用来承载一个邮箱地址</p>
+<p>User-Agent 告知用户浏览器的相关信息</p>
+<p>IP 地址</p>
+<p>Authenticate 传输认证相关信息</p>
+<h2 id="Cookie"><a href="#Cookie" class="headerlink" title="Cookie"></a>Cookie</h2><p>cookie是服务器端在客户端安置的小型存储</p>
+<p>cookie描述了一些键值信息，可以供服务器进行访问查询确认用户的信息</p>
+<figure class="highlight pgsql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs pgsql"><span class="hljs-type">NAME</span>=<span class="hljs-keyword">VALUE</span>   键值描述<br>Expire       过期日期<br><span class="hljs-keyword">Domain</span>       定义Cookie生效的作用域<br><span class="hljs-type">Path</span>         定义在某个路径下Cookie会生效<br>Secure       定义后，只有在TLS/SSL生效后才会发送cookie<br></code></pre></td></tr></table></figure>
 
-<p>(2)接收请求——从网络中读取一条HTTP请求报文。</p>
-<figure class="highlight taggerscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs taggerscript">从 Socket 中读取 HTTP 请求报文，HTTP 是基于文本协议，使用 CRLF（<span class="hljs-symbol">\\</span>r<span class="hljs-symbol">\\</span>n）标志字段和请求结束。<br>请求报文包括请求行、头部字段、空行和可选的消息体。<br>Web 服务器需按 HTTP 语法解析这些字段，并生成一个结构化的请求对象供业务逻辑处理。<br></code></pre></td></tr></table></figure>
+<h1 id="认证"><a href="#认证" class="headerlink" title="认证"></a>认证</h1><p>Web应用程序收到一条HTTP请求报文时，服务器没有按照请求执行动作，而是以一个“认证质询”进行响应，要求用户提供一些保密信息来说明他是谁，从而对其进行质询。</p>
+<p>用户再次发起请求时，要附上保密证书（用户名和密码）。如果证书不匹配，服务器可以再次质询客户端，或产生一条错误信息。如果证书匹配，就可以正常完成请求了。</p>
+<h2 id="基本认证"><a href="#基本认证" class="headerlink" title="基本认证"></a>基本认证</h2><ol>
+<li>客户端发送访问请求</li>
+<li>服务端返回未授权，说明客户需求提供对应的用户名和密码</li>
+<li>客户端重新发送带有认证信息的请求</li>
+<li>服务端验证后正确则回复认证成功的响应</li>
+</ol>
+<h2 id="Base-64"><a href="#Base-64" class="headerlink" title="Base-64"></a>Base-64</h2><p>将 8位数据转换为6位编码，用64个字符重新表示</p>
+<p>基本认证存在很多缺陷，明文传输，以及在过于复杂的网络环境中有被监听和篡改报文的风险</p>
+<h2 id="摘要认证"><a href="#摘要认证" class="headerlink" title="摘要认证"></a>摘要认证</h2><p>客户端发送请求信息</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs http"><span class="hljs-keyword">GET</span> <span class="hljs-string">/protected/resource</span> <span class="hljs-meta">HTTP/1.1</span><br><span class="hljs-attribute">Host</span><span class="hljs-punctuation">: </span>example.com<br></code></pre></td></tr></table></figure>
 
-<p>(3)处理请求——对请求报文进行解释，并采取行动。</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs">现代 Web 框架会基于请求路径、方法、参数等信息进行路由匹配，将请求分发给对应的控制器函数进行业务逻辑处理。<br></code></pre></td></tr></table></figure>
+<p>服务器响应请求，请求进行授权认证</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs routeros">HTTP/1.1 401 Unauthorized<br>WWW-Authenticate: Digest<br>  <span class="hljs-attribute">realm</span>=<span class="hljs-string">&quot;example.com&quot;</span>,<br>  <span class="hljs-attribute">nonce</span>=<span class="hljs-string">&quot;abc123&quot;</span>,             ← 服务端生成的随机数，防止重放攻击<br>  <span class="hljs-attribute">qop</span>=<span class="hljs-string">&quot;auth&quot;</span>,<br>  <span class="hljs-attribute">algorithm</span>=MD5<br><br></code></pre></td></tr></table></figure>
 
-<p>(4)访问资源——访问报文中指定的资源。</p>
-<figure class="highlight armasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs armasm">资源访问可以是静态资源（如 HTML、CSS、图片文件）或动态处理（如数据库操作、业务逻辑执行）。<br>根据请求方法（<span class="hljs-meta">GET</span>/POST）和 URI 路径，决定资源类型与访问方式。<br></code></pre></td></tr></table></figure>
+<p>客户端对收到的随机数 和本地密码进行MD5计算，响应</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs routeros">Authorization: Digest<br>  <span class="hljs-attribute">username</span>=<span class="hljs-string">&quot;alice&quot;</span>,<br>  <span class="hljs-attribute">realm</span>=<span class="hljs-string">&quot;example.com&quot;</span>,<br>  <span class="hljs-attribute">nonce</span>=<span class="hljs-string">&quot;abc123&quot;</span>,<br>  <span class="hljs-attribute">uri</span>=<span class="hljs-string">&quot;/protected/resource&quot;</span>,<br>  <span class="hljs-attribute">response</span>=<span class="hljs-string">&quot;dcd98b7102dd2f0e8b11...&quot;</span>,  ← 由客户端计算出的摘要<br>  <span class="hljs-attribute">qop</span>=auth,<br>  <span class="hljs-attribute">nc</span>=00000001,<br>  <span class="hljs-attribute">cnonce</span>=<span class="hljs-string">&quot;xyz789&quot;</span><br><br></code></pre></td></tr></table></figure>
 
-<p>(5)构建响应——创建带有正确首部的HTTP响应报文。</p>
-<figure class="highlight pgsql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs pgsql">修改或者其他响应办法确定后，构造序列化对象（如<span class="hljs-type">Json</span>），以及响应头信息。对客户端进行响应。<br></code></pre></td></tr></table></figure>
+<h1 id="字段与功能点"><a href="#字段与功能点" class="headerlink" title="字段与功能点"></a>字段与功能点</h1><table>
+<thead>
+<tr>
+<th>字段名</th>
+<th>所在报文</th>
+<th>典型组合</th>
+<th>对应功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Connection</code>+<code>Upgrade</code></td>
+<td>请求 &amp; 响应</td>
+<td><code>Connection: Upgrade</code>,<code>Upgrade: websocket</code></td>
+<td>协议升级机制（如 HTTP → WebSocket）</td>
+</tr>
+<tr>
+<td><code>Host</code></td>
+<td>请求头</td>
+<td>-</td>
+<td>虚拟主机路由（同 IP 多域名支持）</td>
+</tr>
+<tr>
+<td><code>Content-Type</code>+<code>Content-Length</code></td>
+<td>请求&#x2F;响应</td>
+<td><code>Content-Type: application/json</code></td>
+<td>请求体格式标识与数据边界控制</td>
+</tr>
+<tr>
+<td><code>Transfer-Encoding</code></td>
+<td>响应头</td>
+<td><code>Transfer-Encoding: chunked</code></td>
+<td>分块传输机制（适合大文件&#x2F;流式内容）</td>
+</tr>
+<tr>
+<td><code>Cookie</code>+<code>Set-Cookie</code></td>
+<td>请求 + 响应</td>
+<td><code>Set-Cookie: sessionId=abc123</code></td>
+<td>客户端会话状态管理</td>
+</tr>
+<tr>
+<td><code>Authorization</code>+<code>WWW-Authenticate</code></td>
+<td>请求 + 响应</td>
+<td><code>Authorization: Bearer &lt;token&gt;</code></td>
+<td>身份验证机制（如 OAuth、Basic）</td>
+</tr>
+<tr>
+<td><code>ETag</code>+<code>If-None-Match</code></td>
+<td>响应 + 请求</td>
+<td><code>ETag: &quot;123abc&quot;</code></td>
+<td>协商缓存：基于内容校验</td>
+</tr>
+<tr>
+<td><code>Last-Modified</code>+<code>If-Modified-Since</code></td>
+<td>响应 + 请求</td>
+<td><code>Last-Modified: Tue, 12 May 2025 10:00:00 GMT</code></td>
+<td>协商缓存：基于时间戳</td>
+</tr>
+<tr>
+<td><code>Cache-Control</code></td>
+<td>请求&#x2F;响应</td>
+<td><code>Cache-Control: no-cache</code></td>
+<td>缓存行为控制（是否缓存、最大时长）</td>
+</tr>
+<tr>
+<td><code>Accept</code>+<code>Content-Type</code></td>
+<td>请求 + 响应</td>
+<td><code>Accept: application/json</code></td>
+<td>内容协商机制</td>
+</tr>
+<tr>
+<td><code>Accept-Encoding</code>+<code>Content-Encoding</code></td>
+<td>请求 + 响应</td>
+<td><code>Content-Encoding: gzip</code></td>
+<td>压缩格式协商</td>
+</tr>
+<tr>
+<td><code>Accept-Language</code></td>
+<td>请求头</td>
+<td>-</td>
+<td>响应语言偏好协商</td>
+</tr>
+<tr>
+<td><code>Origin</code>+<code>Access-Control-*</code></td>
+<td>请求 + 响应</td>
+<td><code>Access-Control-Allow-Origin: *</code></td>
+<td>CORS 跨域访问控制</td>
+</tr>
+<tr>
+<td><code>Referer</code></td>
+<td>请求头</td>
+<td>-</td>
+<td>来源追踪、防盗链、分析跳转</td>
+</tr>
+<tr>
+<td><code>Location</code>+<code>3xx</code>状态码</td>
+<td>响应头</td>
+<td><code>Location: &lt;https://new.url</code>&gt;</td>
+<td>重定向机制</td>
+</tr>
+<tr>
+<td><code>X-Forwarded-For</code></td>
+<td>请求头</td>
+<td>-</td>
+<td>获取客户端真实 IP（经代理）</td>
+</tr>
+<tr>
+<td><code>X-Requested-With</code></td>
+<td>请求头</td>
+<td><code>X-Requested-With: XMLHttpRequest</code></td>
+<td>AJAX 请求标识</td>
+</tr>
+</tbody></table>
+<h2 id="长连接"><a href="#长连接" class="headerlink" title="长连接"></a>长连接</h2><p>将HTTP 会话变为维持TCP连接，从请求-响应-关闭 变为 请求-响应-等待超时-关闭</p>
+<h1 id="HTTPS"><a href="#HTTPS" class="headerlink" title="HTTPS"></a>HTTPS</h1><h1 id="重定向与负载均衡"><a href="#重定向与负载均衡" class="headerlink" title="重定向与负载均衡"></a>重定向与负载均衡</h1><h2 id="HTTP重定向"><a href="#HTTP重定向" class="headerlink" title="HTTP重定向"></a>HTTP重定向</h2><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs">实现 ：服务器接收HTTP请求，服务器返回重定向消息，客户端将请求重新发送到选中服务器<br>局限 ：服务器需要可以对请求进行处理，且重定向步骤较多<br></code></pre></td></tr></table></figure>
 
-<p>(6)发送响应——将响应回送给客户端。</p>
-<figure class="highlight abnf"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs abnf">底层 将 状态码 响应头 消息体 编码为字节数组 以<span class="hljs-keyword">CRLF</span>作为结尾，由Socket发送给客户端<br></code></pre></td></tr></table></figure>
+<p>客户端 发送请求报文 ：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs http"><span class="hljs-keyword">GET</span> <span class="hljs-string">/hammers.html</span> <span class="hljs-meta">HTTP/1.0</span><br><span class="hljs-attribute">Host</span><span class="hljs-punctuation">: </span>www.joes-hardware.com<br><span class="hljs-attribute">User-Agent</span><span class="hljs-punctuation">: </span>Mozilla/4.51 [en] (X11; U; IRIX 6.2 IP22)<br></code></pre></td></tr></table></figure>
 
-<p>(7)记录事务处理过程——将与已完成事务有关的内容记录在一个日志文件中。</p>
-<figure class="highlight armasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs armasm">服务器会将每次请求的处理过程记录到访问日志中，包括客户端 <span class="hljs-built_in">IP</span>、请求路径、方法、状态码、响应时间等。<br>日志有助于问题追踪、性能分析与安全监控。<br></code></pre></td></tr></table></figure>
+<p>服务端响应一个重定向报文</p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">HTTP</span>/<span class="hljs-number">1</span>.<span class="hljs-number">0302</span> Redirect<br><span class="hljs-attribute">Server</span>: Stronghold/<span class="hljs-number">2</span>.<span class="hljs-number">4</span>.<span class="hljs-number">2</span> Apache/<span class="hljs-number">1</span>.<span class="hljs-number">3</span>.<span class="hljs-number">6</span><br><span class="hljs-attribute">Location</span>: &lt;http://<span class="hljs-number">161.58.228.45</span>/hammers.html&gt;<br></code></pre></td></tr></table></figure>
 
-<h1 id="代理"><a href="#代理" class="headerlink" title="代理"></a>代理</h1><p>Web代理（proxy）服务器是网络的中间实体。代理位于客户端和服务器之间，扮演“中间人”的角色，在各端点之间来回传送HTTP报文</p>
-<p><strong>代理 ： 客户端向代理服务器发送请求，代理服务器转发给后端的引用服务器</strong></p>
-<p><strong>反向代理：客户端不感知代理存在，请求发向代理，由其代表后端服务器处理请求（如 Nginx、API 网关）</strong></p>
-<h3 id="为什么需要代理"><a href="#为什么需要代理" class="headerlink" title="为什么需要代理"></a>为什么需要代理</h3><ul>
-<li>消息过滤，代理可以作为中间过程为最终客户进行内容筛选。通过检查请求&#x2F;响应内容对用户的访问进行控制</li>
-<li>访问策略，代理通过解析中间消息，可以对不同的用户实施不同的访问策略</li>
-<li>防火墙，通过检查传输的Http消息，来监控网络中是否存在恶意信息</li>
-<li>web缓存，代理缓存维护了常用文档的本地副本，并将它们按需提供，以减少缓慢且昂贵的因特网通信。</li>
-<li>反向代理，代理可以假扮Web服务器。这些被称为替代物（surrogate）或反向代理（re-verse proxy）的代理接收发给Web服务器的真实请求，但与Web服务器不同的是，它们可以发起与其他服务器的通信，以便按需定位所请求的内容。</li>
-</ul>
-<h1 id="缓存"><a href="#缓存" class="headerlink" title="缓存"></a>缓存</h1><p>缓存服务器，用于分摊对web服务器的访问压力，其核心逻辑是收到请求后</p>
-<p>(1) 接收——缓存从网络中读取抵达的请求报文。</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs">缓存检测到一条网络连接上的活动，读取输入数据。高性能的缓存会同时从多条输入连接上读取数据，在整条报文抵达之前开始对事务进行处理<br></code></pre></td></tr></table></figure>
+<p>客户端向服务端提供的重定向地址重新发送请求</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs http"><span class="hljs-keyword">GET</span> <span class="hljs-string">/hammers.html</span> <span class="hljs-meta">HTTP/1.0</span><br><span class="hljs-attribute">Host</span><span class="hljs-punctuation">: </span>161.58.228.45<br><span class="hljs-attribute">User-Agent</span><span class="hljs-punctuation">: </span>Mozilla/4.51 [en] (X11; U; IRIX 6.2 IP22)<br></code></pre></td></tr></table></figure>
 
-<p>(2) 解析——缓存对报文进行解析，提取出URL和各种首部。</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs">缓存将请求报文解析为片断，将首部的各个部分放入易于操作的数据结构中。<br></code></pre></td></tr></table></figure>
+<h2 id="DNS重定向"><a href="#DNS重定向" class="headerlink" title="DNS重定向"></a>DNS重定向</h2><figure class="highlight armasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs armasm">实现 ：DNS服务器决定URL的主机名中返回<span class="hljs-built_in">IP</span>地址中的哪一个<br>局限 ：需要配置DNS服务器<br></code></pre></td></tr></table></figure>
 
-<p>(3) 查询——缓存查看是否有本地副本可用，如果没有，就获取一份副本（并将其保存在本地）。</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs">本地副本可能存储在内存、本地磁盘，甚至附近的另一台计算机中。<br>专业级的缓存会使用快速算法来确定本地缓存中是否有某个对象。<br>如果本地没有这个文档，它可以根据情形和配置，到原始服务器或父代理中去取，或者返回一条错误信息。<br></code></pre></td></tr></table></figure>
+<h2 id="IP-MAC转发"><a href="#IP-MAC转发" class="headerlink" title="IP MAC转发"></a>IP MAC转发</h2><figure class="highlight armasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs armasm">实现 ：通过绑定目的<span class="hljs-built_in">IP</span>到对应的MAC地址<br>局限 ：同一广播域内<br></code></pre></td></tr></table></figure>
 
-<p>(4) 新鲜度检测——缓存查看已缓存副本是否足够新鲜，如果不是，就询问服务器是否有任何更新。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs bash">HTTP通过缓存将服务器文档的副本保留一段时间。<br>在这段时间里，都认为文档是“新鲜的”，缓存可以在不联系服务器的情况下，直接提供该文档。<br>但一旦已缓存副本停留的时间太长，超过了文档的新鲜度限值（freshness <span class="hljs-built_in">limit</span>），<br>就认为对象“过时”了，在提供该文档之前，缓存要再次与服务器进行确认，<br>以查看文档是否发生了变化。客户端发送给缓存的所有请求首部自身都可以强制缓存进行再验证，<br>或者完全避免验证，这使得事情变得更加复杂了。<br></code></pre></td></tr></table></figure>
-
-<p>(5) 创建响应——缓存会用新的首部和已缓存的主体来构建一条响应报文。</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs">我们希望缓存的响应看起来就像来自原始服务器的一样，缓存将已缓存的服务器响应首部作为响应首部的起点。<br>然后缓存对这些基础首部进行了修改和扩充。<br>缓存负责对这些首部进行改造，以便与客户端的要求相匹配。<br></code></pre></td></tr></table></figure>
-
-<p>(6) 发送——缓存通过网络将响应发回给客户端。</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs">一旦响应首部准备好了，缓存就将响应回送给客户端。<br>和所有代理服务器一样，代理缓存要管理与客户端之间的连接。<br></code></pre></td></tr></table></figure>
-
-<p>(7) 日志——缓存可选地创建一个日志文件条目来描述这个事务。</p>
-<figure class="highlight livecodeserver"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs livecodeserver">大多数缓存都会保存日志文件以及与缓存的使用有关的一些统计数据。<br>每个缓存事务结束之后，缓存都会更新缓存命中和未命中数目的统计数据（以及其他相关的度量值），<br>并将条目插入一个用来显示请求类型、<span class="hljs-built_in">URL</span>和所发生事件的日志文件。<br></code></pre></td></tr></table></figure>
-
-<h1 id="网关"><a href="#网关" class="headerlink" title="网关"></a>网关</h1><p>网关可以作为某种翻译器使用，它抽象出了一种能够到达资源的方法。网关是资源和应用程序之间的粘合剂。应用程序可以（通过HTTP或其他已定义的接口）请求网关来处理某条请求，网关可以提供一条响应。</p>
-<p>应用程序网关API就是通用网关接口（Common Gateway Interface,CGI）。CGI是一个标准接口集，Web服务器可以用它来装载程序以响应对特定URL的HTTP请求，并收集程序的输出数据，将其放在HTTP响应中回送。在过去的几年中，商业Web服务器提供了一些更复杂的接口，以便将Web服务器连接到应用程序上去。</p>
-<h1 id="隧道"><a href="#隧道" class="headerlink" title="隧道"></a>隧道</h1><p>Web隧道允许用户通过HTTP连接发送非HTTP流量，这样就可以在HTTP上捎带其他协议数据了。使用Web隧道最常见的原因就是要在HTTP连接中嵌入非HTTP流量，这样，这类流量就可以穿过只允许Web流量通过的防火墙了。</p>
-<p>隧道连接请求</p>
-<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs http"><span class="hljs-keyword">CONNECT</span> <span class="hljs-string">home.netscape.com:443</span> <span class="hljs-meta">HTTP/1.0</span><br><span class="hljs-attribute">User-agent</span><span class="hljs-punctuation">: </span>Mozilla/4.0<br></code></pre></td></tr></table></figure>
-
-<p>隧道连接响应</p>
-<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">HTTP</span>/<span class="hljs-number">1</span>.<span class="hljs-number">0200</span> Connection Established<br><span class="hljs-attribute">Proxy</span>-agent: Netscape-Proxy/<span class="hljs-number">1</span>.<span class="hljs-number">1</span><br></code></pre></td></tr></table></figure>
-
-<p>隧道在发出连接请求后，不必等待响应，就会以隧道形式发送数据到对端。如果收到认证响应或其他非成功响应，请求端需要做好重新准备数据的准备。</p>
+<h2 id="IP-地址转发"><a href="#IP-地址转发" class="headerlink" title="IP 地址转发"></a>IP 地址转发</h2><figure class="highlight armasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs armasm">实现 ：通过识别目的端口，重定向<span class="hljs-built_in">IP</span>地址到代理或镜像服务器<br>局限 ：服务器或代理看不到真正的客户端<span class="hljs-built_in">IP</span>地址<br></code></pre></td></tr></table></figure>
 
                 
               </div>
@@ -401,8 +494,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>HTTP协议 III 服务类型</div>
-      <div>http://gadoid.io/2025/05/12/HTTP协议-III-服务类型/</div>
+      <div>HTTP协议 IV 识别，连接，认证与安全</div>
+      <div>http://gadoid.io/2025/05/13/HTTP-协议-IV-识别，连接，认证与安全/</div>
     </div>
     <div class="license-meta">
       
@@ -414,7 +507,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2025年5月12日</div>
+          <div>2025年5月13日</div>
         </div>
       
       
@@ -446,18 +539,12 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2025/05/13/HTTP-%E5%8D%8F%E8%AE%AE-IV-%E8%AF%86%E5%88%AB%EF%BC%8C%E8%BF%9E%E6%8E%A5%EF%BC%8C%E8%AE%A4%E8%AF%81%E4%B8%8E%E5%AE%89%E5%85%A8/" title="HTTP协议 IV 识别，连接，认证与安全">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">HTTP协议 IV 识别，连接，认证与安全</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2025/05/11/HTTP%E5%8D%8F%E8%AE%AE-II-%E8%BF%9E%E6%8E%A5/" title="HTTP协议 II 连接">
-                        <span class="hidden-mobile">HTTP协议 II 连接</span>
+                      <a href="/2025/05/12/HTTP%E5%8D%8F%E8%AE%AE-III-%E6%9C%8D%E5%8A%A1%E7%B1%BB%E5%9E%8B/" title="HTTP协议 III 服务类型">
+                        <span class="hidden-mobile">HTTP协议 III 服务类型</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
