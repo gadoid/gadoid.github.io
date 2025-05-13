@@ -15,12 +15,14 @@
       
       <category>网络技术</category>
       
+      <category>RPC</category>
+      
     </categories>
     
     
     <tags>
       
-      <tag>网络技术</tag>
+      <tag>网络技术,RPC</tag>
       
     </tags>
     
@@ -40,12 +42,14 @@
       
       <category>网络技术</category>
       
+      <category>WebSocket</category>
+      
     </categories>
     
     
     <tags>
       
-      <tag>网络技术</tag>
+      <tag>网络技术, WebSocket</tag>
       
     </tags>
     
