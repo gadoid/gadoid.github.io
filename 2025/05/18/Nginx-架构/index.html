@@ -19,24 +19,24 @@
   <meta name="author" content="Codfish">
   <meta name="keywords" content="">
   
-    <meta name="description" content="🔵 1xx - 信息性状态码（Informational）   状态码 含义 描述    100 Continue 客户端应继续其请求。服务器已收到请求头，正在等待请求体。   101 Switching Protocols 客户端请求切换协议，服务器同意并切换。常见于 WebSocket 握手。    🟢 2xx - 成功状态码（Successful）   状态码 含义 描述    200">
+    <meta name="description" content="架构Nginx启动后，会创建预定义好的套接字资源。之后根据配置创建多个子进程。多个子进程共享同一个监听 socket，当有新连接到来时， Linux 4.5+ 的内核使用 EPOLLEXCLUSIVE 实现仅唤醒一个进程来处理连接，避免惊群效应。旧版本则需通过用户态互斥机制控制，如 accept_mutex。 12345master process 		- worker process   #">
 <meta property="og:type" content="article">
-<meta property="og:title" content="状态码速查">
-<meta property="og:url" content="http://gadoid.io/2025/05/17/%E7%8A%B6%E6%80%81%E7%A0%81%E9%80%9F%E6%9F%A5/index.html">
+<meta property="og:title" content="Nginx 架构">
+<meta property="og:url" content="http://gadoid.io/2025/05/18/Nginx-%E6%9E%B6%E6%9E%84/index.html">
 <meta property="og:site_name" content="西北有高楼">
-<meta property="og:description" content="🔵 1xx - 信息性状态码（Informational）   状态码 含义 描述    100 Continue 客户端应继续其请求。服务器已收到请求头，正在等待请求体。   101 Switching Protocols 客户端请求切换协议，服务器同意并切换。常见于 WebSocket 握手。    🟢 2xx - 成功状态码（Successful）   状态码 含义 描述    200">
+<meta property="og:description" content="架构Nginx启动后，会创建预定义好的套接字资源。之后根据配置创建多个子进程。多个子进程共享同一个监听 socket，当有新连接到来时， Linux 4.5+ 的内核使用 EPOLLEXCLUSIVE 实现仅唤醒一个进程来处理连接，避免惊群效应。旧版本则需通过用户态互斥机制控制，如 accept_mutex。 12345master process 		- worker process   #">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2025-05-17T03:32:16.000Z">
-<meta property="article:modified_time" content="2025-05-17T03:34:09.370Z">
+<meta property="article:published_time" content="2025-05-17T17:21:20.000Z">
+<meta property="article:modified_time" content="2025-05-17T17:29:48.825Z">
 <meta property="article:author" content="Codfish">
-<meta property="article:tag" content="速查信息">
+<meta property="article:tag" content="网络技术，Nginx">
 <meta name="twitter:card" content="summary_large_image">
   
   
     <meta name="referrer" content="no-referrer-when-downgrade">
   
   
-  <title>状态码速查 - 西北有高楼</title>
+  <title>Nginx 架构 - 西北有高楼</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -214,7 +214,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="状态码速查"></span>
+            <span id="subtitle" data-typed-text="Nginx 架构"></span>
           
         </div>
 
@@ -225,8 +225,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2025-05-17 11:32" pubdate>
-          2025年5月17日 中午
+        <time datetime="2025-05-18 01:21" pubdate>
+          2025年5月18日 凌晨
         </time>
       </span>
     
@@ -237,7 +237,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          473 字
+          612 字
         
       </span>
     
@@ -248,7 +248,7 @@
         
         
         
-          4 分钟
+          6 分钟
         
       </span>
     
@@ -285,190 +285,111 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">状态码速查</h1>
+            <h1 id="seo-header">Nginx 架构</h1>
             
             
               <div class="markdown-body">
                 
-                <h3 id="🔵-1xx-信息性状态码（Informational）"><a href="#🔵-1xx-信息性状态码（Informational）" class="headerlink" title="🔵 1xx - 信息性状态码（Informational）"></a>🔵 <strong>1xx - 信息性状态码（Informational）</strong></h3><table>
+                <h1 id="架构"><a href="#架构" class="headerlink" title="架构"></a>架构</h1><p>Nginx启动后，会创建预定义好的套接字资源。之后根据配置创建多个子进程。多个子进程共享同一个监听 socket，当有新连接到来时，</p>
+<p>Linux 4.5+ 的内核使用 <code>EPOLLEXCLUSIVE</code> 实现仅唤醒一个进程来处理连接，避免惊群效应。旧版本则需通过用户态互斥机制控制，如 <code>accept_mutex</code>。</p>
+<figure class="highlight crmsh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs crmsh"><span class="hljs-keyword">master</span> <span class="hljs-title">process</span> <br>		- worker process   <span class="hljs-comment">#  多个工作线程</span><br>		- worker process<br>		- Cache Manager    <span class="hljs-comment">#  缓存管理器</span><br>		- Cache Loader     <span class="hljs-comment">#  缓存加载器</span><br></code></pre></td></tr></table></figure>
+
+<h1 id="Master进程"><a href="#Master进程" class="headerlink" title="Master进程"></a>Master进程</h1><p>当子进程退出（包括异常退出）后，内核会向Master发送SIGCHLD信号，通过子进程退出，在Master内核态切换回用户态时会检查信号位表，查询退出的子进程信息，并创建新的进程。</p>
+<p>master支持的信号 ：</p>
+<table>
 <thead>
 <tr>
-<th>状态码</th>
-<th>含义</th>
-<th>描述</th>
+<th>信号</th>
+<th>说明</th>
+<th>等效命令行</th>
 </tr>
 </thead>
 <tbody><tr>
-<td>100</td>
-<td>Continue</td>
-<td>客户端应继续其请求。服务器已收到请求头，正在等待请求体。</td>
+<td><code>SIGHUP</code></td>
+<td>重新加载配置，<strong>平滑重启服务</strong></td>
+<td><code>nginx -s reload</code></td>
 </tr>
 <tr>
-<td>101</td>
-<td>Switching Protocols</td>
-<td>客户端请求切换协议，服务器同意并切换。常见于 WebSocket 握手。</td>
+<td><code>SIGQUIT</code></td>
+<td>优雅退出（处理完当前连接后退出）</td>
+<td><code>nginx -s quit</code></td>
+</tr>
+<tr>
+<td><code>SIGTERM</code></td>
+<td>强制退出（立即关闭）</td>
+<td><code>nginx -s stop</code></td>
+</tr>
+<tr>
+<td><code>SIGINT</code></td>
+<td>强制退出（Ctrl+C 等）</td>
+<td>等同于 <code>SIGTERM</code></td>
+</tr>
+<tr>
+<td><code>SIGUSR1</code></td>
+<td>重新打开日志文件（用于 logrotate）</td>
+<td><code>nginx -s reopen</code></td>
+</tr>
+<tr>
+<td><code>SIGUSR2</code></td>
+<td>启动<strong>二进制热升级</strong> （不中断服务）</td>
+<td>手动 <code>kill -USR2</code></td>
+</tr>
+<tr>
+<td><code>SIGWINCH</code></td>
+<td>停止 worker 进程（仅 master 运行）</td>
+<td>内部调试或模块使用</td>
 </tr>
 </tbody></table>
-<hr>
-<h3 id="🟢-2xx-成功状态码（Successful）"><a href="#🟢-2xx-成功状态码（Successful）" class="headerlink" title="🟢 2xx - 成功状态码（Successful）"></a>🟢 <strong>2xx - 成功状态码（Successful）</strong></h3><table>
+<p>worker支持的信号 ： （可以直接向worker进程发送信号，但更推荐向父进程发送信号由父进程统一管理）</p>
+<table>
 <thead>
 <tr>
-<th>状态码</th>
-<th>含义</th>
-<th>描述</th>
+<th>信号</th>
+<th>说明</th>
 </tr>
 </thead>
 <tbody><tr>
-<td>200</td>
-<td>OK</td>
-<td>请求成功，服务器已返回请求的数据。</td>
+<td><code>SIGQUIT</code></td>
+<td>优雅退出，处理完当前连接再关闭</td>
 </tr>
 <tr>
-<td>201</td>
-<td>Created</td>
-<td>请求成功并创建了新的资源。常用于 POST 创建。</td>
+<td><code>SIGTERM</code></td>
+<td>立即终止，强制退出</td>
 </tr>
 <tr>
-<td>202</td>
-<td>Accepted</td>
-<td>请求已接收，但尚未处理完成。</td>
+<td><code>SIGINT</code></td>
+<td>立即终止（类似 SIGTERM）</td>
 </tr>
 <tr>
-<td>204</td>
-<td>No Content</td>
-<td>请求成功，但服务器不返回内容。常用于 DELETE 操作。</td>
+<td><code>SIGWINCH</code></td>
+<td>停止接收连接并退出（仅特定模块）</td>
+</tr>
+<tr>
+<td><code>SIGUSR1</code></td>
+<td>重新打开日志文件</td>
+</tr>
+<tr>
+<td><code>SIGALRM</code></td>
+<td>用于内部超时控制</td>
+</tr>
+<tr>
+<td><code>SIGIO</code></td>
+<td>高速事件通知（用于 aio 模式）</td>
+</tr>
+<tr>
+<td><code>SIGCHLD</code></td>
+<td>接收子进程退出信号（master 专用）</td>
 </tr>
 </tbody></table>
-<hr>
-<h3 id="🟡-3xx-重定向状态码（Redirection）"><a href="#🟡-3xx-重定向状态码（Redirection）" class="headerlink" title="🟡 3xx - 重定向状态码（Redirection）"></a>🟡 <strong>3xx - 重定向状态码（Redirection）</strong></h3><table>
-<thead>
-<tr>
-<th>状态码</th>
-<th>含义</th>
-<th>描述</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>301</td>
-<td>Moved Permanently</td>
-<td>请求的资源已永久移动到新位置，客户端应使用新 URL。</td>
-</tr>
-<tr>
-<td>302</td>
-<td>Found</td>
-<td>请求的资源临时移动，客户端应继续使用原 URL。</td>
-</tr>
-<tr>
-<td>303</td>
-<td>See Other</td>
-<td>请求应使用 GET 方法访问另一个 URL。</td>
-</tr>
-<tr>
-<td>304</td>
-<td>Not Modified</td>
-<td>资源未修改，客户端可使用缓存版本。常用于缓存优化。</td>
-</tr>
-<tr>
-<td>307</td>
-<td>Temporary Redirect</td>
-<td>临时重定向，请求方法不变（区别于 302）。</td>
-</tr>
-</tbody></table>
-<hr>
-<h3 id="🔴-4xx-客户端错误（Client-Error）"><a href="#🔴-4xx-客户端错误（Client-Error）" class="headerlink" title="🔴 4xx - 客户端错误（Client Error）"></a>🔴 <strong>4xx - 客户端错误（Client Error）</strong></h3><table>
-<thead>
-<tr>
-<th>状态码</th>
-<th>含义</th>
-<th>描述</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>400</td>
-<td>Bad Request</td>
-<td>请求格式错误，服务器无法理解。</td>
-</tr>
-<tr>
-<td>401</td>
-<td>Unauthorized</td>
-<td>未授权，需身份验证。</td>
-</tr>
-<tr>
-<td>403</td>
-<td>Forbidden</td>
-<td>请求被拒绝，服务器理解请求但拒绝执行。</td>
-</tr>
-<tr>
-<td>404</td>
-<td>Not Found</td>
-<td>请求资源不存在。</td>
-</tr>
-<tr>
-<td>405</td>
-<td>Method Not Allowed</td>
-<td>请求方法不被允许。</td>
-</tr>
-<tr>
-<td>408</td>
-<td>Request Timeout</td>
-<td>请求超时，服务器未收到完整请求。</td>
-</tr>
-<tr>
-<td>409</td>
-<td>Conflict</td>
-<td>请求冲突，通常是资源状态冲突。</td>
-</tr>
-<tr>
-<td>413</td>
-<td>Payload Too Large</td>
-<td>请求体过大，服务器无法处理。</td>
-</tr>
-<tr>
-<td>429</td>
-<td>Too Many Requests</td>
-<td>请求过于频繁，被限流。</td>
-</tr>
-</tbody></table>
-<hr>
-<h3 id="🔴-5xx-服务器错误（Server-Error）"><a href="#🔴-5xx-服务器错误（Server-Error）" class="headerlink" title="🔴 5xx - 服务器错误（Server Error）"></a>🔴 <strong>5xx - 服务器错误（Server Error）</strong></h3><table>
-<thead>
-<tr>
-<th>状态码</th>
-<th>含义</th>
-<th>描述</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>500</td>
-<td>Internal Server Error</td>
-<td>服务器内部错误，无法完成请求。</td>
-</tr>
-<tr>
-<td>501</td>
-<td>Not Implemented</td>
-<td>请求方法未实现。</td>
-</tr>
-<tr>
-<td>502</td>
-<td>Bad Gateway</td>
-<td>网关或代理服务器收到无效响应。</td>
-</tr>
-<tr>
-<td>503</td>
-<td>Service Unavailable</td>
-<td>服务器暂时不可用（过载或维护）。</td>
-</tr>
-<tr>
-<td>504</td>
-<td>Gateway Timeout</td>
-<td>网关超时，未及时获得上游响应。</td>
-</tr>
-<tr>
-<td>505</td>
-<td>HTTP Version Not Supported</td>
-<td>服务器不支持请求中的 HTTP 版本。</td>
-</tr>
-</tbody></table>
+<h1 id="热部署"><a href="#热部署" class="headerlink" title="热部署"></a>热部署</h1><ul>
+<li>替换旧的 nginx 可执行文件为新版</li>
+<li>向旧 master 进程发送 <code>SIGUSR2</code> 信号，触发热升级</li>
+<li>旧 master 写出 <code>.oldbin</code> pid 文件</li>
+<li>新 nginx 可执行文件启动新的 master + worker</li>
+<li>向旧 master 发送 <code>SIGWINCH</code>，优雅退出旧 worker</li>
+<li>若需回滚，向旧 master 发送 <code>HUP</code> 恢复旧 worker，向新 master 发送 <code>QUIT</code> 退出新进程</li>
+</ul>
+<h1 id="配置参数"><a href="#配置参数" class="headerlink" title="配置参数"></a>配置参数</h1><figure class="highlight xl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs xl">--<span class="hljs-keyword">prefix</span>             指定安装目录<br>--user               指定运行子进程的用户<br>--group              指定运行子进程的用户组<br>--pid-<span class="hljs-built_in">path</span>           存放进程运行pid文件的路径<br>--conf-<span class="hljs-built_in">path</span>          配置文件nginx.conf的存放路径<br>--error-<span class="hljs-built_in">log</span>-<span class="hljs-built_in">path</span>     错误日志error.<span class="hljs-built_in">log</span>的存放路径<br>--http-<span class="hljs-built_in">log</span>-<span class="hljs-built_in">path</span>      访问日志access.<span class="hljs-built_in">log</span>的存放路径<br>--<span class="hljs-keyword">with</span>-pcre          pcre库的存放路径<br>--<span class="hljs-keyword">with</span>-zlib          zlib库的存放路径<br></code></pre></td></tr></table></figure>
 
                 
               </div>
@@ -487,7 +408,7 @@
     
       <span class="category-chain">
         
-  <a href="/categories/%E9%80%9F%E6%9F%A5%E4%BF%A1%E6%81%AF/" class="category-chain-item">速查信息</a>
+  <a href="/categories/Nginx/" class="category-chain-item">Nginx</a>
   
   
 
@@ -502,7 +423,7 @@
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/%E9%80%9F%E6%9F%A5%E4%BF%A1%E6%81%AF/" class="print-no-link">#速查信息</a>
+        <a href="/tags/%E7%BD%91%E7%BB%9C%E6%8A%80%E6%9C%AF%EF%BC%8CNginx/" class="print-no-link">#网络技术，Nginx</a>
       
     </div>
   
@@ -514,8 +435,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>状态码速查</div>
-      <div>http://gadoid.io/2025/05/17/状态码速查/</div>
+      <div>Nginx 架构</div>
+      <div>http://gadoid.io/2025/05/18/Nginx-架构/</div>
     </div>
     <div class="license-meta">
       
@@ -527,7 +448,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2025年5月17日</div>
+          <div>2025年5月18日</div>
         </div>
       
       
@@ -559,9 +480,9 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2025/05/18/Nginx-%E6%9E%B6%E6%9E%84/" title="Nginx 架构">
+                      <a href="/2025/05/18/Nginx-%E9%85%8D%E7%BD%AE/" title="Nginx 配置">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">Nginx 架构</span>
+                        <span class="hidden-mobile">Nginx 配置</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
@@ -569,8 +490,8 @@
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2025/05/17/RPC%E6%A1%86%E6%9E%B6%E5%AE%9E%E7%8E%B0/" title="RPC框架实现">
-                        <span class="hidden-mobile">RPC框架实现</span>
+                      <a href="/2025/05/17/%E7%8A%B6%E6%80%81%E7%A0%81%E9%80%9F%E6%9F%A5/" title="状态码速查">
+                        <span class="hidden-mobile">状态码速查</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
