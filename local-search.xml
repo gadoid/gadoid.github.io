@@ -20,7 +20,11 @@
     
     <tags>
       
-      <tag>网络技术，Nginx，中间件</tag>
+      <tag>网络技术</tag>
+      
+      <tag>Nginx</tag>
+      
+      <tag>中间件</tag>
       
     </tags>
     
@@ -45,7 +49,11 @@
     
     <tags>
       
-      <tag>网络技术，Nginx ，中间件</tag>
+      <tag>网络技术</tag>
+      
+      <tag>Nginx</tag>
+      
+      <tag>中间件</tag>
       
     </tags>
     
@@ -951,9 +959,9 @@
     
     <tags>
       
-      <tag>Redis</tag>
-      
       <tag>中间件</tag>
+      
+      <tag>Redis</tag>
       
     </tags>
     
