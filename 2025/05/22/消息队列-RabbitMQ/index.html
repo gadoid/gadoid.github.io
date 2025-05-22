@@ -1,0 +1,807 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/bg/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Codfish">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="什么是MQMQ即MessageQueue 消息队列 最直接的作用 ： 将同步的事件驱动改为异步的消息驱动 解耦Producer和Consumer都只跟中间件进行交互，而不需要互相进行交互。这意味着，在Producer发送消息时，不需要考虑有没有Consumer或多个Consumer。 异步消息并不是从Producer发送出来后，就立即交由Consumer处理，而是在MQ中间件中暂存下来，等到Con">
+<meta property="og:type" content="article">
+<meta property="og:title" content="消息队列 RabbitMQ">
+<meta property="og:url" content="http://gadoid.io/2025/05/22/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97-RabbitMQ/index.html">
+<meta property="og:site_name" content="西北有高楼">
+<meta property="og:description" content="什么是MQMQ即MessageQueue 消息队列 最直接的作用 ： 将同步的事件驱动改为异步的消息驱动 解耦Producer和Consumer都只跟中间件进行交互，而不需要互相进行交互。这意味着，在Producer发送消息时，不需要考虑有没有Consumer或多个Consumer。 异步消息并不是从Producer发送出来后，就立即交由Consumer处理，而是在MQ中间件中暂存下来，等到Con">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="attachment:71667905-c075-4e31-a47f-b28672e8bb6d:image.png">
+<meta property="og:image" content="attachment:73d150c3-6803-4b2f-a05f-e5f0b878990e:image.png">
+<meta property="og:image" content="attachment:aa855286-93d5-4392-aaaf-c1ca12ac8a09:image.png">
+<meta property="article:published_time" content="2025-05-22T06:53:21.000Z">
+<meta property="article:modified_time" content="2025-05-22T07:05:11.218Z">
+<meta property="article:author" content="Codfish">
+<meta property="article:tag" content="网络技术">
+<meta property="article:tag" content="中间件">
+<meta property="article:tag" content="RabbitMQ">
+<meta property="article:tag" content="消息队列">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="attachment:71667905-c075-4e31-a47f-b28672e8bb6d:image.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>消息队列 RabbitMQ - 西北有高楼</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"gadoid.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>西北有高楼</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/downloads/" target="_self">
+                <i class="iconfont icon-books-fill"></i>
+                <span>资源下载</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/bg/img/ice.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="消息队列 RabbitMQ"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-05-22 14:53" pubdate>
+          2025年5月22日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.9k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          16 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">消息队列 RabbitMQ</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="什么是MQ"><a href="#什么是MQ" class="headerlink" title="什么是MQ"></a>什么是MQ</h1><p>MQ即MessageQueue 消息队列</p>
+<p>最直接的作用 ： 将同步的事件驱动改为异步的消息驱动</p>
+<h2 id="解耦"><a href="#解耦" class="headerlink" title="解耦"></a>解耦</h2><p>Producer和Consumer都只跟中间件进行交互，而不需要互相进行交互。这意味着，在Producer发送消息时，不需要考虑有没有Consumer或多个Consumer。</p>
+<h2 id="异步"><a href="#异步" class="headerlink" title="异步"></a>异步</h2><p>消息并不是从Producer发送出来后，就立即交由Consumer处理，而是在MQ中间件中暂存下来，等到Consumer启动后。自行去MQ中间件上处理。错开了生产-消费的时间</p>
+<h2 id="削峰"><a href="#削峰" class="headerlink" title="削峰"></a>削峰</h2><p>有了MQ做消息暂存，当Producer发送消息的速度和Consumer处理消息的速度不一致时，MQ就可以起到削峰填谷的作用</p>
+<h1 id="主流MQ"><a href="#主流MQ" class="headerlink" title="主流MQ"></a>主流MQ</h1><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">Kafka       吞吐量非常大，性能非常好，技术生态完整       功能单一             分布式日志收集<br>RabbitMQ    消息可靠性高，功能全面            吞吐量较低，消息挤压影响性能    企业系统内部调用<br>RocketMQ    高吞吐，高性能，高可用                  技术生态相对不完整          几乎全场景<br></code></pre></td></tr></table></figure>
+
+<h1 id="处理路径"><a href="#处理路径" class="headerlink" title="处理路径"></a>处理路径</h1><p>┌──────────────┐       AMQP Frame                               ┌──────────────┐<br>│ TCP Socket                    │  ──────────────────▶  │  Connection                  │</p>
+<p>└──────────────┘                                                               └──────────────┘</p>
+<figure class="highlight julia"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs julia">RabbitMQ 的 Socket 资源句柄：用于接收来自 TCP 层的字节流数据，作为 AMQP 协议消息的输入通道<br>                                                                      │<br>                                                                      ▼<br>                                                  ┌────────────┐<br>                                                  │  <span class="hljs-built_in">Channel</span>                   │ <br>                                                  └────────────┘<br></code></pre></td></tr></table></figure>
+
+<p>RabbitMQ 的消息处理通道：将接收到的 AMQP 字节流解析为结构化命令。识别控制字段（如 basic.publish）、参数（如 exchange、routingKey）和消息体，并调用对应的内部方法进行处理。</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs">│<br></code></pre></td></tr></table></figure>
+
+<p>basic.publish                                                                                                              ▼<br>───────────────────────────────────▶  ┌────────────┐<br>│   Exchange                │<br>└────────────┘</p>
+<p>根据 exchange 的类型（fanout、direct、topic、headers）与 routingKey，匹配绑定规则（binding），将消息分发到一个或多个符合条件的队列。<br>│<br>▼<br>┌────────────┐<br>│   Queue                     │<br>└────────────┘</p>
+<p>按 FIFO 原则缓存等待消费。支持内存与磁盘混合存储、消息确认机制（ACK&#x2F;NACK）、TTL、死信等处理策略。<br>│</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs">              ▼<br>消费者收到消息<br></code></pre></td></tr></table></figure>
+
+<h1 id="常用消息场景"><a href="#常用消息场景" class="headerlink" title="常用消息场景"></a>常用消息场景</h1><h2 id="WrokQueue"><a href="#WrokQueue" class="headerlink" title="WrokQueue"></a>WrokQueue</h2><p>生产者生成的消息分发给多个消费者的消息</p>
+<figure class="highlight brainfuck"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs brainfuck"><span class="hljs-comment">P</span> <span class="hljs-literal">----</span>&gt;  <span class="hljs-comment">Queue</span>  <span class="hljs-literal">----</span>&gt; <span class="hljs-comment">Consumer1</span><br><span class="hljs-comment">								</span><span class="hljs-literal">----</span>&gt; <span class="hljs-comment">Consumer2</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="Consumer-对每个消息必须应答"><a href="#Consumer-对每个消息必须应答" class="headerlink" title="Consumer 对每个消息必须应答"></a>Consumer 对每个消息必须应答</h3><p>Consumer端每消费完要给消息，需要给服务端一个ack应答，这个应答可以是手动应答，也可以是自动应答。如果Consumer一直没有给服务端应答，那么服务端不断将这条消息进行投递，就会不断地消耗系统资源。</p>
+<h3 id="RabbitMQ并不完全保证消息安全"><a href="#RabbitMQ并不完全保证消息安全" class="headerlink" title="RabbitMQ并不完全保证消息安全"></a>RabbitMQ并不完全保证消息安全</h3><p>关键的message不能因为服务出现问题而被忽略。如果想要保证消息不丢失，在RabbitMQ中，需要同时将队列和消息的durable属性都设置成true。但是durable仍然不能完全保证消息不被丢失。RabbitMQ是定期将缓存写入到磁盘中，所以当出现异常时，缓存中的数据会丢失。</p>
+<h3 id="消息如何在多个Consumer之间分发"><a href="#消息如何在多个Consumer之间分发" class="headerlink" title="消息如何在多个Consumer之间分发"></a>消息如何在多个Consumer之间分发</h3><p>默认采用了fair dispatch 。即消息轮询，向消费者发送。</p>
+<h2 id="Publish-Subscribe-（发布-订阅）"><a href="#Publish-Subscribe-（发布-订阅）" class="headerlink" title="Publish&#x2F;Subscribe （发布&#x2F;订阅）"></a>Publish&#x2F;Subscribe （发布&#x2F;订阅）</h2><p>Producer 向交换器发布消息，交换器向所有消费者发送消息（指定Fanout队列）</p>
+<figure class="highlight clean"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs clean">P ----&gt; X ----&gt; amq.gen-RQ6 -&gt; C1<br>          ----&gt; amq.gen-As8 -&gt; C2<br>        <br></code></pre></td></tr></table></figure>
+
+<h2 id="Routing-基于内容的路由"><a href="#Routing-基于内容的路由" class="headerlink" title="Routing  基于内容的路由"></a>Routing  基于内容的路由</h2><p>通过 routingKey 来查询特定队列向其中发送消息</p>
+<figure class="highlight ada"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs ada">channel.baseicPublish(EXCHANGE_NAME, routingKey<span class="hljs-string">&quot;debug&quot;</span>, props : <span class="hljs-keyword"><span class="hljs-keyword">null</span></span>, <span class="hljs-type">message.getBytes</span>());<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight xl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs xl">P ----&gt; <span class="hljs-function"><span class="hljs-title">error</span> ----&gt;</span> <span class="hljs-function"><span class="hljs-title">amq</span>.gen-S9b -&gt;</span> C1<br>  ----&gt; <span class="hljs-function"><span class="hljs-title">info</span>  ----&gt;</span> <br>  ----&gt; <span class="hljs-function"><span class="hljs-title">warn</span>  ----&gt;</span> <span class="hljs-function"><span class="hljs-title">amq</span>.gen.Ag1 -&gt;</span> C2<br>  ----&gt; <span class="hljs-function"><span class="hljs-title">error</span> ----&gt;</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="Topics-基于话题的路由"><a href="#Topics-基于话题的路由" class="headerlink" title="Topics 基于话题的路由"></a>Topics 基于话题的路由</h2><p>routingKey 作为话题进行转发</p>
+<figure class="highlight jboss-cli"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs jboss-cli">P <span class="hljs-params">----</span>&gt; X <span class="hljs-params">----</span>&gt; *<span class="hljs-string">.orange.</span>* <span class="hljs-params">----</span>&gt; Q1 <span class="hljs-params">----</span>&gt; C1<br>          <span class="hljs-params">----</span>&gt; *.*<span class="hljs-string">.rabbit</span>  <br>                         <span class="hljs-params">----</span>&gt;Q2 <span class="hljs-params">----</span>&gt; C2<br>          <span class="hljs-params">----</span>&gt; lazy.<span class="hljs-comment">#  </span><br></code></pre></td></tr></table></figure>
+
+<h2 id="Headers-头部路由机制"><a href="#Headers-头部路由机制" class="headerlink" title="Headers 头部路由机制"></a>Headers 头部路由机制</h2><p>定制键值对，指定交换器类型为Headers。设置channel绑定的头部信息，通过匹配头部信息转发</p>
+<h2 id="Publisher-Confirms-发送者消息确认"><a href="#Publisher-Confirms-发送者消息确认" class="headerlink" title="Publisher Confirms 发送者消息确认"></a>Publisher Confirms 发送者消息确认</h2><p>通过阻塞等待接收发布消息的确认</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><code class="hljs java">channel.confirmSelect();<br><br><span class="hljs-comment">// 单条消息发布</span><br><span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span> ; i&lt; MESSAGE_COUNT;i++)&#123;<br>	<span class="hljs-type">String</span> <span class="hljs-variable">body</span> <span class="hljs-operator">=</span> String.value(i);<br>	channel.basicPublish(<span class="hljs-string">&quot;&quot;</span>,queue,<span class="hljs-literal">null</span>,body.getBytes());<br>	channel.waitForConfirmsOrDie(<span class="hljs-number">5_000</span>);<br>&#125;<br><br><span class="hljs-comment">// 批量消息发布</span><br><br><span class="hljs-type">int</span> <span class="hljs-variable">batchSize</span> <span class="hljs-operator">=</span> <span class="hljs-number">100</span> ;<br><span class="hljs-type">int</span> <span class="hljs-variable">outstandingMessageCount</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span> ;<br><span class="hljs-type">long</span> <span class="hljs-variable">start</span> <span class="hljs-operator">=</span> System.nonoTime();<br><span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span> ; i &lt; MESSAGE_COUNT ; i++ )&#123;<br>	<span class="hljs-type">String</span> <span class="hljs-variable">body</span> <span class="hljs-operator">=</span> String.valueOf(i);<br>	ch.basicPublish(<span class="hljs-string">&quot;&quot;</span>, queue, <span class="hljs-literal">null</span> , body.getBytes());<br>	outstandingMessageCount++ ;<br><br>	<span class="hljs-keyword">if</span>(outstandingMessageCount == batchSize)&#123;<br>		ch.waitForConfirmsOrDie(<span class="hljs-number">5_000</span>);<br>		outstandingMessageCount = <span class="hljs-number">0</span> ;<br>	&#125;<br>&#125;<br><br><span class="hljs-keyword">if</span>(outstandingMessageCount &gt; <span class="hljs-number">0</span>)&#123;<br>	ch.waitForConFirmsOrDie(<span class="hljs-number">5_000</span>);<br>&#125;<br><br><span class="hljs-comment">// 异步确认</span><br><br>channel.addConfirmListener(ConfirmCallback var1 , ConfirmCallback var2);<br></code></pre></td></tr></table></figure>
+
+<h1 id="队列结构"><a href="#队列结构" class="headerlink" title="队列结构"></a>队列结构</h1><h2 id="Classic-结构队列"><a href="#Classic-结构队列" class="headerlink" title="Classic 结构队列"></a>Classic 结构队列</h2><p>FIFO队列的简单实现。如果持久化置位为true，则将消息存储进磁盘，如果持久化置位为false，则将消息加入缓存中</p>
+<h2 id="Quorum-仲裁队列"><a href="#Quorum-仲裁队列" class="headerlink" title="Quorum 仲裁队列"></a>Quorum 仲裁队列</h2><p>数据一定会持久化，不能自动删除，提高数据的安全性</p>
+<p>不适合的场景</p>
+<ol>
+<li>一些临时使用的队列：比如transient临时队列，exclusive独占队列，或者经常会修改和删除的队列</li>
+<li>对消息低延迟要求高，一致性算法会影响消息的延迟</li>
+<li>对数据安全性要求不高: Quorum队列需要消费者手动通知或者生产者手动确认</li>
+<li>队列消息积压严重</li>
+</ol>
+<h2 id="Stream流式队列"><a href="#Stream流式队列" class="headerlink" title="Stream流式队列"></a>Stream流式队列</h2><p>一个基于<strong>日志模型</strong>的新型队列实现，支持 Kafka 式的顺序流、高并发、可回溯消费，同时保留 RabbitMQ 的灵活路由机制。</p>
+<p>类似于 Kafka 的 Topic，每个 Stream 是一个 <strong>可追加的持久化日志序列</strong></p>
+<p>消息写入后按序编号，消费者使用 offset 拉取</p>
+<p>Stream 可以配置为多分区，便于水平扩展和并行消费</p>
+<p>每个分区就是一个<strong>独立的顺序日志</strong></p>
+<p>每条消息有全局唯一的 offset</p>
+<p>消费者可指定 offset（earliest&#x2F;latest&#x2F;指定位置）启动</p>
+<p>支持消费组状态保存（需要启用 Broker-side offset tracking）</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs java">params.put(<span class="hljs-string">&quot;x-queue-type&quot;</span>,<span class="hljs-string">&quot;stream&quot;</span>);<br>params.put(<span class="hljs-string">&quot;x-max-length-bytes&quot;</span>,<span class="hljs-number">20_000_000_000L</span>);<br>params.put(<span class="hljs-string">&quot;x-stream-max-segment-size-bytes&quot;</span>,<span class="hljs-number">100_000_000</span>);<br>channel.queueDeclare(QUEUE_NAME,<span class="hljs-literal">true</span>,<span class="hljs-literal">false</span>,<span class="hljs-literal">false</span>,params);       <br></code></pre></td></tr></table></figure>
+
+<h2 id="死信队列"><a href="#死信队列" class="headerlink" title="死信队列"></a>死信队列</h2><p>用于接收其他队列中未能正常消费的消息的队列</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs java">x-dead-letter-exchange:mirror.dlExchange  对应的死信交换机<br>x-dead-letter-routing-key: mirror.messageExchange1.messageQueue1 死信交换机routing-key<br>x-message-ttl: <span class="hljs-number">3000</span> 消息过期时间<br>durable: <span class="hljs-literal">true</span>  持久化<br></code></pre></td></tr></table></figure>
+
+<h3 id="何时会产生死信"><a href="#何时会产生死信" class="headerlink" title="何时会产生死信"></a>何时会产生死信</h3><ol>
+<li>消息被消费者确认拒绝，消费者把requeue参数设置为ture,并且在消费后，向RabbitMQ返回拒绝</li>
+<li>消息达到预设的TTL时限还一直没有被消费</li>
+<li>消息由于队列已经达到最长长度限制而被丢掉</li>
+</ol>
+<h2 id="Sharding-插件"><a href="#Sharding-插件" class="headerlink" title="Sharding 插件"></a>Sharding 插件</h2><p>通过分队列的方式提高消息的吞吐量</p>
+<p><img src="attachment:71667905-c075-4e31-a47f-b28672e8bb6d:image.png" srcset="/img/loading.gif" lazyload alt="image.png"></p>
+<p>设置sharding 策略</p>
+<p><img src="attachment:73d150c3-6803-4b2f-a05f-e5f0b878990e:image.png" srcset="/img/loading.gif" lazyload alt="image.png"></p>
+<p>定义交换机</p>
+<p><img src="attachment:aa855286-93d5-4392-aaaf-c1ca12ac8a09:image.png" srcset="/img/loading.gif" lazyload alt="image.png"></p>
+<p>最终会绑定3个虚拟队列</p>
+<p>在消费端绑定虚拟交换机</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span>  <span class="hljs-keyword">class</span> <span class="hljs-title class_">ShardingConsumer</span> &#123;<br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> String QUEUENAME= <span class="hljs-string">&quot;sharding_exchange&quot;</span>; <br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> <span class="hljs-keyword">throws</span> IOException, TimeoutException&#123;<br>		<span class="hljs-type">ConnectionFactory</span> <span class="hljs-variable">factory</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ConnectionFactory</span>();<br>		factory.setHost(<span class="hljs-string">&quot;192.168.65.193&quot;</span>);<br>		factory.setPort(<span class="hljs-number">5672</span>);<br>		factory.setUsername(<span class="hljs-string">&quot;admin&quot;</span>);<br>		factory.setPassword(<span class="hljs-string">&quot;admin&quot;</span>);<br>		factory.setVirtualHost(<span class="hljs-string">&quot;/mirror&quot;</span>);<br>		<span class="hljs-type">Connection</span> <span class="hljs-variable">connection</span> <span class="hljs-operator">=</span> factory.newConnection();<br>		<span class="hljs-type">Channel</span> <span class="hljs-variable">channel</span> <span class="hljs-operator">=</span> connection.createChannel();<br>	<br>		channel.queueDeclare(QUEUENAME,<span class="hljs-literal">false</span> ,<span class="hljs-literal">false</span>,<span class="hljs-literal">false</span>,<span class="hljs-literal">null</span>);<br>	<br>		<span class="hljs-type">Consumer</span> <span class="hljs-variable">myconsumer</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">DefaultConsumer</span>(channel)&#123;<br>			<span class="hljs-meta">@Override</span> <br>			<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">handleDelivery</span><span class="hljs-params">(String consumerTag, Envelope envelope,AMQP.BasicProperties </span><br><span class="hljs-params">			                           properties, <span class="hljs-type">byte</span>[] body)</span> <span class="hljs-keyword">throws</span> IOException&#123;<br>					<span class="hljs-type">String</span> <span class="hljs-variable">routingKey</span> <span class="hljs-operator">=</span> envelope.getRoutingKey();<br>					System.out.println(<span class="hljs-string">&quot;routingKey &gt;&quot;</span> + routingKey);<br>					<span class="hljs-type">String</span> <span class="hljs-variable">contentType</span> <span class="hljs-operator">=</span> properties.getContentType();<br>					System.out.println(<span class="hljs-string">&quot;contentType &gt;&quot;</span> + contentType);<br>			    <span class="hljs-type">long</span> <span class="hljs-variable">deliveryTag</span> <span class="hljs-operator">=</span> envelope.getDeliveryTag();<br>			    System.out.println(<span class="hljs-string">&quot;deliveryTag &gt;&quot;</span> + deliveryTag);<br>			    System.out.println(<span class="hljs-string">&quot;content:&quot;</span> + <span class="hljs-keyword">new</span> <span class="hljs-title class_">String</span>(body,<span class="hljs-string">&quot;UTF-8&quot;</span>));                    <br>			&#125;<br>		&#125;;<br>		<span class="hljs-comment">// 需要进行3次接收 队列的分发。</span><br>		<span class="hljs-type">String</span> <span class="hljs-variable">consumerFlag1</span> <span class="hljs-operator">=</span> channel.basicConsume(QUEUENAME,<span class="hljs-literal">true</span> , myconsumer);<br>		System.out.println(<span class="hljs-string">&quot;c1:&quot;</span> + consumerFlag1);<br>		<span class="hljs-type">String</span> <span class="hljs-variable">consumerFlag2</span> <span class="hljs-operator">=</span> channel.basicConsume(QUEUENAME,<span class="hljs-literal">true</span>, myconsumer);<br>		System.out.println(<span class="hljs-string">&quot;c2:&quot;</span> + consumerFlag2);<br>		<span class="hljs-type">String</span> <span class="hljs-variable">consumerFlag3</span> <span class="hljs-operator">=</span> channel.basicConsume(QUEUENAME,<span class="hljs-literal">true</span>, myconsumer);<br>		System.out.println(<span class="hljs-string">&quot;c3:&quot;</span> + consumerFlag3);<br>	&#125;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<p>使用Sharding后，因为只需要指定虚拟的Exchange，并不能确定消息最终会发送到哪条队列。虽然策略是均匀保存测率，但是不能完全保证均匀。</p>
+<p>所以适用于消息延迟要求不严格，以及对消费顺序没有任何要求的场景。</p>
+<p>另外尽量不要使用碎片队列接收，会导致队列的消息分配会受到影响。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/" class="category-chain-item">消息队列</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E7%BD%91%E7%BB%9C%E6%8A%80%E6%9C%AF/" class="print-no-link">#网络技术</a>
+      
+        <a href="/tags/%E4%B8%AD%E9%97%B4%E4%BB%B6/" class="print-no-link">#中间件</a>
+      
+        <a href="/tags/RabbitMQ/" class="print-no-link">#RabbitMQ</a>
+      
+        <a href="/tags/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/" class="print-no-link">#消息队列</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>消息队列 RabbitMQ</div>
+      <div>http://gadoid.io/2025/05/22/消息队列-RabbitMQ/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Codfish</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年5月22日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/05/19/Nginx-%E5%BA%94%E7%94%A8/" title="Nginx 应用">
+                        <span class="hidden-mobile">Nginx 应用</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"lQzCvqmOtewLtpMfvfxKLomU-MdYXbMMI","appKey":"daMNlw5XcjN8TelT6GCHh8RF","path":"window.location.pathname","placeholder":"让灵感在这里发生","avatar":"monsterid","meta":["nick","mail"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":true,"recordIP":true,"serverURLs":"https://lQzCvqmO.api.lncldglobal.com","emojiCDN":null,"emojiMaps":null,"enableQQ":false,"enable":true,"visitor":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      &copy; 2025 - 2025 <a target="_blank" rel="noopener" href="https://github.com/username">CODFISH</a>
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+<!-- hexo injector body_end start --><script src="/js/chatbot-loader.js" defer></script><!-- hexo injector body_end end --></body>
+</html>
