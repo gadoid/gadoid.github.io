@@ -1,0 +1,806 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/bg/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Codfish">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="大模型的交互过程 这是一个简单的提问-响应过程。为了解决模型的“幻觉问题”，可以通过多种方式向模型添加有用的信息来增加模型响应结果的可信度  1 . 多轮对话，通过多次提问过程，更加精确的描述用户的实际需求。如Agent 2 . 客户端代理对用户请求进行扩展，最终请求 携带 代理描述信息+原用户请求，向大模型发起请求。如RAG，MCP 3 .  模型端 功能扩展，模型端使用本地工具（一般是一些方法">
+<meta property="og:type" content="article">
+<meta property="og:title" content="大模型应用与扩展-Function Calling与MCP">
+<meta property="og:url" content="http://gadoid.io/2025/06/17/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%BA%94%E7%94%A8%E4%B8%8E%E6%89%A9%E5%B1%95-Function-Calling%E4%B8%8EMCP/index.html">
+<meta property="og:site_name" content="西北有高楼">
+<meta property="og:description" content="大模型的交互过程 这是一个简单的提问-响应过程。为了解决模型的“幻觉问题”，可以通过多种方式向模型添加有用的信息来增加模型响应结果的可信度  1 . 多轮对话，通过多次提问过程，更加精确的描述用户的实际需求。如Agent 2 . 客户端代理对用户请求进行扩展，最终请求 携带 代理描述信息+原用户请求，向大模型发起请求。如RAG，MCP 3 .  模型端 功能扩展，模型端使用本地工具（一般是一些方法">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://i.111666.best/image/hjqMibXRb6nLoE2xBo8Fl4.png">
+<meta property="og:image" content="https://i.111666.best/image/6VLSvOsKt8bxRff2qJshwn.png">
+<meta property="og:image" content="https://i.111666.best/image/WBijY3IgkcE7NG9DlwZBCn.png">
+<meta property="og:image" content="https://i.111666.best/image/cn2lJMH4EBYTymbHhAfP0d.png">
+<meta property="og:image" content="https://i.111666.best/image/Dv1czsRCD9fgyWhAErmFy8.png">
+<meta property="article:published_time" content="2025-06-17T08:30:25.000Z">
+<meta property="article:modified_time" content="2025-06-17T08:35:20.454Z">
+<meta property="article:author" content="Codfish">
+<meta property="article:tag" content="大模型">
+<meta property="article:tag" content="AI">
+<meta property="article:tag" content="MCP">
+<meta property="article:tag" content="Function Calling">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://i.111666.best/image/hjqMibXRb6nLoE2xBo8Fl4.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>大模型应用与扩展-Function Calling与MCP - 西北有高楼</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"gadoid.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>西北有高楼</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/downloads/" target="_self">
+                <i class="iconfont icon-books-fill"></i>
+                <span>资源下载</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/bg/img/ice.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="大模型应用与扩展-Function Calling与MCP"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-06-17 16:30" pubdate>
+          2025年6月17日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.9k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          33 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">大模型应用与扩展-Function Calling与MCP</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="大模型的交互过程"><a href="#大模型的交互过程" class="headerlink" title="大模型的交互过程"></a><strong>大模型的交互过程</strong></h1><p><img src="https://i.111666.best/image/hjqMibXRb6nLoE2xBo8Fl4.png" srcset="/img/loading.gif" lazyload alt="处理过程.png"></p>
+<p>这是一个简单的提问-响应过程。为了解决模型的“幻觉问题”，可以通过多种方式向模型添加有用的信息来增加模型响应结果的可信度</p>
+<p><img src="https://i.111666.best/image/6VLSvOsKt8bxRff2qJshwn.png" srcset="/img/loading.gif" lazyload alt="扩展处理.png"></p>
+<p>1 . 多轮对话，通过多次提问过程，更加精确的描述用户的实际需求。如Agent</p>
+<p>2 . 客户端代理对用户请求进行扩展，最终请求 携带 代理描述信息+原用户请求，向大模型发起请求。如RAG，MCP</p>
+<p>3 .  模型端 功能扩展，模型端使用本地工具（一般是一些方法调用）来自行获取扩展信息，增强相应质量。如Function Calling</p>
+<p>综上，在从流程上，大模型的扩展会有本地端的功能增强，服务端功能增强两种方式。从内容上，则分为 调用 &#x2F; 内容 两种。</p>
+<h1 id="Function与MCP"><a href="#Function与MCP" class="headerlink" title="Function与MCP"></a>Function与MCP</h1><p>我们知道 ，只有每一次请求的发起都会被正确转化为对特定功能的调用，这时AI 所能提供的服务才可以作为稳定系统的一部分。在这个角度，大模型能否根据用户请求，进行稳定的参数调用响应。成为大模型能否参与到业务流程中的重要要求。</p>
+<p><img src="https://i.111666.best/image/WBijY3IgkcE7NG9DlwZBCn.png" srcset="/img/loading.gif" lazyload alt="MCP&amp;FunctionCall.png"></p>
+<h1 id="Function-Calling"><a href="#Function-Calling" class="headerlink" title="Function Calling"></a>Function Calling</h1><p>Function Calling 是 openai提供的一种序列化请求&#x2F;响应的方式。通过向大模型发起结构化的调用请求，模型会分析请求内容，并响应对应的函数以及参数调用。</p>
+<h2 id="MCP"><a href="#MCP" class="headerlink" title="MCP"></a>MCP</h2><p>MCP(Model Context Protocol) 模型上下文协议。它是一种与模型的通信方式。其定义了MCP Client 和MCP Sever 两种角色。也可以将MCP理解为一个位于本地的中间过程代理。通过接收用户向模型发起的请求，之后查询本地支持的API字段，组装后向大模型发起请求，大模型接收后分析用户请求以及其中定义的tools信息。响应一个方法调用请求（function call 在这个步骤被执行）给MCP server. MCP server 接收后。根据调用请求在本地执行对应的方法，获取返回信息，再传递给大模型处理。大模型处理后，整理结果向用户返回。</p>
+<p><img src="https://i.111666.best/image/cn2lJMH4EBYTymbHhAfP0d.png" srcset="/img/loading.gif" lazyload alt="mcp处理过程.png"></p>
+<h1 id="MCP-实现"><a href="#MCP-实现" class="headerlink" title="MCP 实现"></a>MCP 实现</h1><h2 id="客户端"><a href="#客户端" class="headerlink" title="客户端"></a>客户端</h2><p>MCP 架构 定义了 3个过程角色 ：</p>
+<ol>
+<li>MCP HOST :  主要负责与用户进行交互。接收用户发出的消息请求</li>
+<li>MCP Client :  组织message，构造发送给模型的请求。一般将MCP HOST 包含在客户端内</li>
+<li>MCP Server :  维护本地的方法调用列表，处理接收到的模型功能调用，将处理后的消息和用户消息再一次发送给大模型</li>
+</ol>
+<p>一个标准的大模型HTTP请求（基于qwen3）类似于：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;model&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;qwen3-8b&quot;</span><span class="hljs-punctuation">,</span>  <span class="hljs-comment">//  指定模型名称</span><br>    <span class="hljs-attr">&quot;input&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span>     <span class="hljs-comment">// 传入的消息</span><br>        <span class="hljs-attr">&quot;messages&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span>   <span class="hljs-comment">// 传入的消息内容</span><br>            <span class="hljs-punctuation">&#123;</span><br>                <span class="hljs-attr">&quot;role&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;system&quot;</span><span class="hljs-punctuation">,</span>   <span class="hljs-comment">// 定义消息的角色，系统prompt</span><br>                <span class="hljs-attr">&quot;content&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span>   <br>                    <span class="hljs-punctuation">&#123;</span><br>                        <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;text&quot;</span><span class="hljs-punctuation">,</span>  <span class="hljs-comment">// 定义消息类型</span><br>                        <span class="hljs-attr">&quot;text&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;你是一个助手，你需要根据用户的输入进行回答。用户的输入中包含它所能提供的调用功能，如果你觉得执行某个功能，会帮助得到更 好的结果，请向用户返回对应的json请求&quot;</span>  <span class="hljs-comment">// 具体的文本信息</span><br>                    <span class="hljs-punctuation">&#125;</span><br>                <span class="hljs-punctuation">]</span><br>            <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>                <span class="hljs-attr">&quot;role&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;user&quot;</span><span class="hljs-punctuation">,</span>      <span class="hljs-comment">// 消息角色，一般是用户请求</span><br>                <span class="hljs-attr">&quot;content&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>                    <span class="hljs-punctuation">&#123;</span><br>                        <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;text&quot;</span><span class="hljs-punctuation">,</span>   <span class="hljs-comment">// 消息类型 </span><br>                        <span class="hljs-attr">&quot;text&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;我想执行test&quot;</span>  <span class="hljs-comment">// 用户角色</span><br>                    <span class="hljs-punctuation">&#125;</span><br>                <span class="hljs-punctuation">]</span><br>            <span class="hljs-punctuation">&#125;</span><br>        <span class="hljs-punctuation">]</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;parameters&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;temperature&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">0.7</span><span class="hljs-punctuation">,</span>   <span class="hljs-comment">// 温度，-&gt;0 表示生成的内容更发散， -&gt;1 表示生成的内容更稳定</span><br>        <span class="hljs-attr">&quot;top_p&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">0.8</span><span class="hljs-punctuation">,</span>  <span class="hljs-comment">// 表示相关度 </span><br>        <span class="hljs-attr">&quot;result_format&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;message&quot;</span><span class="hljs-punctuation">,</span>  <span class="hljs-comment">// 响应的信息格式</span><br>        <span class="hljs-attr">&quot;enable_thinking&quot;</span><span class="hljs-punctuation">:</span> False  <span class="hljs-comment">// qwen特有参数</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;tools&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span>  <span class="hljs-comment">// 本地的工具声明</span><br>        <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;function&quot;</span><span class="hljs-punctuation">,</span>   <span class="hljs-comment">// 类型指定为function,声明为一个可执行函数的信息</span><br>            <span class="hljs-attr">&quot;function&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span>           <br>                <span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;test&quot;</span><span class="hljs-punctuation">,</span>   <span class="hljs-comment">// 函数名</span><br>                <span class="hljs-attr">&quot;description&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;调用test功能&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-comment">// 对函数功能的描述</span><br>                <span class="hljs-attr">&quot;parameters&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span>  <span class="hljs-comment">// 参数描述</span><br>                    <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;object&quot;</span><span class="hljs-punctuation">,</span>  <br>                    <span class="hljs-attr">&quot;properties&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>                        <span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>                            <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;string&quot;</span><span class="hljs-punctuation">,</span><br>                            <span class="hljs-attr">&quot;description&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;name参数&quot;</span><br>                        <span class="hljs-punctuation">&#125;</span><br>                    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>                    <span class="hljs-attr">&quot;required&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>                        <span class="hljs-string">&quot;name&quot;</span>  <span class="hljs-comment">// 要求的参数信息</span><br>                    <span class="hljs-punctuation">]</span><br>                <span class="hljs-punctuation">&#125;</span><br>            <span class="hljs-punctuation">&#125;</span><br>        <span class="hljs-punctuation">&#125;</span><br>    <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;tool_choice&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;auto&quot;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p>qwen3 支持的 role 角色定义 （经过测试目前 tool_call的Function Calling 机制仍未能正确识别）</p>
+<table>
+<thead>
+<tr>
+<th>role 值</th>
+<th>含义说明</th>
+<th>示例场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>system</code></td>
+<td>设置系统行为和角色，引导模型回答风格或身份</td>
+<td>“你是一个有耐心的英语老师”</td>
+</tr>
+<tr>
+<td><code>user</code></td>
+<td>用户输入，用于发起请求或提问</td>
+<td>“请告诉我北京今天的天气”</td>
+</tr>
+<tr>
+<td><code>assistant</code></td>
+<td>模型生成的回答内容</td>
+<td>自动由模型生成返回消息</td>
+</tr>
+<tr>
+<td><code>tool_call</code></td>
+<td>（可选）表示模型请求调用某个工具（函数）</td>
+<td>用于 Function Calling 机制</td>
+</tr>
+<tr>
+<td><code>tool_response</code></td>
+<td>（可选）表示工具调用的响应结果，传给模型继续生成</td>
+<td>工具调用返回值的嵌入，例如天气数据</td>
+</tr>
+</tbody></table>
+<p>首先定义了一个MCPmessage的 结构，在后续的传递过程中通过创建MCPmessage对象来完成用户，响应消息的插入</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">class</span> <span class="hljs-title class_">MCPmessage</span>:<br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self,role,<span class="hljs-built_in">type</span>,message</span>):<br>        <span class="hljs-variable language_">self</span>.data = &#123;<br>            <span class="hljs-string">&quot;role&quot;</span>:role,<br>            <span class="hljs-string">&quot;content&quot;</span>:[&#123;<br>                <span class="hljs-string">&quot;type&quot;</span>:<span class="hljs-built_in">type</span>,<br>                <span class="hljs-built_in">type</span>:message<br>            &#125;]<br>        &#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="客户端实现"><a href="#客户端实现" class="headerlink" title="客户端实现"></a>客户端实现</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">class</span> <span class="hljs-title class_">LLMClient</span>:<br>    <span class="hljs-string">&quot;&quot;&quot;大模型客户端&quot;&quot;&quot;</span><br>  <br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self</span>):<br>        <span class="hljs-variable language_">self</span>.api_key = <span class="hljs-string">&quot;your-api-key&quot;</span><br>        <span class="hljs-variable language_">self</span>.base_url = <span class="hljs-string">&quot;&lt;https://dashscope.aliyuncs.com/api/v1&gt;&quot;</span><br>        <span class="hljs-variable language_">self</span>.model = <span class="hljs-string">&quot;qwen-8b&quot;</span><br>  <br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">configure</span>(<span class="hljs-params">self, api_key: <span class="hljs-built_in">str</span>, base_url: <span class="hljs-built_in">str</span> = <span class="hljs-literal">None</span>, model: <span class="hljs-built_in">str</span> = <span class="hljs-literal">None</span></span>):<br>        <span class="hljs-string">&quot;&quot;&quot;配置大模型参数&quot;&quot;&quot;</span><br>        <span class="hljs-variable language_">self</span>.api_key = api_key<br>        <span class="hljs-keyword">if</span> base_url:<br>            <span class="hljs-variable language_">self</span>.base_url = base_url<br>        <span class="hljs-keyword">if</span> model:<br>            <span class="hljs-variable language_">self</span>.model = model<br>  <br>    <span class="hljs-keyword">async</span> <span class="hljs-keyword">def</span> <span class="hljs-title function_">chat_completion</span>(<span class="hljs-params">self, messages, tools</span>) :<br>        <span class="hljs-string">&quot;&quot;&quot;调用大模型进行对话&quot;&quot;&quot;</span><br>        <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> <span class="hljs-variable language_">self</span>.api_key:<br>            <span class="hljs-keyword">return</span> &#123;<span class="hljs-string">&quot;error&quot;</span>: <span class="hljs-string">&quot;API Key未配置&quot;</span>&#125;<br>        messages.insert(<span class="hljs-number">0</span>,&#123;<br>                        <span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;system&quot;</span>,<br>                        <span class="hljs-string">&quot;content&quot;</span>: [<br>                            &#123;<br>                                <span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;text&quot;</span>,<br>                                <span class="hljs-string">&quot;text&quot;</span>: <span class="hljs-string">&quot;你是一个助手，你需要根据用户的输入进行回答。用户的输入中包含它所能提供的调用功能，如果你觉得执行某个功能，会帮助得到更好的结果，请向用户返回对应的json请求,你可以调用如下功能，如果发现“执行test”等关键词，请调用 execute_test，并传入 name=\\&quot;</span>test\\<span class="hljs-string">&quot;&quot;</span>,<br>                            &#125;<br>                        ],<br>                    &#125;)<br><br>        headers = &#123;<br>            <span class="hljs-string">&quot;Authorization&quot;</span>: <span class="hljs-string">f&quot;Bearer <span class="hljs-subst">&#123;self.api_key&#125;</span>&quot;</span>,<br>            <span class="hljs-string">&quot;Content-Type&quot;</span>: <span class="hljs-string">&quot;application/json&quot;</span><br>        &#125;<br>      <br>        payload = &#123;<br>            <span class="hljs-string">&quot;model&quot;</span>: <span class="hljs-variable language_">self</span>.model,<br>            <span class="hljs-string">&quot;input&quot;</span> : &#123;<br>                <span class="hljs-string">&quot;messages&quot;</span>: messages<br>            &#125;,<br>            <span class="hljs-string">&quot;parameters&quot;</span>: &#123;<br>                <span class="hljs-string">&quot;temperature&quot;</span>: <span class="hljs-number">0.7</span>,<br>                <span class="hljs-string">&quot;top_p&quot;</span>: <span class="hljs-number">0.8</span>,<br>                <span class="hljs-string">&quot;result_format&quot;</span>: <span class="hljs-string">&quot;tool_call&quot;</span>,<br>                <span class="hljs-string">&quot;enable_thinking&quot;</span>: <span class="hljs-literal">False</span>,<br>            &#125;,<br>            <span class="hljs-string">&quot;tools&quot;</span>: tools,<br>            <span class="hljs-string">&quot;tool_choice&quot;</span>: <span class="hljs-string">&quot;auto&quot;</span><br>        &#125;<br>        <span class="hljs-keyword">if</span> tools:<br>            payload[<span class="hljs-string">&quot;tools&quot;</span>] = tools<br>            payload[<span class="hljs-string">&quot;tool_choice&quot;</span>] = <span class="hljs-string">&quot;auto&quot;</span><br>        <span class="hljs-keyword">try</span>:<br>            <span class="hljs-built_in">print</span>(payload)<br>            response = requests.post(<br>                <span class="hljs-string">f&quot;<span class="hljs-subst">&#123;self.base_url&#125;</span>/services/aigc/text-generation/generation&quot;</span>,<br>                headers=headers,<br>                json=payload,<br>                timeout=<span class="hljs-number">30</span><br>            )<br>            response.raise_for_status()<br>            <span class="hljs-keyword">return</span> response.json()<br>        <span class="hljs-keyword">except</span> requests.exceptions.RequestException <span class="hljs-keyword">as</span> e:<br>            <span class="hljs-keyword">return</span> &#123;<span class="hljs-string">&quot;error&quot;</span>: <span class="hljs-string">f&quot;大模型调用失败: <span class="hljs-subst">&#123;<span class="hljs-built_in">str</span>(e)&#125;</span>&quot;</span>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<h2 id="MCP-服务器"><a href="#MCP-服务器" class="headerlink" title="MCP 服务器"></a>MCP 服务器</h2><p>MCP 服务器主要负责 本地的功能管理，以及中间过程方法调用的功能处理。</p>
+<p>即当 用户发起的请求信息 得到模型响应了一个调用传递后，会根据传递的JSON请求，解析识别到对应的函数进行执行，并将结果与用户原请求一起返回给大模型由大模型继续处理。</p>
+<p>从这里我们可以看出来，大模型本身并不保存会话记录。所谓的”会话“ 实际上是每一次请求都携带了之前请求的全部token内容，由大模型依据所有内容再进行生成。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">class</span> <span class="hljs-title class_">McpServer</span> :<br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self</span>):<br>        <span class="hljs-variable language_">self</span>.llmclient = LLMClient()<br>        <span class="hljs-variable language_">self</span>.conversation_history = []<br>        <span class="hljs-variable language_">self</span>.session_id = <span class="hljs-built_in">str</span>(uuid.uuid4())<br>        <span class="hljs-variable language_">self</span>.api_registry = &#123;&#125;<br><br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">convert_functions_to_tools</span>(<span class="hljs-params">self</span>):<br>        <span class="hljs-string">&quot;&quot;&quot;将函数注册表转换为API工具格式&quot;&quot;&quot;</span><br>        tools = []<br>        <span class="hljs-keyword">for</span> name, func_struct <span class="hljs-keyword">in</span> <span class="hljs-variable language_">self</span>.api_registry.items():<br>            tool = &#123;<br>                <span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;function&quot;</span>,<br>                <span class="hljs-string">&quot;function&quot;</span>: &#123;<br>                    <span class="hljs-string">&quot;name&quot;</span>: name,<br>                    <span class="hljs-string">&quot;description&quot;</span>: <span class="hljs-string">f&quot;调用<span class="hljs-subst">&#123;name&#125;</span>功能&quot;</span>,<br>                    <span class="hljs-string">&quot;parameters&quot;</span>: &#123;<br>                        <span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;object&quot;</span>,<br>                        <span class="hljs-string">&quot;properties&quot;</span>: &#123;&#125;,<br>                        <span class="hljs-string">&quot;required&quot;</span>: func_struct.parameters_list<br>                    &#125;<br>                &#125;<br>            &#125;<br>            <span class="hljs-comment"># 为每个参数添加属性定义</span><br>            <span class="hljs-keyword">for</span> param <span class="hljs-keyword">in</span> func_struct.parameters_list:<br>                tool[<span class="hljs-string">&quot;function&quot;</span>][<span class="hljs-string">&quot;parameters&quot;</span>][<span class="hljs-string">&quot;properties&quot;</span>][param] = &#123;<br>                    <span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>,<br>                    <span class="hljs-string">&quot;description&quot;</span>: <span class="hljs-string">f&quot;<span class="hljs-subst">&#123;param&#125;</span>参数&quot;</span><br>                &#125;<br>            tools.append(tool)<br>        <span class="hljs-keyword">return</span> tools<br><br>    <span class="hljs-keyword">async</span> <span class="hljs-keyword">def</span> <span class="hljs-title function_">process_message</span>(<span class="hljs-params">self,user_message</span>) :<br>		    <span class="hljs-string">&quot;&quot;&quot;对请求预处理，并向大模型发送请求&quot;&quot;&quot;</span><br>        message = MCPmessage(role=<span class="hljs-string">&quot;user&quot;</span>, <span class="hljs-built_in">type</span>=<span class="hljs-string">&quot;text&quot;</span>, message=user_message)<br>        <span class="hljs-variable language_">self</span>.conversation_history.append(message.data)<br>        <span class="hljs-variable language_">self</span>.messages = []<br>        <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-variable language_">self</span>.conversation_history[-<span class="hljs-number">3</span>:]:<br>            <span class="hljs-variable language_">self</span>.messages.append(i) <br>        tools=<span class="hljs-variable language_">self</span>.convert_functions_to_tools()<br>        response = <span class="hljs-keyword">await</span> <span class="hljs-variable language_">self</span>.llmrequest(<span class="hljs-variable language_">self</span>.messages,tools)  <br><br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">search_parameter</span>(<span class="hljs-params">self, message</span>):<br>		    <span class="hljs-string">&quot;&quot;&quot;因为目前qwen3 对于function calling 的 tool_call 字段响应不够稳定，</span><br><span class="hljs-string">		    通过一个解析方法来获取方法名和参数信息&quot;&quot;&quot;</span><br>        start, end = -<span class="hljs-number">1</span>, -<span class="hljs-number">1</span><br>        <span class="hljs-keyword">for</span> i, char <span class="hljs-keyword">in</span> <span class="hljs-built_in">enumerate</span>(message):  <span class="hljs-comment"># 修复：正确遍历字符</span><br>            <span class="hljs-keyword">if</span> char == <span class="hljs-string">&quot;\\&quot;</span><span class="hljs-string">&quot;:</span><br><span class="hljs-string">                if start == -1:</span><br><span class="hljs-string">                    start = i + 1  # 跳过引号本身</span><br><span class="hljs-string">                else:</span><br><span class="hljs-string">                    end = i</span><br><span class="hljs-string">                    break</span><br><span class="hljs-string">      </span><br><span class="hljs-string">        if start != -1 and end != -1:</span><br><span class="hljs-string">            return message[start:end]</span><br><span class="hljs-string">        return &quot;</span><span class="hljs-string">&quot;</span><br><span class="hljs-string">    async def llmrequest(self,messages,tools):</span><br><span class="hljs-string">		    &quot;</span><span class="hljs-string">&quot;&quot;</span>用户请求-&gt;模型调用响应-&gt;本地方法执行-&gt;结果回传-&gt;模型响应处理流程<span class="hljs-string">&quot;&quot;&quot;</span><br><span class="hljs-string">        response = await self.llmclient.chat_completion(messages,tools)</span><br><span class="hljs-string">        # 获取用户的请求的响应信息</span><br><span class="hljs-string">        try :</span><br><span class="hljs-string">            FunctionCallMessage = response[&quot;output&quot;][&quot;choices&quot;][0][&quot;message&quot;][&quot;content&quot;]</span><br><span class="hljs-string">            # 检查响应的内容</span><br><span class="hljs-string">            if &quot;action&quot; in FunctionCallMessage:</span><br><span class="hljs-string">            # 当前无法稳定返回 &quot;tool_call&quot;。 先通过 检索实现 方法调用</span><br><span class="hljs-string">                function_name = self.search_parameter(FunctionCallMessage.split(&quot;\\&quot;action\\&quot;&quot;)[1])</span><br><span class="hljs-string">                # 使用检索函数获取待执行函数名</span><br><span class="hljs-string">                if function_name in self.api_registry.keys():</span><br><span class="hljs-string">                # 查询维护的方法列表中是否存在对应的方法</span><br><span class="hljs-string">                    target_function = self.api_registry[function_name]</span><br><span class="hljs-string">                    # 查询到对应的对象</span><br><span class="hljs-string">                    parameters_list = []</span><br><span class="hljs-string">                    for i  in target_function.parameters_list:</span><br><span class="hljs-string">                        if i in FunctionCallMessage: </span><br><span class="hljs-string">                            parameters_list.append(self.search_parameter(FunctionCallMessage.split(i)[-1]))</span><br><span class="hljs-string">						                # 从响应结果中提取方法</span><br><span class="hljs-string">                self.api_registry[function_name].function(parameters_list)</span><br><span class="hljs-string">                # 执行函数调用</span><br><span class="hljs-string">                response = requests.post(self.api_registry[function_name].url)</span><br><span class="hljs-string">                # 如果是一个接口请求，则可以使用requests向接口发出请求</span><br><span class="hljs-string">                self.conversation_history.append(MCPmessage(&quot;function&quot;,&quot;text&quot;,&quot;test 功能已经执行完毕，请向客户端返回成功信息&quot;  ).data)</span><br><span class="hljs-string">                # 将响应结果添加到对话历史中</span><br><span class="hljs-string">                response = await self.llmclient.chat_completion([self.conversation_history[-1]],tools)              </span><br><span class="hljs-string">				        # 获取响应</span><br><span class="hljs-string">        except KeyError:</span><br><span class="hljs-string">            pass </span><br><span class="hljs-string">        return response</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><p>定义方法的结构维护，便于查询方法和方法的参数信息。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">class</span> <span class="hljs-title class_">FunctionStruct</span> :<br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self,name,function,parameters_list,url</span>):<br>        <span class="hljs-variable language_">self</span>.name = name<br>        <span class="hljs-variable language_">self</span>.function = function<br>        <span class="hljs-variable language_">self</span>.parameters_list = parameters_list<br>        <span class="hljs-variable language_">self</span>.url = url<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">execute_test</span>(<span class="hljs-params">*args</span>):<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;function test&quot;</span>)<br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">None</span><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">execute</span>(<span class="hljs-params">*args</span>):<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;function execute&quot;</span>)<br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">None</span><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">main</span>():<br>    ms = McpServer()<br>    ms.api_registry[<span class="hljs-string">&quot;execute_test&quot;</span>] = FunctionStruct(<span class="hljs-string">&quot;execute_test&quot;</span>, execute_test, [<span class="hljs-string">&quot;name&quot;</span>], <span class="hljs-string">&quot;&lt;http://www.baidu.com&gt;&quot;</span>)<br>    ms.api_registry[<span class="hljs-string">&quot;execute&quot;</span>] = FunctionStruct(<span class="hljs-string">&quot;execute&quot;</span>, execute, [<span class="hljs-string">&quot;name&quot;</span>], <span class="hljs-string">&quot;&lt;http://www.baidu.com&gt;&quot;</span>)<br>  <br>    <span class="hljs-keyword">async</span> <span class="hljs-keyword">def</span> <span class="hljs-title function_">async_interaction</span>():<br>        <span class="hljs-keyword">while</span> <span class="hljs-literal">True</span>:<br>            <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;请输入你的问题：&quot;</span>)<br>            question = <span class="hljs-built_in">input</span>()<br>            <span class="hljs-keyword">await</span> ms.process_message(question)<br>  <br>    asyncio.run(async_interaction())<br><span class="hljs-keyword">if</span> __name__ == <span class="hljs-string">&quot;__main__&quot;</span>:<br>    main()<br></code></pre></td></tr></table></figure>
+
+<h2 id="结果"><a href="#结果" class="headerlink" title="结果"></a>结果</h2><p>通过打印接口信息可以看到对大模型发起了两次请求，并最终执行了功能，并返回成功的响应</p>
+<figure class="highlight prolog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs prolog">请输入你的问题：<br>我想执行test<br>&#123;<span class="hljs-string">&#x27;model&#x27;</span>: <span class="hljs-string">&#x27;qwen3-8b&#x27;</span>, <span class="hljs-string">&#x27;input&#x27;</span>: &#123;<span class="hljs-string">&#x27;messages&#x27;</span>: [&#123;<span class="hljs-string">&#x27;role&#x27;</span>: <span class="hljs-string">&#x27;system&#x27;</span>, <span class="hljs-string">&#x27;content&#x27;</span>: [&#123;<span class="hljs-string">&#x27;type&#x27;</span>: <span class="hljs-string">&#x27;text&#x27;</span>, <span class="hljs-string">&#x27;text&#x27;</span>: <span class="hljs-string">&#x27;你是一个助手，你需要根据用户的输入进行回答。用户的输入中包含它所能提供的调用功能，如果你觉得执行某个功能，会帮助得到更好的结果，请向用 户返回对应的json请求,你可以调用如下功能，如果发现“执行test”等关键词，请调用 execute_test，并传入 name=&quot;test&quot;&#x27;</span>&#125;]&#125;, &#123;<span class="hljs-string">&#x27;role&#x27;</span>: <span class="hljs-string">&#x27;user&#x27;</span>, <span class="hljs-string">&#x27;content&#x27;</span>: [&#123;<span class="hljs-string">&#x27;type&#x27;</span>: <span class="hljs-string">&#x27;text&#x27;</span>, <span class="hljs-string">&#x27;text&#x27;</span>: <span class="hljs-string">&#x27;我想执行test&#x27;</span>&#125;]&#125;, &#123;<span class="hljs-string">&#x27;role&#x27;</span>: <span class="hljs-string">&#x27;user&#x27;</span>, <span class="hljs-string">&#x27;content&#x27;</span>: [&#123;<span class="hljs-string">&#x27;type&#x27;</span>: <span class="hljs-string">&#x27;text&#x27;</span>, <span class="hljs-string">&#x27;text&#x27;</span>: <span class="hljs-string">&#x27;我想执行test&#x27;</span>&#125;]&#125;, &#123;<span class="hljs-string">&#x27;role&#x27;</span>: <span class="hljs-string">&#x27;user&#x27;</span>, <span class="hljs-string">&#x27;content&#x27;</span>: [&#123;<span class="hljs-string">&#x27;type&#x27;</span>: <span class="hljs-string">&#x27;text&#x27;</span>, <span class="hljs-string">&#x27;text&#x27;</span>: <span class="hljs-string">&#x27;我想执行test&#x27;</span>&#125;]&#125;]&#125;, <span class="hljs-string">&#x27;parameters&#x27;</span>: &#123;<span class="hljs-string">&#x27;temperature&#x27;</span>: <span class="hljs-number">0.7</span>, <span class="hljs-string">&#x27;top_p&#x27;</span>: <span class="hljs-number">0.8</span>, <span class="hljs-string">&#x27;result_format&#x27;</span>: <span class="hljs-string">&#x27;message&#x27;</span>, <span class="hljs-string">&#x27;enable_thinking&#x27;</span>: <span class="hljs-symbol">False</span>&#125;, <span class="hljs-string">&#x27;tools&#x27;</span>: [&#123;<span class="hljs-string">&#x27;type&#x27;</span>: <span class="hljs-string">&#x27;function&#x27;</span>, <span class="hljs-string">&#x27;function&#x27;</span>: &#123;<span class="hljs-string">&#x27;name&#x27;</span>: <span class="hljs-string">&#x27;execute_test&#x27;</span>, <span class="hljs-string">&#x27;description&#x27;</span>: <span class="hljs-string">&#x27;调用execute_test功能&#x27;</span>, <span class="hljs-string">&#x27;parameters&#x27;</span>: &#123;<span class="hljs-string">&#x27;type&#x27;</span>: <span class="hljs-string">&#x27;object&#x27;</span>, <span class="hljs-string">&#x27;properties&#x27;</span>: &#123;<span class="hljs-string">&#x27;name&#x27;</span>: &#123;<span class="hljs-string">&#x27;type&#x27;</span>: <span class="hljs-string">&#x27;string&#x27;</span>, <span class="hljs-string">&#x27;description&#x27;</span>: <span class="hljs-string">&#x27;name参数&#x27;</span>&#125;&#125;, <span class="hljs-string">&#x27;required&#x27;</span>: [<span class="hljs-string">&#x27;name&#x27;</span>]&#125;&#125;&#125;, &#123;<span class="hljs-string">&#x27;type&#x27;</span>: <span class="hljs-string">&#x27;function&#x27;</span>, <span class="hljs-string">&#x27;function&#x27;</span>: &#123;<span class="hljs-string">&#x27;name&#x27;</span>: <span class="hljs-string">&#x27;execute&#x27;</span>, <span class="hljs-string">&#x27;description&#x27;</span>: <span class="hljs-string">&#x27;调用execute功能&#x27;</span>, <span class="hljs-string">&#x27;parameters&#x27;</span>: &#123;<span class="hljs-string">&#x27;type&#x27;</span>: <span class="hljs-string">&#x27;object&#x27;</span>, <span class="hljs-string">&#x27;properties&#x27;</span>: &#123;<span class="hljs-string">&#x27;name&#x27;</span>: &#123;<span class="hljs-string">&#x27;type&#x27;</span>: <span class="hljs-string">&#x27;string&#x27;</span>, <span class="hljs-string">&#x27;description&#x27;</span>: <span class="hljs-string">&#x27;name参数&#x27;</span>&#125;&#125;, <span class="hljs-string">&#x27;required&#x27;</span>: [<span class="hljs-string">&#x27;name&#x27;</span>]&#125;&#125;&#125;], <span class="hljs-string">&#x27;tool_choice&#x27;</span>: <span class="hljs-string">&#x27;auto&#x27;</span>&#125;<br>&#123;<span class="hljs-string">&#x27;output&#x27;</span>: &#123;<span class="hljs-string">&#x27;choices&#x27;</span>: [&#123;<span class="hljs-string">&#x27;finish_reason&#x27;</span>: <span class="hljs-string">&#x27;stop&#x27;</span>, <span class="hljs-string">&#x27;message&#x27;</span>: &#123;<span class="hljs-string">&#x27;role&#x27;</span>: <span class="hljs-string">&#x27;assistant&#x27;</span>, <span class="hljs-string">&#x27;content&#x27;</span>: <span class="hljs-string">&#x27;&#123;&quot;action&quot;: &quot;execute_test&quot;, &quot;name&quot;: &quot;test&quot;&#125;&#x27;</span>&#125;&#125;]&#125;, <span class="hljs-string">&#x27;usage&#x27;</span>: &#123;<span class="hljs-string">&#x27;total_tokens&#x27;</span>: <span class="hljs-number">108</span>, <span class="hljs-string">&#x27;output_tokens&#x27;</span>: <span class="hljs-number">13</span>, <span class="hljs-string">&#x27;input_tokens&#x27;</span>: <span class="hljs-number">95</span>&#125;, <span class="hljs-string">&#x27;request_id&#x27;</span>: <span class="hljs-string">&#x27;09dc09ea-ed80-9632-bd1d-77d05cde942e&#x27;</span>&#125;<br>function test<br>&#123;<span class="hljs-string">&#x27;model&#x27;</span>: <span class="hljs-string">&#x27;qwen3-8b&#x27;</span>, <span class="hljs-string">&#x27;input&#x27;</span>: &#123;<span class="hljs-string">&#x27;messages&#x27;</span>: [&#123;<span class="hljs-string">&#x27;role&#x27;</span>: <span class="hljs-string">&#x27;system&#x27;</span>, <span class="hljs-string">&#x27;content&#x27;</span>: [&#123;<span class="hljs-string">&#x27;type&#x27;</span>: <span class="hljs-string">&#x27;text&#x27;</span>, <span class="hljs-string">&#x27;text&#x27;</span>: <span class="hljs-string">&#x27;你是一个助手，你需要根据用户的输入进行回答。用户的输入中包含它所能提供的调用功能，如果你觉得执行某个功能，会帮助得到更好的结果，请向用 户返回对应的json请求,你可以调用如下功能，如果发现“执行test”等关键词，请调用 execute_test，并传入 name=&quot;test&quot;&#x27;</span>&#125;]&#125;, &#123;<span class="hljs-string">&#x27;role&#x27;</span>: <span class="hljs-string">&#x27;function&#x27;</span>, <span class="hljs-string">&#x27;content&#x27;</span>: [&#123;<span class="hljs-string">&#x27;type&#x27;</span>: <span class="hljs-string">&#x27;text&#x27;</span>, <span class="hljs-string">&#x27;text&#x27;</span>: <span class="hljs-string">&#x27;test 功能已经执行完毕，请向客户端返回成功信息&#x27;</span>&#125;]&#125;]&#125;, <span class="hljs-string">&#x27;parameters&#x27;</span>: &#123;<span class="hljs-string">&#x27;temperature&#x27;</span>: <span class="hljs-number">0.7</span>, <span class="hljs-string">&#x27;top_p&#x27;</span>: <span class="hljs-number">0.8</span>, <span class="hljs-string">&#x27;result_format&#x27;</span>: <span class="hljs-string">&#x27;message&#x27;</span>, <span class="hljs-string">&#x27;enable_thinking&#x27;</span>: <span class="hljs-symbol">False</span>&#125;, <span class="hljs-string">&#x27;tools&#x27;</span>: [&#123;<span class="hljs-string">&#x27;type&#x27;</span>: <span class="hljs-string">&#x27;function&#x27;</span>, <span class="hljs-string">&#x27;function&#x27;</span>: &#123;<span class="hljs-string">&#x27;name&#x27;</span>: <span class="hljs-string">&#x27;execute_test&#x27;</span>, <span class="hljs-string">&#x27;description&#x27;</span>: <span class="hljs-string">&#x27;调用execute_test功能&#x27;</span>, <span class="hljs-string">&#x27;parameters&#x27;</span>: &#123;<span class="hljs-string">&#x27;type&#x27;</span>: <span class="hljs-string">&#x27;object&#x27;</span>, <span class="hljs-string">&#x27;properties&#x27;</span>: &#123;<span class="hljs-string">&#x27;name&#x27;</span>: &#123;<span class="hljs-string">&#x27;type&#x27;</span>: <span class="hljs-string">&#x27;string&#x27;</span>, <span class="hljs-string">&#x27;description&#x27;</span>: <span class="hljs-string">&#x27;name参数&#x27;</span>&#125;&#125;, <span class="hljs-string">&#x27;required&#x27;</span>: [<span class="hljs-string">&#x27;name&#x27;</span>]&#125;&#125;&#125;, &#123;<span class="hljs-string">&#x27;type&#x27;</span>: <span class="hljs-string">&#x27;function&#x27;</span>, <span class="hljs-string">&#x27;function&#x27;</span>: &#123;<span class="hljs-string">&#x27;name&#x27;</span>: <span class="hljs-string">&#x27;execute&#x27;</span>, <span class="hljs-string">&#x27;description&#x27;</span>: <span class="hljs-string">&#x27;调用execute功能&#x27;</span>, <span class="hljs-string">&#x27;parameters&#x27;</span>: &#123;<span class="hljs-string">&#x27;type&#x27;</span>: <span class="hljs-string">&#x27;object&#x27;</span>, <span class="hljs-string">&#x27;properties&#x27;</span>: &#123;<span class="hljs-string">&#x27;name&#x27;</span>: &#123;<span class="hljs-string">&#x27;type&#x27;</span>: <span class="hljs-string">&#x27;string&#x27;</span>, <span class="hljs-string">&#x27;description&#x27;</span>: <span class="hljs-string">&#x27;name参数&#x27;</span>&#125;&#125;, <span class="hljs-string">&#x27;required&#x27;</span>: [<span class="hljs-string">&#x27;name&#x27;</span>]&#125;&#125;&#125;], <span class="hljs-string">&#x27;tool_choice&#x27;</span>: <span class="hljs-string">&#x27;auto&#x27;</span>&#125;<br><span class="hljs-string">``</span><span class="hljs-string">`json</span><br><span class="hljs-string">&#123;</span><br><span class="hljs-string">  &quot;status&quot;: &quot;success&quot;,</span><br><span class="hljs-string">  &quot;message&quot;: &quot;test 功能已经执行完毕&quot;</span><br><span class="hljs-string">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="方法调用链"><a href="#方法调用链" class="headerlink" title="方法调用链"></a>方法调用链</h2><p><img src="https://i.111666.best/image/Dv1czsRCD9fgyWhAErmFy8.png" srcset="/img/loading.gif" lazyload alt="方法调用链.png"></p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>基于以上尝试，我们可以看到MCP 进行了一个中间处理过程，通过LLM 来进行功能与数组的组织最终返回给用户自然语言的结果描述。而不必再关注具体的中间过程。</p>
+<p>与 RAG 技术相比，MCP 提供了另一种大模型能力扩展路径。RAG（Retrieval-Augmented Generation）本质上是一种 <strong>静态的、基于预先构建的向量数据库进行信息增强的机制</strong> ，它能提供相对 <strong>稳定且相关性明确的知识补充</strong> ，适用于对资料完整性要求较高的场景。但其能力受限于数据库的更新频率和覆盖范围。</p>
+<p>而 MCP 更侧重于 <strong>动态信息的实时获取与响应处理</strong> ，通过将本地方法封装为函数工具，模型可以根据语义分析结果主动发起实时调用，从而打破传统问答的静态信息局限。这种机制将对话式交互转化为 <strong>任务式的数据动态组织流程</strong> ，具备更强的灵活性和时效性，尤其适用于实时数据接口、系统调用和复杂业务流程的交互式处理场景。</p>
+<p>因此，两者并非冲突关系，而是互为补充 —— RAG 提供 <strong>知识的可控性与一致性</strong> ，MCP 提供 <strong>执行的实时性与系统集成能力</strong> 。在实际系统中可根据场景组合使用，构建更智能、更可靠的 AI 代理系统。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" class="category-chain-item">大模型</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" class="print-no-link">#大模型</a>
+      
+        <a href="/tags/AI/" class="print-no-link">#AI</a>
+      
+        <a href="/tags/MCP/" class="print-no-link">#MCP</a>
+      
+        <a href="/tags/Function-Calling/" class="print-no-link">#Function Calling</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>大模型应用与扩展-Function Calling与MCP</div>
+      <div>http://gadoid.io/2025/06/17/大模型应用与扩展-Function-Calling与MCP/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Codfish</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年6月17日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/06/12/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%BA%94%E7%94%A8%E4%B8%8E%E6%89%A9%E5%B1%95-RAG/" title="大模型应用与扩展-RAG">
+                        <span class="hidden-mobile">大模型应用与扩展-RAG</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"lQzCvqmOtewLtpMfvfxKLomU-MdYXbMMI","appKey":"daMNlw5XcjN8TelT6GCHh8RF","path":"window.location.pathname","placeholder":"让灵感在这里发生","avatar":"monsterid","meta":["nick","mail"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":true,"recordIP":true,"serverURLs":"https://lQzCvqmO.api.lncldglobal.com","emojiCDN":null,"emojiMaps":null,"enableQQ":false,"enable":true,"visitor":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      &copy; 2025 - 2025 <a target="_blank" rel="noopener" href="https://github.com/username">CODFISH</a>
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+<!-- hexo injector body_end start --><script src="/js/chatbot-loader.js" defer></script><!-- hexo injector body_end end --></body>
+</html>
