@@ -27,7 +27,7 @@
 <meta property="og:description" content="从编码开始当我们开始实现一个需求时，首先关注的是”如何实现功能？”以虚拟房子为例，用面向对象思路组织基本结构： 12345678910111213141516171819202122232425262728293031323334353637383940public class House &#123;    private Bathroom bathroom;    private Bedroo">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2025-07-23T08:07:01.000Z">
-<meta property="article:modified_time" content="2025-07-23T08:09:25.657Z">
+<meta property="article:modified_time" content="2025-07-23T09:26:12.206Z">
 <meta property="article:author" content="Codfish">
 <meta property="article:tag" content="设计模式">
 <meta property="article:tag" content="系统架构">
@@ -238,7 +238,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          2.6k 字
+          3.4k 字
         
       </span>
     
@@ -249,7 +249,7 @@
         
         
         
-          22 分钟
+          28 分钟
         
       </span>
     
@@ -397,6 +397,35 @@
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 违反DIP - 高层模块直接依赖低层模块</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">EmailService</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">sendEmail</span><span class="hljs-params">(String message)</span> &#123; <span class="hljs-comment">/* ... */</span> &#125;<br>&#125;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">OrderProcessor</span> &#123;<br>    <span class="hljs-keyword">private</span> <span class="hljs-type">EmailService</span> <span class="hljs-variable">emailService</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">EmailService</span>(); <span class="hljs-comment">// 直接依赖具体类</span><br>    <br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">processOrder</span><span class="hljs-params">(Order order)</span> &#123;<br>        <span class="hljs-comment">// 处理订单...</span><br>        emailService.sendEmail(<span class="hljs-string">&quot;Order processed&quot;</span>);<br>    &#125;<br>&#125;<br><br><span class="hljs-comment">// 遵循DIP - 依赖抽象</span><br><span class="hljs-keyword">interface</span> <span class="hljs-title class_">NotificationService</span> &#123;<br>    <span class="hljs-keyword">void</span> <span class="hljs-title function_">sendNotification</span><span class="hljs-params">(String message)</span>;<br>&#125;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">EmailService</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">NotificationService</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">sendNotification</span><span class="hljs-params">(String message)</span> &#123; <span class="hljs-comment">/* ... */</span> &#125;<br>&#125;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">OrderProcessor</span> &#123;<br>    <span class="hljs-keyword">private</span> NotificationService notificationService; <span class="hljs-comment">// 依赖抽象</span><br>    <br>    <span class="hljs-keyword">public</span> <span class="hljs-title function_">OrderProcessor</span><span class="hljs-params">(NotificationService notificationService)</span> &#123;<br>        <span class="hljs-built_in">this</span>.notificationService = notificationService;<br>    &#125;<br>    <br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">processOrder</span><span class="hljs-params">(Order order)</span> &#123;<br>        <span class="hljs-comment">// 处理订单...</span><br>        notificationService.sendNotification(<span class="hljs-string">&quot;Order processed&quot;</span>);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
 
 <h2 id="设计模式"><a href="#设计模式" class="headerlink" title="设计模式"></a>设计模式</h2><p>所谓设计模式，就是在上述原则和解耦思想下提出的依据业务来实现的对象设计处理框架。设计模式不是凭空产生的编程技巧，而是在长期的软件开发实践中，针对特定问题场景总结出的成熟解决方案。每一个设计模式都体现了特定的解耦策略，帮助我们在复杂的业务逻辑中保持代码的灵活性和可维护性。</p>
+<h3 id="设计模式的区分"><a href="#设计模式的区分" class="headerlink" title="设计模式的区分"></a>设计模式的区分</h3><p>可以从 它们提供的思路和实现方式来区分：</p>
+<ol>
+<li>创建型模式：创建型模式提供了一种创建对象的最佳方式。 如单例模式，工厂方法模式，抽象工厂模式</li>
+<li>结构型模式：结构型模式关注对象之间的组合。如适配器模式，代理模式，装饰模式</li>
+<li>行为型模式：行为型模式关注对象之间的通信。如迭代器模式，模板方法模式，策略模式</li>
+</ol>
+<h3 id="模式的设计理念"><a href="#模式的设计理念" class="headerlink" title="模式的设计理念"></a>模式的设计理念</h3><p>🔨 创建型模式（5）<br>单例模式：某个类只有一个实例，并提供一个全局访问点。</p>
+<p>工厂方法模式：通过工厂方法创建对象实例，延迟到子类实现。</p>
+<p>抽象工厂模式：创建多个相关对象的工厂接口，定义产品族。</p>
+<p>建造者模式：将一个复杂对象的构建过程与其表示分离，使构建过程可复用、可扩展。</p>
+<p>原型模式：通过复制原型对象来创建新对象，无需指定其具体类。</p>
+<p>🧱 结构型模式（7）<br>适配器模式：将一个类的接口转换成客户端期望的接口，解决接口不兼容问题。</p>
+<p>装饰器模式：动态地为对象添加新的功能，而无需修改其结构。</p>
+<p>代理模式：为其他对象提供一种代理以控制对它的访问。</p>
+<p>桥接模式：将抽象部分与实现部分分离，使它们可以独立变化。</p>
+<p>组合模式：将对象组合成树形结构，以表示“部分-整体”的层次结构。</p>
+<p>外观模式：为子系统中的一组接口提供统一的高层接口，简化使用。</p>
+<p>享元模式：通过共享大量细粒度对象来减少内存使用和对象创建开销。</p>
+<p>⚙️ 行为型模式（11）<br>模板方法模式：定义算法骨架，将一些步骤延迟到子类实现。</p>
+<p>策略模式：定义一系列算法，并使它们可互换。</p>
+<p>观察者模式：对象之间建立一对多的依赖关系，被观察者状态改变时通知所有观察者。</p>
+<p>命令模式：将请求封装为对象，以支持命令的撤销、排队和记录日志等功能。</p>
+<p>职责链模式：多个对象组成一条链，请求沿链传递，直到被某个对象处理。</p>
+<p>状态模式：允许对象在内部状态改变时改变其行为。</p>
+<p>访问者模式：在不改变对象结构的前提下定义新的操作。</p>
+<p>中介者模式：通过一个中介对象封装对象间交互，减少对象之间的耦合。</p>
+<p>解释器模式：为语言定义文法并建立解释器，用于解释语言中的句子。</p>
+<p>备忘录模式：在不破坏封装性的前提下保存并恢复对象的内部状态。</p>
+<p>迭代器模式：提供一种方式顺序访问聚合对象中的元素，而不暴露其内部结构。</p>
 
                 
               </div>
