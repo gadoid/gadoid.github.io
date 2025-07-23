@@ -1,0 +1,823 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/bg/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Codfish">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="从编码开始当我们开始实现一个需求时，首先关注的是”如何实现功能？”以虚拟房子为例，用面向对象思路组织基本结构： 12345678910111213141516171819202122232425262728293031323334353637383940public class House &#123;    private Bathroom bathroom;    private Bedroo">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从编码到设计模式：系统是如何被组织的?">
+<meta property="og:url" content="http://gadoid.io/2025/07/23/%E4%BB%8E%E7%BC%96%E7%A0%81%E5%88%B0%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%EF%BC%9A%E7%B3%BB%E7%BB%9F%E6%98%AF%E5%A6%82%E4%BD%95%E8%A2%AB%E7%BB%84%E7%BB%87%E7%9A%84/index.html">
+<meta property="og:site_name" content="西北有高楼">
+<meta property="og:description" content="从编码开始当我们开始实现一个需求时，首先关注的是”如何实现功能？”以虚拟房子为例，用面向对象思路组织基本结构： 12345678910111213141516171819202122232425262728293031323334353637383940public class House &#123;    private Bathroom bathroom;    private Bedroo">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-07-23T08:07:01.000Z">
+<meta property="article:modified_time" content="2025-07-23T08:09:25.657Z">
+<meta property="article:author" content="Codfish">
+<meta property="article:tag" content="设计模式">
+<meta property="article:tag" content="系统架构">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>从编码到设计模式：系统是如何被组织的? - 西北有高楼</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"gadoid.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>西北有高楼</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/downloads/" target="_self">
+                <i class="iconfont icon-books-fill"></i>
+                <span>资源下载</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/bg/img/ice.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="从编码到设计模式：系统是如何被组织的?"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-07-23 16:07" pubdate>
+          2025年7月23日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.6k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          22 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">从编码到设计模式：系统是如何被组织的?</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="从编码开始"><a href="#从编码开始" class="headerlink" title="从编码开始"></a>从编码开始</h2><p>当我们开始实现一个需求时，首先关注的是”如何实现功能？”以虚拟房子为例，用面向对象思路组织基本结构：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">House</span> &#123;<br>    <span class="hljs-keyword">private</span> Bathroom bathroom;<br>    <span class="hljs-keyword">private</span> Bedroom bedroom;<br>    <span class="hljs-keyword">private</span> Kitchen kitchen;<br>    <br>    <span class="hljs-keyword">public</span> <span class="hljs-title function_">House</span><span class="hljs-params">()</span> &#123;<br>        <span class="hljs-built_in">this</span>.bathroom = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Bathroom</span>();<br>        <span class="hljs-built_in">this</span>.bedroom = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Bedroom</span>();<br>        <span class="hljs-built_in">this</span>.kitchen = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Kitchen</span>();<br>    &#125;<br>    <br>    *<span class="hljs-comment">// 提供访问各个房间的方法*</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">useBathroom</span><span class="hljs-params">()</span> &#123; *<span class="hljs-comment">/* ... */</span>* &#125;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">rest</span><span class="hljs-params">()</span> &#123; *<span class="hljs-comment">/* ... */</span>* &#125;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">cook</span><span class="hljs-params">()</span> &#123; *<span class="hljs-comment">/* ... */</span>* &#125;<br>&#125;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Bathroom</span> &#123;<br>    <span class="hljs-keyword">private</span> Shower shower;<br>    <span class="hljs-keyword">private</span> Mirror mirror;<br>    <br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">takeShower</span><span class="hljs-params">()</span> &#123; shower.start(); &#125;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">lookInMirror</span><span class="hljs-params">()</span> &#123; mirror.reflect(); &#125;<br>&#125;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Bedroom</span> &#123;<br>    <span class="hljs-keyword">private</span> Bed bed;<br>    <span class="hljs-keyword">private</span> Chair chair;<br>    <br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">sleep</span><span class="hljs-params">()</span> &#123; bed.layDown(); &#125;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">sit</span><span class="hljs-params">()</span> &#123; chair.sitOn(); &#125;<br>&#125;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Kitchen</span> &#123;<br>    <span class="hljs-keyword">private</span> Knife knife;<br>    <span class="hljs-keyword">private</span> Dish dish;<br>    <br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">prepareMeal</span><span class="hljs-params">()</span> &#123; knife.cut(); &#125;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">serveMeal</span><span class="hljs-params">()</span> &#123; dish.serve(); &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>通过面向对象，我们可以明确地描述对象具备的功能与方法，创建可操作的对象结构。</p>
+<h2 id="系统中的对象角色"><a href="#系统中的对象角色" class="headerlink" title="系统中的对象角色"></a>系统中的对象角色</h2><p>房子并非目的本身，构建房子是为了更好地利用这个结构完成我们的目标。我们可以将对象分为三种角色：</p>
+<h3 id="1-事务发起者-Initiator"><a href="#1-事务发起者-Initiator" class="headerlink" title="1. 事务发起者 (Initiator)"></a>1. 事务发起者 (Initiator)</h3><ul>
+<li><strong>职责</strong>：定义需要达成的目的，orchestrate整个处理流程</li>
+<li><strong>特征</strong>：了解业务目标，控制执行顺序</li>
+<li><strong>示例</strong>：<code>PersonLivingInHouse</code> 类，决定何时睡觉、做饭、洗澡</li>
+</ul>
+<h3 id="2-事务描述者-Domain-Object"><a href="#2-事务描述者-Domain-Object" class="headerlink" title="2. 事务描述者 (Domain Object)"></a>2. 事务描述者 (Domain Object)</h3><ul>
+<li><strong>职责</strong>：描述被处理事务的状态和行为规则</li>
+<li><strong>特征</strong>：封装业务逻辑，维护对象状态</li>
+<li><strong>示例</strong>：<code>House</code>、<code>Room</code> 等领域对象</li>
+</ul>
+<h3 id="3-过程处理者-Service-Handler"><a href="#3-过程处理者-Service-Handler" class="headerlink" title="3. 过程处理者 (Service&#x2F;Handler)"></a>3. 过程处理者 (Service&#x2F;Handler)</h3><ul>
+<li><strong>职责</strong>：处理事务在特定阶段的逻辑，协调对象间交互</li>
+<li><strong>特征</strong>：无状态，专注于处理逻辑</li>
+<li><strong>示例</strong>：<code>HousekeepingService</code>、<code>MealPreparationService</code></li>
+</ul>
+<h2 id="语义关系重新定义"><a href="#语义关系重新定义" class="headerlink" title="语义关系重新定义"></a>语义关系重新定义</h2><p>基于面向对象设计原则，类与类之间主要有以下语义关系：</p>
+<h3 id="IS-A-关系-继承"><a href="#IS-A-关系-继承" class="headerlink" title="IS-A 关系 (继承)"></a>IS-A 关系 (继承)</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">abstract</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Room</span> &#123;<br>    <span class="hljs-keyword">protected</span> String name;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">abstract</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">clean</span><span class="hljs-params">()</span>;<br>&#125;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Bedroom</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">Room</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">clean</span><span class="hljs-params">()</span> &#123; *<span class="hljs-comment">/* 卧室特有的清洁方式 */</span>* &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>语义</strong>：描述类型层次关系，子类是父类的特化</li>
+<li><strong>原则</strong>：子类必须能完全替代父类（里氏替换原则）</li>
+<li><strong>创建</strong>：通过继承机制，子类自动获得父类的属性和方法</li>
+</ul>
+<h3 id="HAS-A-关系-组合-聚合"><a href="#HAS-A-关系-组合-聚合" class="headerlink" title="HAS-A 关系 (组合&#x2F;聚合)"></a>HAS-A 关系 (组合&#x2F;聚合)</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">class</span> <span class="hljs-title class_">House</span> &#123;<br>    <span class="hljs-keyword">private</span> List&lt;Room&gt; rooms; *<span class="hljs-comment">// 组合关系*</span><br>    <span class="hljs-keyword">private</span> Address address;   *<span class="hljs-comment">// 聚合关系*</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>语义</strong>：描述整体与部分的关系</li>
+<li><strong>区别</strong>：组合是强拥有（生命周期一致），聚合是弱拥有</li>
+<li><strong>创建</strong>：通过成员变量持有其他对象的引用</li>
+</ul>
+<h3 id="USE-A-关系-依赖"><a href="#USE-A-关系-依赖" class="headerlink" title="USE-A 关系 (依赖)"></a>USE-A 关系 (依赖)</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Person</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">liveIn</span><span class="hljs-params">(House house)</span> &#123;<br>        house.useBathroom(); *<span class="hljs-comment">// 依赖关系*</span><br>    &#125;<br>&#125;`<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>语义</strong>：描述临时性的使用关系</li>
+<li><strong>特征</strong>：对象间耦合度最低，通过参数传递或临时创建</li>
+<li><strong>创建</strong>：通过方法参数、局部变量或工厂模式获得对象</li>
+</ul>
+<h3 id="CAN-DO-关系-接口实现"><a href="#CAN-DO-关系-接口实现" class="headerlink" title="CAN-DO 关系 (接口实现)"></a>CAN-DO 关系 (接口实现)</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">interface</span> <span class="hljs-title class_">Cleanable</span> &#123;<br>    <span class="hljs-keyword">void</span> <span class="hljs-title function_">clean</span><span class="hljs-params">()</span>;<br>&#125;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Room</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Cleanable</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">clean</span><span class="hljs-params">()</span> &#123; *<span class="hljs-comment">/* 实现清洁功能 */</span>* &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>语义</strong>：描述对象具备某种能力或契约</li>
+<li><strong>原则</strong>：定义what而不是how，支持多重实现</li>
+<li><strong>创建</strong>：通过实现接口方法，获得多态能力</li>
+</ul>
+<h2 id="定义与调用分离：不同关系模式的解耦机制"><a href="#定义与调用分离：不同关系模式的解耦机制" class="headerlink" title="定义与调用分离：不同关系模式的解耦机制"></a>定义与调用分离：不同关系模式的解耦机制</h2><p>在面向对象设计中，每种关系模式都代表了不同的”定义与调用分离”策略。核心在于回答三个问题：</p>
+<ul>
+<li><strong>定义权</strong>：属性和方法由谁定义？</li>
+<li><strong>调用权</strong>：属性和方法由谁调用？</li>
+<li><strong>管理权</strong>：对象生命周期由谁管理？</li>
+</ul>
+<h3 id="继承关系：纵向的定义与调用分离"><a href="#继承关系：纵向的定义与调用分离" class="headerlink" title="继承关系：纵向的定义与调用分离"></a>继承关系：纵向的定义与调用分离</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">abstract</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Vehicle</span> &#123;<br>    <span class="hljs-keyword">protected</span> String brand;          <span class="hljs-comment">// 父类定义通用属性</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">abstract</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">start</span><span class="hljs-params">()</span>;   <span class="hljs-comment">// 父类定义调用契约</span><br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">displayInfo</span><span class="hljs-params">()</span> &#123;     <span class="hljs-comment">// 父类定义并实现调用逻辑</span><br>        System.out.println(<span class="hljs-string">&quot;Brand: &quot;</span> + brand);<br>        start(); <span class="hljs-comment">// 调用子类的具体实现</span><br>    &#125;<br>&#125;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Car</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">Vehicle</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">start</span><span class="hljs-params">()</span> &#123;           <span class="hljs-comment">// 子类定义具体实现</span><br>        System.out.println(<span class="hljs-string">&quot;Car engine starts&quot;</span>);<br>    &#125;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<p><strong>分离特征</strong>：</p>
+<ul>
+<li><strong>定义分工</strong>：父类定义契约和通用逻辑，子类定义具体实现</li>
+<li><strong>调用分工</strong>：父类负责统一调用逻辑，子类提供被调用的实现</li>
+<li><strong>管理模式</strong>：通过多态机制，调用者无需知道具体类型，只需面向抽象编程</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">Vehicle</span> <span class="hljs-variable">vehicle</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Car</span>(); <span class="hljs-comment">// 调用者只需要知道Vehicle接口</span><br>vehicle.displayInfo();       <span class="hljs-comment">// 父类控制调用流程，子类提供实现</span><br><br></code></pre></td></tr></table></figure>
+
+<h3 id="接口关系：契约式的定义与调用分离"><a href="#接口关系：契约式的定义与调用分离" class="headerlink" title="接口关系：契约式的定义与调用分离"></a>接口关系：契约式的定义与调用分离</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">interface</span> <span class="hljs-title class_">Flyable</span> &#123;<br>    <span class="hljs-keyword">void</span> <span class="hljs-title function_">fly</span><span class="hljs-params">()</span>;     <span class="hljs-comment">// 接口定义调用契约，不提供实现</span><br>&#125;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Bird</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Flyable</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">fly</span><span class="hljs-params">()</span> &#123;                    <span class="hljs-comment">// 实现类定义具体实现</span><br>        System.out.println(<span class="hljs-string">&quot;Bird flies&quot;</span>);<br>    &#125;<br>&#125;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">FlightController</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">controlFlight</span><span class="hljs-params">(Flyable flyable)</span> &#123;  <span class="hljs-comment">// 调用者面向接口调用</span><br>        flyable.fly(); <span class="hljs-comment">// 不关心具体是谁实现的fly方法</span><br>    &#125;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<p><strong>分离特征</strong>：</p>
+<ul>
+<li><strong>定义分工</strong>：接口定义what（契约），实现类定义how（具体实现）</li>
+<li><strong>调用分工</strong>：调用者面向接口调用，完全不依赖具体实现</li>
+<li><strong>管理模式</strong>：调用者通过依赖注入或参数传递获得实例，不负责创建</li>
+</ul>
+<h3 id="组合关系：委托式的定义与调用分离"><a href="#组合关系：委托式的定义与调用分离" class="headerlink" title="组合关系：委托式的定义与调用分离"></a>组合关系：委托式的定义与调用分离</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Engine</span> &#123;<br>    <span class="hljs-keyword">private</span> <span class="hljs-type">boolean</span> <span class="hljs-variable">running</span> <span class="hljs-operator">=</span> <span class="hljs-literal">false</span>;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">start</span><span class="hljs-params">()</span> &#123;              <span class="hljs-comment">// 被组合类定义自己的行为</span><br>        running = <span class="hljs-literal">true</span>;<br>        System.out.println(<span class="hljs-string">&quot;Engine started&quot;</span>);<br>    &#125;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-type">boolean</span> <span class="hljs-title function_">isRunning</span><span class="hljs-params">()</span> &#123; <span class="hljs-keyword">return</span> running; &#125;<br>&#125;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Car</span> &#123;<br>    <span class="hljs-keyword">private</span> Engine engine;             <span class="hljs-comment">// 组合类拥有被组合对象</span><br><br>    <span class="hljs-keyword">public</span> <span class="hljs-title function_">Car</span><span class="hljs-params">()</span> &#123;<br>        <span class="hljs-built_in">this</span>.engine = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Engine</span>();    <span class="hljs-comment">// 组合类负责创建和管理</span><br>    &#125;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">start</span><span class="hljs-params">()</span> &#123;              <span class="hljs-comment">// 组合类定义对外接口</span><br>        engine.start();                <span class="hljs-comment">// 委托给被组合对象执行</span><br>        System.out.println(<span class="hljs-string">&quot;Car is ready&quot;</span>);<br>    &#125;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<p><strong>分离特征</strong>：</p>
+<ul>
+<li><strong>定义分工</strong>：被组合类定义内部行为，组合类定义对外接口和协调逻辑</li>
+<li><strong>调用分工</strong>：外部调用组合类接口，组合类内部调用被组合对象方法</li>
+<li><strong>管理模式</strong>：组合类全权负责被组合对象的生命周期管理</li>
+</ul>
+<h3 id="依赖关系：临时式的定义与调用分离"><a href="#依赖关系：临时式的定义与调用分离" class="headerlink" title="依赖关系：临时式的定义与调用分离"></a>依赖关系：临时式的定义与调用分离</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">class</span> <span class="hljs-title class_">EmailService</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">sendEmail</span><span class="hljs-params">(String message)</span> &#123;    <span class="hljs-comment">// 被依赖类定义服务能力</span><br>        System.out.println(<span class="hljs-string">&quot;Sending: &quot;</span> + message);<br>    &#125;<br>&#125;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">OrderProcessor</span> &#123;<br>    <span class="hljs-comment">// 依赖类定义使用场景和调用时机</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">processOrder</span><span class="hljs-params">(Order order, EmailService emailService)</span> &#123;<br>        <span class="hljs-comment">// 处理订单逻辑...</span><br><br>        <span class="hljs-comment">// 在需要时调用被依赖对象的服务</span><br>        emailService.sendEmail(<span class="hljs-string">&quot;Order processed: &quot;</span> + order.getId());<br>    &#125;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<p><strong>分离特征</strong>：</p>
+<ul>
+<li><strong>定义分工</strong>：被依赖类定义服务能力，依赖类定义使用场景</li>
+<li><strong>调用分工</strong>：依赖类在特定时机调用被依赖类的服务</li>
+<li><strong>管理模式</strong>：被依赖对象由外部创建和管理，依赖类只负责使用</li>
+</ul>
+<p>所谓解耦，就是将定义，调用，生命周期分离的设计过程。</p>
+<h2 id="SOLID原则"><a href="#SOLID原则" class="headerlink" title="SOLID原则"></a>SOLID原则</h2><h3 id="单一职责原则"><a href="#单一职责原则" class="headerlink" title="单一职责原则"></a>单一职责原则</h3><p>核心：一个类应该只有一个引起它变化的原因。这意味着在定义层面上一个类只对其关注的处理过程负责，通过这种设计方便于减少与其他类之间的依赖，同时因为功能与类的一一对应，减少了后续扩展时的修改成本。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 违反SRP - 订单类承担了太多职责</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Order</span> &#123;<br>    <span class="hljs-keyword">private</span> List&lt;Item&gt; items;<br>    <span class="hljs-keyword">private</span> Customer customer;<br>    <br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">addItem</span><span class="hljs-params">(Item item)</span> &#123; <span class="hljs-comment">/* ... */</span> &#125;<br>    <br>    <span class="hljs-comment">// 职责1：计算逻辑</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-type">double</span> <span class="hljs-title function_">calculateTotal</span><span class="hljs-params">()</span> &#123; <span class="hljs-comment">/* ... */</span> &#125;<br>    <br>    <span class="hljs-comment">// 职责2：持久化逻辑</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">saveToDatabase</span><span class="hljs-params">()</span> &#123; <span class="hljs-comment">/* ... */</span> &#125;<br>    <br>    <span class="hljs-comment">// 职责3：通知逻辑</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">sendConfirmationEmail</span><span class="hljs-params">()</span> &#123; <span class="hljs-comment">/* ... */</span> &#125;<br>&#125;<br><br><span class="hljs-comment">// 遵循SRP - 职责分离</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Order</span> &#123;<br>    <span class="hljs-keyword">private</span> List&lt;Item&gt; items;<br>    <span class="hljs-keyword">private</span> Customer customer;<br>    <br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">addItem</span><span class="hljs-params">(Item item)</span> &#123; <span class="hljs-comment">/* ... */</span> &#125;<br>    <span class="hljs-keyword">public</span> <span class="hljs-type">double</span> <span class="hljs-title function_">calculateTotal</span><span class="hljs-params">()</span> &#123; <span class="hljs-comment">/* ... */</span> &#125;<br>&#125;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">OrderRepository</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">save</span><span class="hljs-params">(Order order)</span> &#123; <span class="hljs-comment">/* 持久化逻辑 */</span> &#125;<br>&#125;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">OrderNotificationService</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">sendConfirmation</span><span class="hljs-params">(Order order)</span> &#123; <span class="hljs-comment">/* 通知逻辑 */</span> &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="开闭原则"><a href="#开闭原则" class="headerlink" title="开闭原则"></a>开闭原则</h3><p><strong>核心</strong>：对扩展开放，对修改封闭。这意味着基类提供基础明确的功能定义，派生类完成对原功能的增强和扩展。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 违反OCP - 每次新增形状都要修改AreaCalculator</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">AreaCalculator</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-type">double</span> <span class="hljs-title function_">calculateArea</span><span class="hljs-params">(Object shape)</span> &#123;<br>        <span class="hljs-keyword">if</span> (shape <span class="hljs-keyword">instanceof</span> Rectangle) &#123;<br>            <span class="hljs-type">Rectangle</span> <span class="hljs-variable">rect</span> <span class="hljs-operator">=</span> (Rectangle) shape;<br>            <span class="hljs-keyword">return</span> rect.width * rect.height;<br>        &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (shape <span class="hljs-keyword">instanceof</span> Circle) &#123;<br>            <span class="hljs-type">Circle</span> <span class="hljs-variable">circle</span> <span class="hljs-operator">=</span> (Circle) shape;<br>            <span class="hljs-keyword">return</span> Math.PI * circle.radius * circle.radius;<br>        &#125;<br>        <span class="hljs-comment">// 每次新增形状都要在这里添加if-else</span><br>        <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>    &#125;<br>&#125;<br><br><span class="hljs-comment">// 遵循OCP - 通过抽象实现扩展</span><br><span class="hljs-keyword">interface</span> <span class="hljs-title class_">Shape</span> &#123;<br>    <span class="hljs-type">double</span> <span class="hljs-title function_">calculateArea</span><span class="hljs-params">()</span>;<br>&#125;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Rectangle</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Shape</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-type">double</span> <span class="hljs-title function_">calculateArea</span><span class="hljs-params">()</span> &#123;<br>        <span class="hljs-keyword">return</span> width * height;<br>    &#125;<br>&#125;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">AreaCalculator</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-type">double</span> <span class="hljs-title function_">calculateArea</span><span class="hljs-params">(Shape shape)</span> &#123;<br>        <span class="hljs-keyword">return</span> shape.calculateArea(); <span class="hljs-comment">// 新增形状无需修改此方法</span><br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="里氏替换原则"><a href="#里氏替换原则" class="headerlink" title="里氏替换原则"></a>里氏替换原则</h3><p><strong>核心</strong>：子类对象必须能够替换其基类对象。通过这条规则，我们可以更好的完成定义阶段和调用阶段的解耦，子类服从于标准的父类实现，就可以在编码阶段优先完成过程的设计。多态的安全边界，建立在语义契约的一致性之上。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 正确的LSP示例</span><br><span class="hljs-keyword">abstract</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Bird</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">abstract</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">move</span><span class="hljs-params">()</span>;<br>&#125;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Sparrow</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">Bird</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">move</span><span class="hljs-params">()</span> &#123;<br>        fly(); <span class="hljs-comment">// 麻雀通过飞行移动</span><br>    &#125;<br>    <br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">fly</span><span class="hljs-params">()</span> &#123; <span class="hljs-comment">/* 飞行实现 */</span> &#125;<br>&#125;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Penguin</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">Bird</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">move</span><span class="hljs-params">()</span> &#123;<br>        walk(); <span class="hljs-comment">// 企鹅通过走路移动</span><br>    &#125;<br>    <br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">walk</span><span class="hljs-params">()</span> &#123; <span class="hljs-comment">/* 行走实现 */</span> &#125;<br>&#125;<br><br><span class="hljs-comment">// 客户端代码可以统一处理所有鸟类</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">moveBird</span><span class="hljs-params">(Bird bird)</span> &#123;<br>    bird.move(); <span class="hljs-comment">// 无论是麻雀还是企鹅都能正确工作</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="接口隔离原则"><a href="#接口隔离原则" class="headerlink" title="接口隔离原则"></a><strong>接口隔离原则</strong></h3><p><strong>核心</strong>：客户端不应该依赖它不需要的接口。通过接口隔离，我们可以更好的在编码阶段定义业务处理过程，面向一个过程，只需要该过程的具体实现，而不需要关系该实现类具备的其他能力。接口不是能力的集合，而是角色的边界。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 违反ISP - 胖接口</span><br><span class="hljs-keyword">interface</span> <span class="hljs-title class_">Worker</span> &#123;<br>    <span class="hljs-keyword">void</span> <span class="hljs-title function_">work</span><span class="hljs-params">()</span>;<br>    <span class="hljs-keyword">void</span> <span class="hljs-title function_">eat</span><span class="hljs-params">()</span>;<br>    <span class="hljs-keyword">void</span> <span class="hljs-title function_">sleep</span><span class="hljs-params">()</span>;<br>&#125;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Robot</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Worker</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">work</span><span class="hljs-params">()</span> &#123; <span class="hljs-comment">/* 机器人工作 */</span> &#125;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">eat</span><span class="hljs-params">()</span> &#123; <span class="hljs-comment">/* 机器人不需要吃饭！ */</span> &#125;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">sleep</span><span class="hljs-params">()</span> &#123; <span class="hljs-comment">/* 机器人不需要睡觉！ */</span> &#125;<br>&#125;<br><br><span class="hljs-comment">// 遵循ISP - 接口隔离</span><br><span class="hljs-keyword">interface</span> <span class="hljs-title class_">Workable</span> &#123;<br>    <span class="hljs-keyword">void</span> <span class="hljs-title function_">work</span><span class="hljs-params">()</span>;<br>&#125;<br><br><span class="hljs-keyword">interface</span> <span class="hljs-title class_">Eatable</span> &#123;<br>    <span class="hljs-keyword">void</span> <span class="hljs-title function_">eat</span><span class="hljs-params">()</span>;<br>&#125;<br><br><span class="hljs-keyword">interface</span> <span class="hljs-title class_">Sleepable</span> &#123;<br>    <span class="hljs-keyword">void</span> <span class="hljs-title function_">sleep</span><span class="hljs-params">()</span>;<br>&#125;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Human</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Workable</span>, Eatable, Sleepable &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">work</span><span class="hljs-params">()</span> &#123; <span class="hljs-comment">/* ... */</span> &#125;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">eat</span><span class="hljs-params">()</span> &#123; <span class="hljs-comment">/* ... */</span> &#125;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">sleep</span><span class="hljs-params">()</span> &#123; <span class="hljs-comment">/* ... */</span> &#125;<br>&#125;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Robot</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Workable</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">work</span><span class="hljs-params">()</span> &#123; <span class="hljs-comment">/* 机器人只需要实现工作接口 */</span> &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="依赖倒置原则"><a href="#依赖倒置原则" class="headerlink" title="依赖倒置原则"></a>依赖倒置原则</h3><p><strong>核心</strong>：高层模块不应该依赖低层模块，两者都应该依赖于抽象。依赖倒置原则讨论的是设计与实现的分离。高层模块服务于业务流程，而底层模块则服务于功能实现。两者通过抽象完成从流程到每一阶段的业务处理的绑定。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 违反DIP - 高层模块直接依赖低层模块</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">EmailService</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">sendEmail</span><span class="hljs-params">(String message)</span> &#123; <span class="hljs-comment">/* ... */</span> &#125;<br>&#125;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">OrderProcessor</span> &#123;<br>    <span class="hljs-keyword">private</span> <span class="hljs-type">EmailService</span> <span class="hljs-variable">emailService</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">EmailService</span>(); <span class="hljs-comment">// 直接依赖具体类</span><br>    <br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">processOrder</span><span class="hljs-params">(Order order)</span> &#123;<br>        <span class="hljs-comment">// 处理订单...</span><br>        emailService.sendEmail(<span class="hljs-string">&quot;Order processed&quot;</span>);<br>    &#125;<br>&#125;<br><br><span class="hljs-comment">// 遵循DIP - 依赖抽象</span><br><span class="hljs-keyword">interface</span> <span class="hljs-title class_">NotificationService</span> &#123;<br>    <span class="hljs-keyword">void</span> <span class="hljs-title function_">sendNotification</span><span class="hljs-params">(String message)</span>;<br>&#125;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">EmailService</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">NotificationService</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">sendNotification</span><span class="hljs-params">(String message)</span> &#123; <span class="hljs-comment">/* ... */</span> &#125;<br>&#125;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">OrderProcessor</span> &#123;<br>    <span class="hljs-keyword">private</span> NotificationService notificationService; <span class="hljs-comment">// 依赖抽象</span><br>    <br>    <span class="hljs-keyword">public</span> <span class="hljs-title function_">OrderProcessor</span><span class="hljs-params">(NotificationService notificationService)</span> &#123;<br>        <span class="hljs-built_in">this</span>.notificationService = notificationService;<br>    &#125;<br>    <br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">processOrder</span><span class="hljs-params">(Order order)</span> &#123;<br>        <span class="hljs-comment">// 处理订单...</span><br>        notificationService.sendNotification(<span class="hljs-string">&quot;Order processed&quot;</span>);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="设计模式"><a href="#设计模式" class="headerlink" title="设计模式"></a>设计模式</h2><p>所谓设计模式，就是在上述原则和解耦思想下提出的依据业务来实现的对象设计处理框架。设计模式不是凭空产生的编程技巧，而是在长期的软件开发实践中，针对特定问题场景总结出的成熟解决方案。每一个设计模式都体现了特定的解耦策略，帮助我们在复杂的业务逻辑中保持代码的灵活性和可维护性。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" class="category-chain-item">设计模式</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" class="print-no-link">#设计模式</a>
+      
+        <a href="/tags/%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84/" class="print-no-link">#系统架构</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>从编码到设计模式：系统是如何被组织的?</div>
+      <div>http://gadoid.io/2025/07/23/从编码到设计模式：系统是如何被组织的/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Codfish</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年7月23日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/07/16/%E5%9F%BA%E4%BA%8ESpring-Boot-%E7%9A%84-HTTP%E6%9C%8D%E5%8A%A1%E6%9E%84%E5%BB%BA/" title="基于Spring Boot 的 HTTP服务构建">
+                        <span class="hidden-mobile">基于Spring Boot 的 HTTP服务构建</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"lQzCvqmOtewLtpMfvfxKLomU-MdYXbMMI","appKey":"daMNlw5XcjN8TelT6GCHh8RF","path":"window.location.pathname","placeholder":"让灵感在这里发生","avatar":"monsterid","meta":["nick","mail"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":true,"recordIP":true,"serverURLs":"https://lQzCvqmO.api.lncldglobal.com","emojiCDN":null,"emojiMaps":null,"enableQQ":false,"enable":true,"visitor":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      &copy; 2025 - 2025 <a target="_blank" rel="noopener" href="https://github.com/username">CODFISH</a>
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+<!-- hexo injector body_end start --><script src="/js/chatbot-loader.js" defer></script><!-- hexo injector body_end end --></body>
+</html>
