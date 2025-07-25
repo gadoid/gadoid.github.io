@@ -19,15 +19,15 @@
   <meta name="author" content="Codfish">
   <meta name="keywords" content="">
   
-    <meta name="description" content="门面模式提供了一个统一的接口，用于访问子系统中的功能，外观模式定义了一个高层接口，让子系统更容易使用 角色 门面角色  ：门面模式的核心，被客户角色调用，它熟悉子系统的功能，内部根据客户角色的需求预定了几种功能的组合 子系统角色 ：实现了子系统功能，对客户角色和门面角色是未知的。它的内部可以有系统内的相互交互，也可以有供外界调用的接口 客户角色 ：通过调用门面角色完成要实现的功能  优点 降低了客">
+    <meta name="description" content="桥模式即将抽象部分与它的实现分离，使它们可以独立地变化 角色 抽象类 ： 维护了Implementor即它的实现类 扩展抽象类 ：扩展抽象部分的接口 实现接口： 定义实现部分的接口 具体实现：Implementor 接口的具体实现  应用桥模式以发送消息为例。当存在多种通知模式的时候，可以使用接口和抽象类来管理具体实现。在最终的流程中以基类组件业务流程，最终创建实现类完成通知-发送操作。 1234">
 <meta property="og:type" content="article">
-<meta property="og:title" content="门面模式">
-<meta property="og:url" content="http://gadoid.io/2025/07/25/%E9%97%A8%E9%9D%A2%E6%A8%A1%E5%BC%8F/index.html">
+<meta property="og:title" content="桥模式">
+<meta property="og:url" content="http://gadoid.io/2025/07/25/%E6%A1%A5%E6%A8%A1%E5%BC%8F/index.html">
 <meta property="og:site_name" content="西北有高楼">
-<meta property="og:description" content="门面模式提供了一个统一的接口，用于访问子系统中的功能，外观模式定义了一个高层接口，让子系统更容易使用 角色 门面角色  ：门面模式的核心，被客户角色调用，它熟悉子系统的功能，内部根据客户角色的需求预定了几种功能的组合 子系统角色 ：实现了子系统功能，对客户角色和门面角色是未知的。它的内部可以有系统内的相互交互，也可以有供外界调用的接口 客户角色 ：通过调用门面角色完成要实现的功能  优点 降低了客">
+<meta property="og:description" content="桥模式即将抽象部分与它的实现分离，使它们可以独立地变化 角色 抽象类 ： 维护了Implementor即它的实现类 扩展抽象类 ：扩展抽象部分的接口 实现接口： 定义实现部分的接口 具体实现：Implementor 接口的具体实现  应用桥模式以发送消息为例。当存在多种通知模式的时候，可以使用接口和抽象类来管理具体实现。在最终的流程中以基类组件业务流程，最终创建实现类完成通知-发送操作。 1234">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2025-07-25T07:24:17.000Z">
-<meta property="article:modified_time" content="2025-07-25T07:24:38.923Z">
+<meta property="article:published_time" content="2025-07-25T12:17:28.000Z">
+<meta property="article:modified_time" content="2025-07-25T12:17:51.572Z">
 <meta property="article:author" content="Codfish">
 <meta property="article:tag" content="设计模式">
 <meta name="twitter:card" content="summary_large_image">
@@ -36,7 +36,7 @@
     <meta name="referrer" content="no-referrer-when-downgrade">
   
   
-  <title>门面模式 - 西北有高楼</title>
+  <title>桥模式 - 西北有高楼</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -214,7 +214,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="门面模式"></span>
+            <span id="subtitle" data-typed-text="桥模式"></span>
           
         </div>
 
@@ -225,8 +225,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2025-07-25 15:24" pubdate>
-          2025年7月25日 下午
+        <time datetime="2025-07-25 20:17" pubdate>
+          2025年7月25日 晚上
         </time>
       </span>
     
@@ -237,7 +237,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          812 字
+          522 字
         
       </span>
     
@@ -248,7 +248,7 @@
         
         
         
-          7 分钟
+          5 分钟
         
       </span>
     
@@ -285,37 +285,22 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">门面模式</h1>
+            <h1 id="seo-header">桥模式</h1>
             
             
               <div class="markdown-body">
                 
-                <p>门面模式提供了一个统一的接口，用于访问子系统中的功能，外观模式定义了一个高层接口，让子系统更容易使用</p>
+                <p>桥模式即将抽象部分与它的实现分离，使它们可以独立地变化</p>
 <h2 id="角色"><a href="#角色" class="headerlink" title="角色"></a>角色</h2><ol>
-<li>门面角色  ：门面模式的核心，被客户角色调用，它熟悉子系统的功能，内部根据客户角色的需求预定了几种功能的组合</li>
-<li>子系统角色 ：实现了子系统功能，对客户角色和门面角色是未知的。它的内部可以有系统内的相互交互，也可以有供外界调用的接口</li>
-<li>客户角色 ：通过调用门面角色完成要实现的功能</li>
+<li>抽象类 ： 维护了Implementor即它的实现类</li>
+<li>扩展抽象类 ：扩展抽象部分的接口</li>
+<li>实现接口： 定义实现部分的接口</li>
+<li>具体实现：Implementor 接口的具体实现</li>
 </ol>
-<h2 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h2><ol>
-<li>降低了客户类与子系统类的耦合度，实现了子系统与客户之间的松耦合关系<ol>
-<li>只提供了一个访问子系统的统一入口，并不影响用户直接使用子系统类</li>
-<li>减少了与子系统的关联对象，实现了子系统与客户之间的松耦合关系，松耦合使得子系统的组件变化不会影响到它的客户</li>
-</ol>
-</li>
-<li>外观模式对客户屏蔽了子系统组件，从而简化了接口，减少了客户处理的对象数目，并使子系统的使用更加简单<ol>
-<li>引入外观角色之后，用户只需要与外观角色交互即可</li>
-<li>用户与子系统之间的复杂逻辑关系由外观角色来实现</li>
-</ol>
-</li>
-<li>降低原有系统的复杂度和系统中的编译依赖性</li>
-</ol>
-<h2 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h2><p>在不引入抽象外观类的情况下，增加新的子系统可能需要修改外观类或客户端的源代码。</p>
-<p>不能很好地限制客户使用子类系统，如果对客户访问子系统类做出太多的限制，则减少了可变性和灵活性。</p>
-<h2 id="场景"><a href="#场景" class="headerlink" title="场景"></a>场景</h2><p>门面模式一般用于在系统网关位置提供统一接口，对外提供明确间接的调用方法。在内部定义响应的绑定方案。</p>
-<h2 id="实现门面模式"><a href="#实现门面模式" class="headerlink" title="实现门面模式"></a>实现门面模式</h2><p>系统内部的多个子系统</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 内部子系统</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">SubSystemLight</span>&#123;<br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">on</span><span class="hljs-params">()</span>&#123;<br>		System.out.println(<span class="hljs-string">&quot;开灯&quot;</span>);<br>	&#125;<br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">off</span><span class="hljs-params">()</span>&#123;<br>		System.out.println(<span class="hljs-string">&quot;关灯&quot;</span>);<br>	&#125;<br>&#125;<br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">SubSystemSunblind</span>&#123;<br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">on</span><span class="hljs-params">()</span>&#123;<br>		System.out.println(<span class="hljs-string">&quot;打开窗帘&quot;</span>);<br>	&#125;<br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">off</span><span class="hljs-params">()</span>&#123;<br>		System.out.println(<span class="hljs-string">&quot;关闭窗帘&quot;</span>);<br>	&#125;<br>&#125;<br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">SubSystemTV</span>&#123;<br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">on</span><span class="hljs-params">()</span>&#123;<br>		System.out.println(<span class="hljs-string">&quot;打开电视&quot;</span>);<br>	&#125;<br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">off</span><span class="hljs-params">()</span>&#123;<br>		System.out.println(<span class="hljs-string">&quot;关闭电视&quot;</span>)<br>	&#125;<br>&#125;<br><br><span class="hljs-comment">// 定义门面类</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">DeviceFacade</span>&#123;<br>	<span class="hljs-keyword">private</span> <span class="hljs-type">SubSystemLight</span> <span class="hljs-variable">light</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">SubSystemLight</span>();<br>	<span class="hljs-keyword">private</span> <span class="hljs-type">SubSystemSunblind</span> <span class="hljs-variable">sunblind</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">SubSystemSunblind</span>();<br>	<span class="hljs-keyword">private</span> <span class="hljs-type">SubSystemTV</span> <span class="hljs-variable">tv</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">SubSystemTV</span>();<br><br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">on</span><span class="hljs-params">()</span>&#123;<br>		light.on();<br>		sunblind.on();<br>		tv.on();<br>	&#125;<br><br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">off</span><span class="hljs-params">()</span>&#123;<br>		light.off();<br>		sunblind.off();<br>		tv.off();<br>	&#125;<br>&#125;<br><br><span class="hljs-comment">// 调用</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Test</span>&#123;<br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span>&#123;<br>		<span class="hljs-type">DeviceFacade</span> <span class="hljs-variable">deviceFacade</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">DeviceFacade</span>();<br>		deviceFacade.on();<br>		deviceFacade.off();<br>	&#125;<br><br>&#125;<br></code></pre></td></tr></table></figure>
+<h2 id="应用桥模式"><a href="#应用桥模式" class="headerlink" title="应用桥模式"></a>应用桥模式</h2><p>以发送消息为例。当存在多种通知模式的时候，可以使用接口和抽象类来管理具体实现。在最终的流程中以基类组件业务流程，最终创建实现类完成通知-发送操作。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 定义消息格式的接口部分</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">interface</span> <span class="hljs-title class_">MessageImplementor</span> &#123;<br>	<span class="hljs-keyword">void</span> <span class="hljs-title function_">send</span><span class="hljs-params">(String toUser , String messages)</span>;<br>&#125;<br><br><span class="hljs-comment">// 消息格式的实现类</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">WeixinMessage</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">MessageImplementor</span>&#123;<br>	<span class="hljs-meta">@Override</span><br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">send</span><span class="hljs-params">(String toUser, String message)</span>&#123;<br>		System.out.println(<span class="hljs-string">&quot;[微信消息]&quot;</span>+toUser+<span class="hljs-string">&quot;:&quot;</span>+message);<br>	&#125;<br>&#125;<br><br><span class="hljs-comment">// 消息格式的实现类</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">SMSMessage</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">MessageImplementor</span>&#123;<br>	<span class="hljs-meta">@Override</span><br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">send</span><span class="hljs-params">(String toUser , String message)</span>&#123;<br>		System.out.println(<span class="hljs-string">&quot;[短信消息]&quot;</span>+toUser+<span class="hljs-string">&quot;:&quot;</span>+message);<br>	&#125;<br>&#125;<br><br><span class="hljs-comment">// 定义消息发送的抽象类</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">abstract</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">AbstractMessage</span>&#123;<br>	<span class="hljs-keyword">protected</span> MessageImplementor impl ;<br>	<span class="hljs-keyword">public</span> <span class="hljs-title function_">AbstractMessage</span><span class="hljs-params">(MessageImplementor impl)</span>&#123;<br>		<span class="hljs-built_in">this</span>.impl = impl ;<br>	&#125;<br><br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">send</span><span class="hljs-params">(String toUser,String message)</span>&#123;<br>		<span class="hljs-built_in">this</span>.impl.send(toUser,message);<br>	&#125;<br>&#125;<br><br><span class="hljs-comment">// 定义消息发送的实现类</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">CommonMessage</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">AbstractMessage</span>&#123;<br>	<span class="hljs-keyword">public</span> <span class="hljs-title function_">CommonMessage</span><span class="hljs-params">(MessageImplementor impl)</span>&#123;<br>		<span class="hljs-built_in">super</span>(impl);<br>	&#125;<br><br>	<span class="hljs-meta">@Override</span><br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">send</span><span class="hljs-params">(String toUser, String message)</span>&#123;<br>		<span class="hljs-built_in">super</span>.send(toUser,message);<br>	&#125;<br>&#125;<br><br><span class="hljs-comment">// 定义消息发送的实现类</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">UrgencyMessage</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">AbstractMessage</span>&#123;<br>	<span class="hljs-keyword">public</span> <span class="hljs-title function_">UrgencyMessage</span><span class="hljs-params">(MessageImplementor impl)</span>&#123;<br>		<span class="hljs-built_in">super</span>(impl);<br>	&#125;<br>	<span class="hljs-meta">@Override</span><br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">send</span><span class="hljs-params">(String toUser , String message)</span>&#123;<br>		message = <span class="hljs-string">&quot;[加急]&quot;</span>+message;<br>		<span class="hljs-built_in">super</span>.send(toUser,message);<br>	&#125;<br>	<span class="hljs-keyword">public</span> Object <span class="hljs-title function_">watch</span><span class="hljs-params">(String messageId)</span>&#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-string">&quot;[watch]收到&quot;</span>;<br>	&#125;<br>&#125;<br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Test1</span>&#123;<br>	<span class="hljs-keyword">public</span> staic <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span>&#123;<br>		<span class="hljs-type">MessageImplementor</span> <span class="hljs-variable">messageImplementor</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">WeixinMessage</span>();<br>		<span class="hljs-type">AbstractMessage</span> <span class="hljs-variable">message</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">CommonMessage</span>(messageImplementor);<br>		message.send(<span class="hljs-string">&quot;hello from WeChat&quot;</span>);<br>	&#125;<br>&#125;<br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Test2</span>&#123;<br>	<span class="hljs-keyword">public</span> staic <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span>&#123;<br>		<span class="hljs-type">MessageImplementor</span>  <span class="hljs-variable">messageImplementor</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">SMSMessage</span>();<br>	  <span class="hljs-type">AbstractMessage</span>	<span class="hljs-variable">message</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">UrgencyMessage</span>(messageImplementor);<br>		message.send(<span class="hljs-string">&quot;hello from SMS&quot;</span>);<br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
 
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>门面模式的核心在于“统一接口、简化使用、解耦子系统”，它是架构设计中实现<strong>模块隔离、降低耦合度</strong>的重要手段。在微服务网关、系统适配层、三方服务集成等场景中，门面模式均有广泛应用。值得注意的是，门面并不限制直接访问子系统，因此更强调“简化”和“组合”而非“强控制”。合理使用门面模式，可以有效提高系统的可维护性与清晰度。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>桥接模式通过 <strong>将抽象与实现解耦</strong> ，有效解决了系统中多维度扩展所带来的类爆炸问题。在实际应用中，如“消息发送”这种存在<strong>消息类型与发送方式</strong>两种变化维度的场景，桥接模式可以帮助我们灵活地组合不同的实现方式， <strong>扩展性强、层次清晰、遵循开闭原则</strong> 。在系统设计中，当你发现一个类需要同时支持多个独立变化的方向，桥接模式是一个非常值得优先考虑的解决方案。</p>
 
                 
               </div>
@@ -361,8 +346,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>门面模式</div>
-      <div>http://gadoid.io/2025/07/25/门面模式/</div>
+      <div>桥模式</div>
+      <div>http://gadoid.io/2025/07/25/桥模式/</div>
     </div>
     <div class="license-meta">
       
@@ -406,9 +391,9 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2025/07/25/%E6%A1%A5%E6%A8%A1%E5%BC%8F/" title="桥模式">
+                      <a href="/2025/07/25/%E7%BB%84%E5%90%88%E6%A8%A1%E5%BC%8F/" title="组合模式">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">桥模式</span>
+                        <span class="hidden-mobile">组合模式</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
@@ -416,8 +401,8 @@
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2025/07/25/%E8%A3%85%E9%A5%B0%E5%99%A8%E6%A8%A1%E5%BC%8F/" title="装饰器模式">
-                        <span class="hidden-mobile">装饰器模式</span>
+                      <a href="/2025/07/25/%E9%97%A8%E9%9D%A2%E6%A8%A1%E5%BC%8F/" title="门面模式">
+                        <span class="hidden-mobile">门面模式</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
