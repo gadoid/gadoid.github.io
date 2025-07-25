@@ -4,6 +4,31 @@
   
   
   <entry>
+    <title>享元模式</title>
+    <link href="/2025/07/26/%E4%BA%AB%E5%85%83%E6%A8%A1%E5%BC%8F/"/>
+    <url>/2025/07/26/%E4%BA%AB%E5%85%83%E6%A8%A1%E5%BC%8F/</url>
+    
+    <content type="html"><![CDATA[<p>享元模式通过共享技术有效地支持大量细粒度的对象</p><h2 id="角色"><a href="#角色" class="headerlink" title="角色"></a>角色</h2><ol><li>抽象享元角色， 它是产品的抽象类，同时定义出对象的外部状态和内部状态的接口或实现</li><li>具体享元角色，是具体的产品类，实现抽象角色定义的业务</li><li>享元工厂 ，用于构造一个池容器，同时提供从池中获得对象的方法</li></ol><h2 id="场景"><a href="#场景" class="headerlink" title="场景"></a>场景</h2><p>享元模式一般用于创建一个池容器用来一次性创建一组资源对象，当服务需要使用对应资源时，从容器中直接取出资源对象进行使用，减少了频繁创建&#x2F;销毁资源对象的开销。同时解耦了资源与资源调用请求过程。方便对资源进行统一管理</p><h2 id="使用享元模式"><a href="#使用享元模式" class="headerlink" title="使用享元模式"></a>使用享元模式</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 创建基础资源实现类</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Toy</span>&#123;<br><span class="hljs-keyword">private</span> String name ;<br><br><span class="hljs-keyword">public</span> String <span class="hljs-title function_">getName</span><span class="hljs-params">()</span>&#123;<br><span class="hljs-keyword">return</span> name ;<br>&#125;<br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">setName</span><span class="hljs-params">(String name)</span>&#123;<br><span class="hljs-built_in">this</span>.name = name ;<br>&#125;<br><span class="hljs-meta">@Override</span><br><span class="hljs-keyword">public</span> String <span class="hljs-title function_">toString</span><span class="hljs-params">()</span>&#123;<br><span class="hljs-keyword">return</span> <span class="hljs-string">&quot;Toy Name&quot;</span> + name ;<br>&#125;<br>&#125;<br><span class="hljs-comment">// 创建池容器。定义获取资源对象的方法</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">ToyFactory</span>&#123;<br><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> Map&lt;String , Toy&gt;toyMap = <span class="hljs-keyword">new</span> <span class="hljs-title class_">HashMap</span>&lt;&gt;();<br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> Toy <span class="hljs-title function_">getToy</span><span class="hljs-params">(String name )</span>&#123;<br><span class="hljs-type">Toy</span> <span class="hljs-variable">toy</span> <span class="hljs-operator">=</span> toyMap.get(name);<br><span class="hljs-keyword">if</span>(toy == <span class="hljs-literal">null</span>)&#123;<br> toy = <span class="hljs-keyword">new</span> <span class="hljs-title class_">toy</span>();<br> toy.setName(name);<br> toyMap.put(name,toy);<br>&#125; <br><span class="hljs-keyword">return</span> toy ;<br>&#125;<br>&#125;<br><span class="hljs-comment">// 调用</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Test</span>&#123;<br><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span>&#123;<br><span class="hljs-comment">// 第一次使用会创建对应资源</span><br><span class="hljs-type">Toy</span> <span class="hljs-variable">toy1</span> <span class="hljs-operator">=</span> ToyFactory.getToy(<span class="hljs-string">&quot;变形金刚&quot;</span>);<br><span class="hljs-type">Toy</span> <span class="hljs-variable">toy2</span> <span class="hljs-operator">=</span> ToyFactory.getToy(<span class="hljs-string">&quot;数码暴龙&quot;</span>);<br><br><br>System.out.println(toy1 == ToyFactory.getToy(<span class="hljs-string">&quot;变形金刚&quot;</span>)); <span class="hljs-comment">// true</span><br><br>&#125;<br>&#125;<br></code></pre></td></tr></table></figure><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>享元模式是一种通过<strong>共享对象</strong>来避免重复创建，<strong>优化系统性能</strong>的结构型设计模式。在本例中，我们以 <code>Toy</code> 类为共享对象，通过 <code>ToyFactory</code> 实现了一个简单的对象池：当请求相同名称的玩具时，直接从池中返回已有实例，而不是重复创建，从而达到资源复用的目的。</p><p>享元模式的核心在于：</p><ul><li><strong>共享内部状态</strong> ：不随使用者变化，可复用；</li><li><strong>分离外部状态</strong> ：由调用者动态传入，不参与共享；</li><li><strong>工厂统一管理对象池</strong> ：保障同一类型只创建一次。</li></ul><p>适用于需要频繁创建大量相似对象的场景，如游戏资源、连接池、图形系统等。通过享元模式，系统不仅节省了内存，还提升了对象管理的集中性与一致性。</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>设计模式</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>设计模式</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>组合模式</title>
     <link href="/2025/07/25/%E7%BB%84%E5%90%88%E6%A8%A1%E5%BC%8F/"/>
     <url>/2025/07/25/%E7%BB%84%E5%90%88%E6%A8%A1%E5%BC%8F/</url>
