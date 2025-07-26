@@ -19,15 +19,15 @@
   <meta name="author" content="Codfish">
   <meta name="keywords" content="">
   
-    <meta name="description" content="享元模式通过共享技术有效地支持大量细粒度的对象 角色 抽象享元角色， 它是产品的抽象类，同时定义出对象的外部状态和内部状态的接口或实现 具体享元角色，是具体的产品类，实现抽象角色定义的业务 享元工厂 ，用于构造一个池容器，同时提供从池中获得对象的方法  场景享元模式一般用于创建一个池容器用来一次性创建一组资源对象，当服务需要使用对应资源时，从容器中直接取出资源对象进行使用，减少了频繁创建&amp;#x2F">
+    <meta name="description" content="命令模式将请求封装成对象，以便使用不同的请求，日志，队列等来参数化其他对象 角色 客户端 ： 创建一个具体命令对象，并确定其接收者 命令 ： 声明了一个给所有具体命令类的接口对象 具体命令 ：定义一个接收者和行为之间的弱耦合，实现execute()方法，并负责调用接收者的相应操作 请求者：负责调用命令对象执行请求 接收者：负责具体实施和执行一个请求  场景 请求需要排队或日志记录的系统（如任务调度">
 <meta property="og:type" content="article">
-<meta property="og:title" content="享元模式">
-<meta property="og:url" content="http://gadoid.io/2025/07/26/%E4%BA%AB%E5%85%83%E6%A8%A1%E5%BC%8F/index.html">
+<meta property="og:title" content="命令模式">
+<meta property="og:url" content="http://gadoid.io/2025/07/26/%E5%91%BD%E4%BB%A4%E6%A8%A1%E5%BC%8F/index.html">
 <meta property="og:site_name" content="西北有高楼">
-<meta property="og:description" content="享元模式通过共享技术有效地支持大量细粒度的对象 角色 抽象享元角色， 它是产品的抽象类，同时定义出对象的外部状态和内部状态的接口或实现 具体享元角色，是具体的产品类，实现抽象角色定义的业务 享元工厂 ，用于构造一个池容器，同时提供从池中获得对象的方法  场景享元模式一般用于创建一个池容器用来一次性创建一组资源对象，当服务需要使用对应资源时，从容器中直接取出资源对象进行使用，减少了频繁创建&amp;#x2F">
+<meta property="og:description" content="命令模式将请求封装成对象，以便使用不同的请求，日志，队列等来参数化其他对象 角色 客户端 ： 创建一个具体命令对象，并确定其接收者 命令 ： 声明了一个给所有具体命令类的接口对象 具体命令 ：定义一个接收者和行为之间的弱耦合，实现execute()方法，并负责调用接收者的相应操作 请求者：负责调用命令对象执行请求 接收者：负责具体实施和执行一个请求  场景 请求需要排队或日志记录的系统（如任务调度">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2025-07-25T16:46:31.000Z">
-<meta property="article:modified_time" content="2025-07-25T16:46:47.769Z">
+<meta property="article:published_time" content="2025-07-26T08:15:46.000Z">
+<meta property="article:modified_time" content="2025-07-26T11:10:23.399Z">
 <meta property="article:author" content="Codfish">
 <meta property="article:tag" content="设计模式">
 <meta name="twitter:card" content="summary_large_image">
@@ -36,7 +36,7 @@
     <meta name="referrer" content="no-referrer-when-downgrade">
   
   
-  <title>享元模式 - 西北有高楼</title>
+  <title>命令模式 - 西北有高楼</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -214,7 +214,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="享元模式"></span>
+            <span id="subtitle" data-typed-text="命令模式"></span>
           
         </div>
 
@@ -225,8 +225,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2025-07-26 00:46" pubdate>
-          2025年7月26日 凌晨
+        <time datetime="2025-07-26 16:15" pubdate>
+          2025年7月26日 下午
         </time>
       </span>
     
@@ -237,7 +237,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          588 字
+          641 字
         
       </span>
     
@@ -248,7 +248,7 @@
         
         
         
-          5 分钟
+          6 分钟
         
       </span>
     
@@ -285,28 +285,34 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">享元模式</h1>
+            <h1 id="seo-header">命令模式</h1>
             
             
               <div class="markdown-body">
                 
-                <p>享元模式通过共享技术有效地支持大量细粒度的对象</p>
+                <p>命令模式将请求封装成对象，以便使用不同的请求，日志，队列等来参数化其他对象</p>
 <h2 id="角色"><a href="#角色" class="headerlink" title="角色"></a>角色</h2><ol>
-<li>抽象享元角色， 它是产品的抽象类，同时定义出对象的外部状态和内部状态的接口或实现</li>
-<li>具体享元角色，是具体的产品类，实现抽象角色定义的业务</li>
-<li>享元工厂 ，用于构造一个池容器，同时提供从池中获得对象的方法</li>
+<li>客户端 ： 创建一个具体命令对象，并确定其接收者</li>
+<li>命令 ： 声明了一个给所有具体命令类的接口对象</li>
+<li>具体命令 ：定义一个接收者和行为之间的弱耦合，实现execute()方法，并负责调用接收者的相应操作</li>
+<li>请求者：负责调用命令对象执行请求</li>
+<li>接收者：负责具体实施和执行一个请求</li>
 </ol>
-<h2 id="场景"><a href="#场景" class="headerlink" title="场景"></a>场景</h2><p>享元模式一般用于创建一个池容器用来一次性创建一组资源对象，当服务需要使用对应资源时，从容器中直接取出资源对象进行使用，减少了频繁创建&#x2F;销毁资源对象的开销。同时解耦了资源与资源调用请求过程。方便对资源进行统一管理</p>
-<h2 id="使用享元模式"><a href="#使用享元模式" class="headerlink" title="使用享元模式"></a>使用享元模式</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 创建基础资源实现类</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Toy</span>&#123;<br>	<span class="hljs-keyword">private</span> String name ;<br><br>	<span class="hljs-keyword">public</span> String <span class="hljs-title function_">getName</span><span class="hljs-params">()</span>&#123;<br>		<span class="hljs-keyword">return</span> name ;<br>	&#125;<br><br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">setName</span><span class="hljs-params">(String name)</span>&#123;<br>		<span class="hljs-built_in">this</span>.name = name ;<br>	&#125;<br>	<span class="hljs-meta">@Override</span><br>	<span class="hljs-keyword">public</span> String <span class="hljs-title function_">toString</span><span class="hljs-params">()</span>&#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-string">&quot;Toy Name&quot;</span> + name ;<br>	&#125;<br>&#125;<br><span class="hljs-comment">// 创建池容器。定义获取资源对象的方法</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">ToyFactory</span>&#123;<br>	<span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> Map&lt;String , Toy&gt;toyMap = <span class="hljs-keyword">new</span> <span class="hljs-title class_">HashMap</span>&lt;&gt;();<br><br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> Toy <span class="hljs-title function_">getToy</span><span class="hljs-params">(String name )</span>&#123;<br>		<span class="hljs-type">Toy</span> <span class="hljs-variable">toy</span> <span class="hljs-operator">=</span> toyMap.get(name);<br>		<span class="hljs-keyword">if</span>(toy == <span class="hljs-literal">null</span>)&#123;<br>			 toy = <span class="hljs-keyword">new</span> <span class="hljs-title class_">toy</span>();<br>			 toy.setName(name);<br>			 toyMap.put(name,toy);<br>		&#125; <br>		<span class="hljs-keyword">return</span> toy ;<br>	&#125;<br>&#125;<br><span class="hljs-comment">// 调用</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Test</span>&#123;<br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span>&#123;<br>		<span class="hljs-comment">// 第一次使用会创建对应资源</span><br>		<span class="hljs-type">Toy</span> <span class="hljs-variable">toy1</span> <span class="hljs-operator">=</span> ToyFactory.getToy(<span class="hljs-string">&quot;变形金刚&quot;</span>);<br>		<span class="hljs-type">Toy</span> <span class="hljs-variable">toy2</span> <span class="hljs-operator">=</span> ToyFactory.getToy(<span class="hljs-string">&quot;数码暴龙&quot;</span>);<br><br>	<br>		System.out.println(toy1 == ToyFactory.getToy(<span class="hljs-string">&quot;变形金刚&quot;</span>)); <span class="hljs-comment">// true</span><br><br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
-
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>享元模式是一种通过<strong>共享对象</strong>来避免重复创建，<strong>优化系统性能</strong>的结构型设计模式。在本例中，我们以 <code>Toy</code> 类为共享对象，通过 <code>ToyFactory</code> 实现了一个简单的对象池：当请求相同名称的玩具时，直接从池中返回已有实例，而不是重复创建，从而达到资源复用的目的。</p>
-<p>享元模式的核心在于：</p>
-<ul>
-<li><strong>共享内部状态</strong> ：不随使用者变化，可复用；</li>
-<li><strong>分离外部状态</strong> ：由调用者动态传入，不参与共享；</li>
-<li><strong>工厂统一管理对象池</strong> ：保障同一类型只创建一次。</li>
+<h2 id="场景"><a href="#场景" class="headerlink" title="场景"></a>场景</h2><ul>
+<li>请求需要排队或日志记录的系统（如任务调度系统）</li>
+<li>需要支持操作撤销&#x2F;重做（如编辑器、事务系统）</li>
+<li>需要将行为抽象成参数进行传递（如菜单栏、按钮绑定操作）</li>
 </ul>
-<p>适用于需要频繁创建大量相似对象的场景，如游戏资源、连接池、图形系统等。通过享元模式，系统不仅节省了内存，还提升了对象管理的集中性与一致性。</p>
+<h2 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h2><ol>
+<li>命令模式中，请求者不直接与接收者交互，即请求者不包含接收者的引用，因此彻底消除了彼此之间的耦合</li>
+<li>命令模式满足“开闭”原则。如果增加信的具体命令和该命令的接收者，不必修改调用者的代码，调用者就可以使用新的命令对象</li>
+<li>由于请求者被封装到了命令中，那么就可以将具体命令保存到持久化的媒介中，在需要的时候，重新执行这个具体命令</li>
+<li>使用命令模式可以对请求者的请求排队，每个请求对应一个具体命令</li>
+</ol>
+<h2 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h2><p>可能产生大量具体命令类</p>
+<h2 id="实现命令模式"><a href="#实现命令模式" class="headerlink" title="实现命令模式"></a>实现命令模式</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 最终会被调用到的类</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Barbecuer</span> &#123;<br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">bakeMutton</span><span class="hljs-params">()</span>&#123;<br>		System.out.println(<span class="hljs-string">&quot;烤羊肉串&quot;</span>);<br>	&#125;<br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">bakeChickenWing</span><span class="hljs-params">()</span>&#123;<br>		System.out.println(<span class="hljs-string">&quot;烤鸡翅&quot;</span>);<br>	&#125;<br>&#125;<br><br><span class="hljs-comment">// 定义抽象类，驱动最终被调用的类</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">abstract</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Command</span>&#123;<br>	<span class="hljs-keyword">protected</span> Barbecuer barbecuer ;<br><br>	<span class="hljs-keyword">public</span> <span class="hljs-title function_">Command</span><span class="hljs-params">(Barbecuer barbecuer)</span>&#123;<br>		<span class="hljs-built_in">this</span>.barbecuer = barbecuer ;<br>	&#125;<br><br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">abstract</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">execute</span><span class="hljs-params">()</span>;<br>&#125;<br><br><span class="hljs-comment">// 定义具体实现类 执行方法</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">BakeChickenWingCommand</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">Command</span> &#123;<br>	<span class="hljs-keyword">public</span> <span class="hljs-title function_">BakeChickenWingCommand</span><span class="hljs-params">(Barbecuer barbecuer)</span>&#123;<br>		<span class="hljs-built_in">super</span>(barbecuer);<br>	&#125;<br><br>	<span class="hljs-meta">@Override</span><br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">execute</span><span class="hljs-params">()</span>&#123;<br>		barbecuer.bakeChickenWing();<br>	&#125;<br>&#125;<br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">BakeMuttonCommand</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">Command</span>&#123;<br>	<span class="hljs-keyword">public</span> <span class="hljs-title function_">BakeMuttonCommand</span><span class="hljs-params">(Barbecuer barbecuer)</span>&#123;<br>		<span class="hljs-built_in">super</span>(barbecuer);<br>	&#125;<br><br>	<span class="hljs-meta">@Override</span><br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">execute</span><span class="hljs-params">()</span>&#123;<br>		barbecuer.bakeMutton();<br>	&#125;<br>&#125;<br><span class="hljs-comment">// 中间调用者</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Waiter</span>&#123;<br>	<span class="hljs-keyword">private</span> List&lt;Command&gt;commandList = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ArrayList</span>&lt;&gt;();<br><br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">addCommand</span><span class="hljs-params">(Command command)</span>&#123;<br>		commandList.add(command);<br>	&#125;<br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">notifyBarbecuer</span><span class="hljs-params">()</span>&#123;<br>		<span class="hljs-keyword">for</span>(Command command:commandList)&#123;<br>			command.execute();<br>		&#125;<br>	&#125;<br>&#125;<br><br><span class="hljs-comment">// 调用</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Test</span>&#123;<br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span>&#123;<br>		<span class="hljs-type">Barbecuer</span> <span class="hljs-variable">barbecuer</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Barbecuer</span>();<br>		<span class="hljs-type">Waiter</span> <span class="hljs-variable">waiter</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">waiter</span>();<br><br>		waiter.addCommand(<span class="hljs-keyword">new</span> <span class="hljs-title class_">BakeChickenWingComand</span>(barbecuer));<br>		waiter.addCommand(<span class="hljs-keyword">new</span> <span class="hljs-title class_">BakeMuttonCommand</span>(barbecuer));<br><br>		waiter.notifyBarbecuer();<br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>命令模式是一种将“动作的请求者”与“动作的执行者”彻底解耦的行为型设计模式。它通过将操作请求封装为对象，使得请求本身可以被排队、记录、撤销，甚至在分布式系统中跨网络传递。</p>
 
                 
               </div>
@@ -352,8 +358,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>享元模式</div>
-      <div>http://gadoid.io/2025/07/26/享元模式/</div>
+      <div>命令模式</div>
+      <div>http://gadoid.io/2025/07/26/命令模式/</div>
     </div>
     <div class="license-meta">
       
@@ -397,9 +403,9 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2025/07/26/%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F/" title="代理模式">
+                      <a href="/2025/07/26/%E7%8A%B6%E6%80%81%E6%A8%A1%E5%BC%8F/" title="状态模式">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">代理模式</span>
+                        <span class="hidden-mobile">状态模式</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
@@ -407,8 +413,8 @@
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2025/07/25/%E7%BB%84%E5%90%88%E6%A8%A1%E5%BC%8F/" title="组合模式">
-                        <span class="hidden-mobile">组合模式</span>
+                      <a href="/2025/07/26/%E7%AD%96%E7%95%A5%E6%A8%A1%E5%BC%8F/" title="策略模式">
+                        <span class="hidden-mobile">策略模式</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>

@@ -19,15 +19,15 @@
   <meta name="author" content="Codfish">
   <meta name="keywords" content="">
   
-    <meta name="description" content="享元模式通过共享技术有效地支持大量细粒度的对象 角色 抽象享元角色， 它是产品的抽象类，同时定义出对象的外部状态和内部状态的接口或实现 具体享元角色，是具体的产品类，实现抽象角色定义的业务 享元工厂 ，用于构造一个池容器，同时提供从池中获得对象的方法  场景享元模式一般用于创建一个池容器用来一次性创建一组资源对象，当服务需要使用对应资源时，从容器中直接取出资源对象进行使用，减少了频繁创建&amp;#x2F">
+    <meta name="description" content="策略模式 定义了一组算法，将每个算法封装起来，并且使它们之间可以互换 角色 抽象的策略 ： 一个接口或抽象类 具体的策略 ： 实现了抽象的策略 一个普通的类 ： 上下文环境，对抽象策略的引用  实现策略模式策略模式本身就是 一种多态机制的利用。通过同一个类下的不同实现，来达成根据不同的情况调用不同方法的目的。 12345678910111213141516171819202122232425262">
 <meta property="og:type" content="article">
-<meta property="og:title" content="享元模式">
-<meta property="og:url" content="http://gadoid.io/2025/07/26/%E4%BA%AB%E5%85%83%E6%A8%A1%E5%BC%8F/index.html">
+<meta property="og:title" content="策略模式">
+<meta property="og:url" content="http://gadoid.io/2025/07/26/%E7%AD%96%E7%95%A5%E6%A8%A1%E5%BC%8F/index.html">
 <meta property="og:site_name" content="西北有高楼">
-<meta property="og:description" content="享元模式通过共享技术有效地支持大量细粒度的对象 角色 抽象享元角色， 它是产品的抽象类，同时定义出对象的外部状态和内部状态的接口或实现 具体享元角色，是具体的产品类，实现抽象角色定义的业务 享元工厂 ，用于构造一个池容器，同时提供从池中获得对象的方法  场景享元模式一般用于创建一个池容器用来一次性创建一组资源对象，当服务需要使用对应资源时，从容器中直接取出资源对象进行使用，减少了频繁创建&amp;#x2F">
+<meta property="og:description" content="策略模式 定义了一组算法，将每个算法封装起来，并且使它们之间可以互换 角色 抽象的策略 ： 一个接口或抽象类 具体的策略 ： 实现了抽象的策略 一个普通的类 ： 上下文环境，对抽象策略的引用  实现策略模式策略模式本身就是 一种多态机制的利用。通过同一个类下的不同实现，来达成根据不同的情况调用不同方法的目的。 12345678910111213141516171819202122232425262">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2025-07-25T16:46:31.000Z">
-<meta property="article:modified_time" content="2025-07-25T16:46:47.769Z">
+<meta property="article:published_time" content="2025-07-26T04:53:24.000Z">
+<meta property="article:modified_time" content="2025-07-26T04:53:45.237Z">
 <meta property="article:author" content="Codfish">
 <meta property="article:tag" content="设计模式">
 <meta name="twitter:card" content="summary_large_image">
@@ -36,7 +36,7 @@
     <meta name="referrer" content="no-referrer-when-downgrade">
   
   
-  <title>享元模式 - 西北有高楼</title>
+  <title>策略模式 - 西北有高楼</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -214,7 +214,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="享元模式"></span>
+            <span id="subtitle" data-typed-text="策略模式"></span>
           
         </div>
 
@@ -225,8 +225,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2025-07-26 00:46" pubdate>
-          2025年7月26日 凌晨
+        <time datetime="2025-07-26 12:53" pubdate>
+          2025年7月26日 下午
         </time>
       </span>
     
@@ -237,7 +237,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          588 字
+          441 字
         
       </span>
     
@@ -248,7 +248,7 @@
         
         
         
-          5 分钟
+          4 分钟
         
       </span>
     
@@ -285,28 +285,21 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">享元模式</h1>
+            <h1 id="seo-header">策略模式</h1>
             
             
               <div class="markdown-body">
                 
-                <p>享元模式通过共享技术有效地支持大量细粒度的对象</p>
+                <p>策略模式 定义了一组算法，将每个算法封装起来，并且使它们之间可以互换</p>
 <h2 id="角色"><a href="#角色" class="headerlink" title="角色"></a>角色</h2><ol>
-<li>抽象享元角色， 它是产品的抽象类，同时定义出对象的外部状态和内部状态的接口或实现</li>
-<li>具体享元角色，是具体的产品类，实现抽象角色定义的业务</li>
-<li>享元工厂 ，用于构造一个池容器，同时提供从池中获得对象的方法</li>
+<li>抽象的策略 ： 一个接口或抽象类</li>
+<li>具体的策略 ： 实现了抽象的策略</li>
+<li>一个普通的类 ： 上下文环境，对抽象策略的引用</li>
 </ol>
-<h2 id="场景"><a href="#场景" class="headerlink" title="场景"></a>场景</h2><p>享元模式一般用于创建一个池容器用来一次性创建一组资源对象，当服务需要使用对应资源时，从容器中直接取出资源对象进行使用，减少了频繁创建&#x2F;销毁资源对象的开销。同时解耦了资源与资源调用请求过程。方便对资源进行统一管理</p>
-<h2 id="使用享元模式"><a href="#使用享元模式" class="headerlink" title="使用享元模式"></a>使用享元模式</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 创建基础资源实现类</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Toy</span>&#123;<br>	<span class="hljs-keyword">private</span> String name ;<br><br>	<span class="hljs-keyword">public</span> String <span class="hljs-title function_">getName</span><span class="hljs-params">()</span>&#123;<br>		<span class="hljs-keyword">return</span> name ;<br>	&#125;<br><br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">setName</span><span class="hljs-params">(String name)</span>&#123;<br>		<span class="hljs-built_in">this</span>.name = name ;<br>	&#125;<br>	<span class="hljs-meta">@Override</span><br>	<span class="hljs-keyword">public</span> String <span class="hljs-title function_">toString</span><span class="hljs-params">()</span>&#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-string">&quot;Toy Name&quot;</span> + name ;<br>	&#125;<br>&#125;<br><span class="hljs-comment">// 创建池容器。定义获取资源对象的方法</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">ToyFactory</span>&#123;<br>	<span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> Map&lt;String , Toy&gt;toyMap = <span class="hljs-keyword">new</span> <span class="hljs-title class_">HashMap</span>&lt;&gt;();<br><br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> Toy <span class="hljs-title function_">getToy</span><span class="hljs-params">(String name )</span>&#123;<br>		<span class="hljs-type">Toy</span> <span class="hljs-variable">toy</span> <span class="hljs-operator">=</span> toyMap.get(name);<br>		<span class="hljs-keyword">if</span>(toy == <span class="hljs-literal">null</span>)&#123;<br>			 toy = <span class="hljs-keyword">new</span> <span class="hljs-title class_">toy</span>();<br>			 toy.setName(name);<br>			 toyMap.put(name,toy);<br>		&#125; <br>		<span class="hljs-keyword">return</span> toy ;<br>	&#125;<br>&#125;<br><span class="hljs-comment">// 调用</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Test</span>&#123;<br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span>&#123;<br>		<span class="hljs-comment">// 第一次使用会创建对应资源</span><br>		<span class="hljs-type">Toy</span> <span class="hljs-variable">toy1</span> <span class="hljs-operator">=</span> ToyFactory.getToy(<span class="hljs-string">&quot;变形金刚&quot;</span>);<br>		<span class="hljs-type">Toy</span> <span class="hljs-variable">toy2</span> <span class="hljs-operator">=</span> ToyFactory.getToy(<span class="hljs-string">&quot;数码暴龙&quot;</span>);<br><br>	<br>		System.out.println(toy1 == ToyFactory.getToy(<span class="hljs-string">&quot;变形金刚&quot;</span>)); <span class="hljs-comment">// true</span><br><br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h2 id="实现策略模式"><a href="#实现策略模式" class="headerlink" title="实现策略模式"></a>实现策略模式</h2><p>策略模式本身就是 一种多态机制的利用。通过同一个类下的不同实现，来达成根据不同的情况调用不同方法的目的。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 抽象策略</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">interface</span> <span class="hljs-title class_">Strategy</span> &#123;<br>	<span class="hljs-keyword">void</span> <span class="hljs-title function_">operate</span><span class="hljs-params">()</span>;<br>&#125;<br><br><span class="hljs-comment">// 具体策略实现</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">GoOutWithRain</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Strategy</span> &#123;<br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">operate</span><span class="hljs-params">()</span> &#123;<br>		System.out.println(<span class="hljs-string">&quot;带把雨伞出门&quot;</span>);<br>	&#125;<br>&#125;<br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">GoOutWithSun</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Strategy</span> &#123;<br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">operate</span><span class="hljs-params">()</span> &#123;<br>		System.out.println(<span class="hljs-string">&quot;穿防晒衣出门&quot;</span>);<br>	&#125;<br>&#125;<br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">GoOutWithWind</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Strategy</span> &#123;<br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">operate</span><span class="hljs-params">()</span> &#123;<br>		System.out.println(<span class="hljs-string">&quot;风太大了，不出去了&quot;</span>);<br>	&#125;<br>&#125;<br><br><span class="hljs-comment">// 上下文类</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Context</span> &#123;<br>	<span class="hljs-keyword">private</span> Strategy strategy;<br>	<span class="hljs-keyword">public</span> <span class="hljs-title function_">Context</span><span class="hljs-params">(Strategy strategy)</span> &#123;<br>		<span class="hljs-built_in">this</span>.strategy = strategy;<br>	&#125;<br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">execute</span><span class="hljs-params">()</span> &#123;<br>		strategy.operate();<br>	&#125;<br>&#125;<br><br><span class="hljs-comment">// 调用</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Test</span> &#123;<br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> &#123;<br>		<span class="hljs-type">String</span> <span class="hljs-variable">weather</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;雨天&quot;</span>;<br>		Strategy strategy;<br>		<span class="hljs-keyword">if</span> (weather.equals(<span class="hljs-string">&quot;晴天&quot;</span>)) &#123;<br>			strategy = <span class="hljs-keyword">new</span> <span class="hljs-title class_">GoOutWithSun</span>();<br>		&#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (weather.equals(<span class="hljs-string">&quot;雨天&quot;</span>)) &#123;<br>			strategy = <span class="hljs-keyword">new</span> <span class="hljs-title class_">GoOutWithRain</span>();<br>		&#125; <span class="hljs-keyword">else</span> &#123;<br>			strategy = <span class="hljs-keyword">new</span> <span class="hljs-title class_">GoOutWithWind</span>();<br>		&#125;<br>		<span class="hljs-type">Context</span> <span class="hljs-variable">context</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Context</span>(strategy);<br>		context.execute();<br>	&#125;<br>&#125;<br><br></code></pre></td></tr></table></figure>
 
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>享元模式是一种通过<strong>共享对象</strong>来避免重复创建，<strong>优化系统性能</strong>的结构型设计模式。在本例中，我们以 <code>Toy</code> 类为共享对象，通过 <code>ToyFactory</code> 实现了一个简单的对象池：当请求相同名称的玩具时，直接从池中返回已有实例，而不是重复创建，从而达到资源复用的目的。</p>
-<p>享元模式的核心在于：</p>
-<ul>
-<li><strong>共享内部状态</strong> ：不随使用者变化，可复用；</li>
-<li><strong>分离外部状态</strong> ：由调用者动态传入，不参与共享；</li>
-<li><strong>工厂统一管理对象池</strong> ：保障同一类型只创建一次。</li>
-</ul>
-<p>适用于需要频繁创建大量相似对象的场景，如游戏资源、连接池、图形系统等。通过享元模式，系统不仅节省了内存，还提升了对象管理的集中性与一致性。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>策略模式（Strategy Pattern）是一种 <strong>行为型设计模式</strong> ，它定义了一组算法或行为，将每个算法封装成独立的策略类，并使它们可以相互替换。客户端可以在运行时选择合适的策略，而不必修改使用策略的上下文类。通过将行为抽象提取出来并注入上下文对象，策略模式实现了 <strong>行为的封装、解耦与复用</strong> ，特别适用于具有<strong>多种变换行为</strong>的场景，如支付方式切换、出行策略选择、排序算法替换等。其核心是<strong>面向接口编程+组合优于继承</strong>的思想。</p>
 
                 
               </div>
@@ -352,8 +345,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>享元模式</div>
-      <div>http://gadoid.io/2025/07/26/享元模式/</div>
+      <div>策略模式</div>
+      <div>http://gadoid.io/2025/07/26/策略模式/</div>
     </div>
     <div class="license-meta">
       
@@ -397,9 +390,9 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2025/07/26/%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F/" title="代理模式">
+                      <a href="/2025/07/26/%E5%91%BD%E4%BB%A4%E6%A8%A1%E5%BC%8F/" title="命令模式">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">代理模式</span>
+                        <span class="hidden-mobile">命令模式</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
@@ -407,8 +400,8 @@
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2025/07/25/%E7%BB%84%E5%90%88%E6%A8%A1%E5%BC%8F/" title="组合模式">
-                        <span class="hidden-mobile">组合模式</span>
+                      <a href="/2025/07/26/%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F/" title="代理模式">
+                        <span class="hidden-mobile">代理模式</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
