@@ -19,15 +19,15 @@
   <meta name="author" content="Codfish">
   <meta name="keywords" content="">
   
-    <meta name="description" content="用一个中介对象来封装一系列的对象交互。中介者模式使各对象不需要显式的相互引用，从而使其耦合松散，而且可以独立地改变它们之间的交互。 角色 抽象中介者 ： 抽象中介者角色定义统一的接口，以及一个或者多个事件方法，用于各同事角色之间的通信 具体中介者 ： 实现了抽象中介者所声明的事件方法，协调各同事类之间的行为，持有所有同事类对象的引用。 抽象同事类 ：定义了抽象同事类，持有抽象中介者对象的引用 具体">
+    <meta name="description" content="观察者模式定义了一种一对多的依赖关系。让多个观察者对象同时监听某一个主题对象，这个主题对象在状态发生变化时，会通知所有观察者对象，使它们能够自动更新 角色 抽象观察者角色 ： 为所有的具体观察者定义一个接口，在得到主题通知时更新自己 具体观察者角色 ： 实现抽象观察者角色所需要的更新接口，以便使本身的状态与主题的状态相协调 抽象被观察者角色 ：一个抽象主题，把所有对观察者对象的引用保存在一个集合中">
 <meta property="og:type" content="article">
-<meta property="og:title" content="中介者模式">
-<meta property="og:url" content="http://gadoid.io/2025/07/27/%E4%B8%AD%E4%BB%8B%E8%80%85%E6%A8%A1%E5%BC%8F/index.html">
+<meta property="og:title" content="观察者模式">
+<meta property="og:url" content="http://gadoid.io/2025/07/27/%E8%A7%82%E5%AF%9F%E8%80%85%E6%A8%A1%E5%BC%8F/index.html">
 <meta property="og:site_name" content="西北有高楼">
-<meta property="og:description" content="用一个中介对象来封装一系列的对象交互。中介者模式使各对象不需要显式的相互引用，从而使其耦合松散，而且可以独立地改变它们之间的交互。 角色 抽象中介者 ： 抽象中介者角色定义统一的接口，以及一个或者多个事件方法，用于各同事角色之间的通信 具体中介者 ： 实现了抽象中介者所声明的事件方法，协调各同事类之间的行为，持有所有同事类对象的引用。 抽象同事类 ：定义了抽象同事类，持有抽象中介者对象的引用 具体">
+<meta property="og:description" content="观察者模式定义了一种一对多的依赖关系。让多个观察者对象同时监听某一个主题对象，这个主题对象在状态发生变化时，会通知所有观察者对象，使它们能够自动更新 角色 抽象观察者角色 ： 为所有的具体观察者定义一个接口，在得到主题通知时更新自己 具体观察者角色 ： 实现抽象观察者角色所需要的更新接口，以便使本身的状态与主题的状态相协调 抽象被观察者角色 ：一个抽象主题，把所有对观察者对象的引用保存在一个集合中">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2025-07-27T03:43:58.000Z">
-<meta property="article:modified_time" content="2025-07-27T03:44:26.258Z">
+<meta property="article:published_time" content="2025-07-27T06:55:16.000Z">
+<meta property="article:modified_time" content="2025-07-27T06:55:44.659Z">
 <meta property="article:author" content="Codfish">
 <meta property="article:tag" content="设计模式">
 <meta name="twitter:card" content="summary_large_image">
@@ -36,7 +36,7 @@
     <meta name="referrer" content="no-referrer-when-downgrade">
   
   
-  <title>中介者模式 - 西北有高楼</title>
+  <title>观察者模式 - 西北有高楼</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -214,7 +214,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="中介者模式"></span>
+            <span id="subtitle" data-typed-text="观察者模式"></span>
           
         </div>
 
@@ -225,8 +225,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2025-07-27 11:43" pubdate>
-          2025年7月27日 中午
+        <time datetime="2025-07-27 14:55" pubdate>
+          2025年7月27日 下午
         </time>
       </span>
     
@@ -237,7 +237,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          709 字
+          526 字
         
       </span>
     
@@ -248,7 +248,7 @@
         
         
         
-          6 分钟
+          5 分钟
         
       </span>
     
@@ -285,31 +285,21 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">中介者模式</h1>
+            <h1 id="seo-header">观察者模式</h1>
             
             
               <div class="markdown-body">
                 
-                <p>用一个中介对象来封装一系列的对象交互。中介者模式使各对象不需要显式的相互引用，从而使其耦合松散，而且可以独立地改变它们之间的交互。</p>
+                <p>观察者模式定义了一种一对多的依赖关系。让多个观察者对象同时监听某一个主题对象，这个主题对象在状态发生变化时，会通知所有观察者对象，使它们能够自动更新</p>
 <h2 id="角色"><a href="#角色" class="headerlink" title="角色"></a>角色</h2><ol>
-<li>抽象中介者 ： 抽象中介者角色定义统一的接口，以及一个或者多个事件方法，用于各同事角色之间的通信</li>
-<li>具体中介者 ： 实现了抽象中介者所声明的事件方法，协调各同事类之间的行为，持有所有同事类对象的引用。</li>
-<li>抽象同事类 ：定义了抽象同事类，持有抽象中介者对象的引用</li>
-<li>具体同事类 ：继承抽象同事类，实现自己的业务通过中介者跟其他同事类进行通信</li>
+<li>抽象观察者角色 ： 为所有的具体观察者定义一个接口，在得到主题通知时更新自己</li>
+<li>具体观察者角色 ： 实现抽象观察者角色所需要的更新接口，以便使本身的状态与主题的状态相协调</li>
+<li>抽象被观察者角色 ：一个抽象主题，把所有对观察者对象的引用保存在一个集合中，每个主题可以有任意数量的观察者。</li>
+<li>具体被观察者角色 ：一个具体主题，在具体主题的内部状态改变时，向所有登记过的观察者发出通知。</li>
 </ol>
-<h2 id="场景"><a href="#场景" class="headerlink" title="场景"></a>场景</h2><ol>
-<li>系统中的对象间存在较为复杂的引用，导致依赖关系和结构混乱而无法复用的情况</li>
-<li>想通过一个中间类来封装多个类的行为，但是又不想要太多的子类</li>
-</ol>
-<h2 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h2><ol>
-<li>松散耦合将多个对象之间的联系紧耦合封装到中介对象中，做到松耦合，不会导致牵一发而动全身</li>
-<li>将多个对象之间的交互联系集中在中介对象中，发生变化时，仅需修改中介对象即可，提供系统的灵活性，使同事对象对立而易于复用</li>
-<li>符合迪米特原则，一个对象应当对其他对象有尽可能少的了解</li>
-</ol>
-<h2 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h2><p>当各个同事间的交互非常多且非常复杂时，如果都交给中介者处理，会导致中介者变得十分复杂。</p>
-<h2 id="实现中介者模式"><a href="#实现中介者模式" class="headerlink" title="实现中介者模式"></a>实现中介者模式</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 抽象中介者</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">interface</span> <span class="hljs-title class_">PostOffice</span> &#123;<br>	<span class="hljs-keyword">void</span> <span class="hljs-title function_">deliverLetter</span><span class="hljs-params">(String letter , String receiver)</span>;<br><br>	<span class="hljs-keyword">void</span> <span class="hljs-title function_">addPeople</span><span class="hljs-params">(People people)</span>;<br><br>&#125;<br><br><span class="hljs-comment">// 中介者的实现类</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">PostOfficeImpl</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">PostOffice</span>&#123;<br>	<span class="hljs-keyword">private</span> Map&lt;String , People&gt;peopleMap = <span class="hljs-keyword">new</span> <span class="hljs-title class_">HashMap</span>&lt;&gt;();<br><br>	<span class="hljs-meta">@Override</span><br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">deliverLetter</span><span class="hljs-params">(String letter , String receiver)</span>&#123;<br>		System.out.println(<span class="hljs-string">&quot;=&gt;收信&quot;</span>);<br>		<span class="hljs-type">People</span> <span class="hljs-variable">people</span> <span class="hljs-operator">=</span> peopleMap.get(receiver);<br>		System.out.println(<span class="hljs-string">&quot;=&gt;送信&quot;</span>);<br>		System.out.println(<span class="hljs-string">&quot;=&gt;收信人看信&quot;</span>);<br>		people.receiveLetter(letter);<br>	&#125;<br><br>	<span class="hljs-meta">@Override</span><br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">addPeople</span><span class="hljs-params">(People people)</span>&#123;<br>		peopleMap.put(people.getClass().getSimpleName(),people);<br>	&#125;<br>&#125;<br><br><span class="hljs-comment">// 抽象同事类</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">abstract</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">People</span>&#123;<br>	<span class="hljs-keyword">protected</span> PostOffice postOffice;<br>	<span class="hljs-keyword">public</span> String <span class="hljs-title function_">getAddress</span><span class="hljs-params">()</span>&#123;<br>		<span class="hljs-keyword">return</span> address ;<br>	&#125;<br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">receiveLetter</span><span class="hljs-params">(String letter)</span>&#123;<br>		System.out.println(letter);<br>	&#125;<br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">sendLetter</span><span class="hljs-params">(String letter,String receiver)</span>&#123;<br>		postOffice.deliverLetter(letter,receiver);<br>	&#125;<br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">setAddress</span><span class="hljs-params">(String address)</span>&#123;<br>		<span class="hljs-built_in">this</span>.address = address ;<br>	&#125;<br>	<span class="hljs-keyword">private</span> String address ;<br>	<span class="hljs-keyword">public</span> <span class="hljs-title function_">People</span><span class="hljs-params">(PostOffice postOffice , String address)</span>&#123;<br>		<span class="hljs-built_in">this</span>.postOffice = postOffice;<br>		<span class="hljs-built_in">this</span>.address = address ;<br>	&#125;<br>&#125;<br><br><span class="hljs-comment">// 同事实现类</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">People1</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">People</span>&#123;<br>	<span class="hljs-keyword">public</span> <span class="hljs-title function_">People1</span><span class="hljs-params">(PostOffice postOffice, String address)</span>&#123;<br>		<span class="hljs-built_in">super</span>(postOffice , address);<br>	&#125;<br>&#125; <br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">People2</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">People</span>&#123;<br>	<span class="hljs-keyword">public</span> <span class="hljs-title function_">People2</span><span class="hljs-params">(PostOffice postOffice , String address)</span>&#123;<br>		<span class="hljs-built_in">super</span>(postOffice , address);<br>	&#125;<br>&#125;<br><br><span class="hljs-comment">// 调用</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Client</span>&#123;<br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span>&#123;<br>		<span class="hljs-type">PostOffice</span> <span class="hljs-variable">postOffice</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">PostOfficeImpl</span>();<br><br>	&#125;<br><br>&#125;<br></code></pre></td></tr></table></figure>
+<h2 id="实现观察者模式"><a href="#实现观察者模式" class="headerlink" title="实现观察者模式"></a>实现观察者模式</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 抽象观察者</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">interface</span> <span class="hljs-title class_">NewsObserver</span>&#123;<br>	<span class="hljs-keyword">void</span> <span class="hljs-title function_">update</span><span class="hljs-params">(String msg)</span>;<br>&#125;<br><br><span class="hljs-comment">// 具体观察者</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">BBCNews</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">NewsObserver</span>&#123;<br>	<span class="hljs-meta">@Override</span><br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">update</span><span class="hljs-params">(String msg)</span>&#123;<br>		System.out.println(msg);<br>	&#125;<br>&#125;<br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">ABCNews</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">NewsObserver</span>&#123;<br>	<span class="hljs-meta">@Override</span><br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">update</span><span class="hljs-params">(String msg)</span>&#123;<br>		System.out.println(msg);<br>	&#125;<br>&#125;<br><br><span class="hljs-comment">// 抽象被观察者</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">interface</span> <span class="hljs-title class_">NewsObject</span> &#123;<br>	<span class="hljs-keyword">void</span> <span class="hljs-title function_">addObserver</span><span class="hljs-params">(NewsObserver newsObserver)</span>;<br>	<span class="hljs-keyword">void</span> <span class="hljs-title function_">removeObserver</span><span class="hljs-params">(NewsObserver newsObserver)</span>;<br>	<span class="hljs-keyword">void</span> <span class="hljs-title function_">notify</span><span class="hljs-params">(String msg)</span>;<br>&#125;<br><br><span class="hljs-comment">// 被观察者实现类</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">News</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">NewsObject</span>&#123;<br>	<span class="hljs-keyword">private</span> List&lt;NewsObserver&gt;newsObservers =  <span class="hljs-keyword">new</span> <span class="hljs-title class_">ArrayList</span>&lt;&gt;();<br><br>	<span class="hljs-meta">@Override</span><br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">addObserver</span><span class="hljs-params">(NewsObserver newsObserver)</span>&#123;<br>		newsObservers.add(newsObserver);<br>	&#125;<br>	<span class="hljs-meta">@Override</span><br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">removeObserver</span><span class="hljs-params">(NewsObserver newsObserver)</span>&#123;<br>		newsObservers.remove(newsObserver);<br>	&#125;<br><br>	<span class="hljs-meta">@Override</span><br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">notify</span><span class="hljs-params">(String msg)</span>&#123;<br>			<span class="hljs-keyword">for</span>(NewsObserver newsObserver:newsObservers)&#123;<br>					newsObserver.update(msg);<br>			&#125;<br>	&#125;<br>&#125;<br><br><span class="hljs-comment">// 调用</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Test</span> &#123;<br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span>&#123;<br>		<span class="hljs-type">NewsObject</span> <span class="hljs-variable">news</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">News</span>();<br>	<br>		<span class="hljs-type">NewsObserver</span> <span class="hljs-variable">bbc</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">BBCNews</span>(); <br>		<span class="hljs-type">NewsObserver</span> <span class="hljs-variable">abc</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ABCNews</span>();<br>	<br>		news.addObserver(bbc);<br>		news.addObserver(abc);<br>	<br>		news.notify(<span class="hljs-string">&quot;break news !&quot;</span>);<br><br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
 
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>中介者模式通过引入一个中介对象将多个对象之间的复杂依赖转化为<strong>“一对多”</strong>的依赖关系，避免了“网状”结构演变为“星型”结构。这样不仅降低了类与类之间的耦合性，还提升了对象之间协作的灵活性和系统的可维护性。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>观察者模式是一种 <strong>行为型设计模式</strong> ，用于建立 <strong>一对多的对象依赖关系</strong> 。当一个对象的状态发生变化时，它能够 <strong>自动通知并更新所有依赖于它的对象</strong> ，而无需主动调用。这种模式实现了 <strong>对象间的松耦合</strong> ，在实际系统中常用于<strong>事件监听、数据推送、UI刷新的通知机制</strong>等场景。通过该模式， <strong>被观察者与观察者之间只通过抽象接口联系，避免了直接依赖，提高了系统的可扩展性与可维护性</strong> 。</p>
 
                 
               </div>
@@ -355,8 +345,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>中介者模式</div>
-      <div>http://gadoid.io/2025/07/27/中介者模式/</div>
+      <div>观察者模式</div>
+      <div>http://gadoid.io/2025/07/27/观察者模式/</div>
     </div>
     <div class="license-meta">
       
@@ -400,9 +390,9 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2025/07/27/%E8%A7%82%E5%AF%9F%E8%80%85%E6%A8%A1%E5%BC%8F/" title="观察者模式">
+                      <a href="/2025/07/27/%E8%BF%AD%E4%BB%A3%E5%99%A8%E6%A8%A1%E5%BC%8F/" title="迭代器模式">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">观察者模式</span>
+                        <span class="hidden-mobile">迭代器模式</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
@@ -410,8 +400,8 @@
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2025/07/27/%E5%A4%87%E5%BF%98%E5%BD%95%E6%A8%A1%E5%BC%8F/" title="备忘录模式">
-                        <span class="hidden-mobile">备忘录模式</span>
+                      <a href="/2025/07/27/%E4%B8%AD%E4%BB%8B%E8%80%85%E6%A8%A1%E5%BC%8F/" title="中介者模式">
+                        <span class="hidden-mobile">中介者模式</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
