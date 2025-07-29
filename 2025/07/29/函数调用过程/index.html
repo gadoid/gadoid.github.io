@@ -19,24 +19,23 @@
   <meta name="author" content="Codfish">
   <meta name="keywords" content="">
   
-    <meta name="description" content="解释器模式提供了评估语言的语法或表达式的方式 角色 抽象表达式（Expression） ：定义解释操作的接口，是终结符与非终结符表达式的父类。 终结符表达式（TerminalExpression） ：实现表达式接口，用于表示语法中的基本元素，如数字、变量等。 非终结符表达式（NonTerminalExpression） ：组合多个表达式，对应文法中的组合规则，如加减法、布尔表达式等。 （可选）上下">
+    <meta name="description" content="; &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;">
 <meta property="og:type" content="article">
-<meta property="og:title" content="解释器模式">
-<meta property="og:url" content="http://gadoid.io/2025/07/28/%E8%A7%A3%E9%87%8A%E5%99%A8%E6%A8%A1%E5%BC%8F/index.html">
+<meta property="og:title" content="函数调用过程">
+<meta property="og:url" content="http://gadoid.io/2025/07/29/%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E8%BF%87%E7%A8%8B/index.html">
 <meta property="og:site_name" content="西北有高楼">
-<meta property="og:description" content="解释器模式提供了评估语言的语法或表达式的方式 角色 抽象表达式（Expression） ：定义解释操作的接口，是终结符与非终结符表达式的父类。 终结符表达式（TerminalExpression） ：实现表达式接口，用于表示语法中的基本元素，如数字、变量等。 非终结符表达式（NonTerminalExpression） ：组合多个表达式，对应文法中的组合规则，如加减法、布尔表达式等。 （可选）上下">
+<meta property="og:description" content="; &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2025-07-28T10:10:08.000Z">
-<meta property="article:modified_time" content="2025-07-28T11:04:51.877Z">
+<meta property="article:published_time" content="2025-07-29T13:08:01.000Z">
+<meta property="article:modified_time" content="2025-07-29T13:10:38.483Z">
 <meta property="article:author" content="Codfish">
-<meta property="article:tag" content="设计模式">
 <meta name="twitter:card" content="summary_large_image">
   
   
     <meta name="referrer" content="no-referrer-when-downgrade">
   
   
-  <title>解释器模式 - 西北有高楼</title>
+  <title>函数调用过程 - 西北有高楼</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -214,7 +213,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="解释器模式"></span>
+            <span id="subtitle" data-typed-text="函数调用过程"></span>
           
         </div>
 
@@ -225,8 +224,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2025-07-28 18:10" pubdate>
-          2025年7月28日 晚上
+        <time datetime="2025-07-29 21:08" pubdate>
+          2025年7月29日 晚上
         </time>
       </span>
     
@@ -237,7 +236,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          565 字
+          1.1k 字
         
       </span>
     
@@ -248,7 +247,7 @@
         
         
         
-          5 分钟
+          10 分钟
         
       </span>
     
@@ -285,27 +284,25 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">解释器模式</h1>
+            <h1 id="seo-header">函数调用过程</h1>
             
             
               <div class="markdown-body">
                 
-                <p>解释器模式提供了评估语言的语法或表达式的方式</p>
-<h2 id="角色"><a href="#角色" class="headerlink" title="角色"></a>角色</h2><ol>
-<li><strong>抽象表达式（Expression）</strong> ：定义解释操作的接口，是终结符与非终结符表达式的父类。</li>
-<li><strong>终结符表达式（TerminalExpression）</strong> ：实现表达式接口，用于表示语法中的基本元素，如数字、变量等。</li>
-<li><strong>非终结符表达式（NonTerminalExpression）</strong> ：组合多个表达式，对应文法中的组合规则，如加减法、布尔表达式等。</li>
-<li><strong>（可选）上下文类（Context）</strong> ：用于存储变量、函数等符号与值的映射关系。本例中简化未使用。</li>
-<li><strong>客户端（Client）</strong> ：构建表达式并触发解释操作。</li>
-</ol>
-<h2 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h2><p>扩展性强</p>
-<h2 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h2><ol>
-<li>引起类的膨胀，需要创建大量的类</li>
-<li>效率问题，主要采用递归的调用方法</li>
-</ol>
-<h2 id="实现解释器模式"><a href="#实现解释器模式" class="headerlink" title="实现解释器模式"></a>实现解释器模式</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 定义操作接口</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">abstract</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Expression</span>&#123;<br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">abstract</span> <span class="hljs-type">int</span> <span class="hljs-title function_">interpret</span><span class="hljs-params">()</span>;<br>&#125;<br><br><span class="hljs-comment">// 定义数值处理实现类</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">ValueExpression</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">Expression</span>&#123;<br>	<span class="hljs-keyword">private</span> <span class="hljs-type">int</span> value ;<br>	<span class="hljs-keyword">public</span> <span class="hljs-title function_">ValueExpression</span><span class="hljs-params">()</span>&#123;&#125;<br><br>	<span class="hljs-keyword">public</span> <span class="hljs-title function_">ValueExpression</span><span class="hljs-params">(<span class="hljs-type">int</span> value)</span>&#123;<br>		<span class="hljs-built_in">this</span>.value = value ; <br>	&#125;<br>	<span class="hljs-keyword">public</span> <span class="hljs-type">int</span> <span class="hljs-title function_">getValue</span><span class="hljs-params">()</span>&#123;<br>		<span class="hljs-keyword">return</span> value ;<br>	&#125;<br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">setValue</span><span class="hljs-params">(<span class="hljs-type">int</span> value)</span>&#123;<br>		<span class="hljs-built_in">this</span>.value = value ;<br>	&#125;<br>	<span class="hljs-meta">@Override</span><br>	<span class="hljs-keyword">public</span> <span class="hljs-type">int</span> <span class="hljs-title function_">interpret</span><span class="hljs-params">()</span>&#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>.value ;<br>	&#125;<br><br>&#125;<br><span class="hljs-comment">// 定义符号处理实现类</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">SymbolExpression</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">Expression</span>&#123;<br>	<span class="hljs-keyword">protected</span> Expression left ;<br>	<span class="hljs-keyword">protected</span> Expression right ;<br><br>	<span class="hljs-keyword">public</span> <span class="hljs-title function_">SymbolExpression</span><span class="hljs-params">(Expression left , Expression right)</span>&#123;<br>		<span class="hljs-built_in">this</span>.left = left ;<br>		<span class="hljs-built_in">this</span>.right = right ;<br>	&#125;<br>	<span class="hljs-meta">@Override</span><br>	<span class="hljs-keyword">public</span> <span class="hljs-type">int</span> <span class="hljs-title function_">interpret</span><span class="hljs-params">()</span>&#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-number">0</span> ;<br>	&#125;<br>&#125;<br><br><span class="hljs-comment">// 定义加法表达式</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">AddExpression</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">SymbolExpression</span>&#123;<br>	<span class="hljs-keyword">public</span> <span class="hljs-title function_">AddExpression</span><span class="hljs-params">(Expression left , Expression right)</span>&#123;<br>		<span class="hljs-built_in">super</span>(left , right);<br>	&#125;<br><br>	<span class="hljs-meta">@Override</span><br>	<span class="hljs-keyword">public</span> <span class="hljs-type">int</span> <span class="hljs-title function_">interpret</span><span class="hljs-params">()</span>&#123;<br>		<span class="hljs-keyword">return</span> left.interpret() + right.interpret();<br>	&#125;<br>&#125;<br><br><span class="hljs-comment">// 定义减法表达式</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">SubExpression</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">SymbolExpression</span>&#123;<br>	<span class="hljs-keyword">public</span> <span class="hljs-title function_">SubExpression</span><span class="hljs-params">(Expression left , Expression right)</span>&#123;<br>		<span class="hljs-built_in">super</span>(left,right);<br>	&#125;<br><br>	<span class="hljs-meta">@Override</span><br>	<span class="hljs-keyword">public</span> <span class="hljs-type">int</span> <span class="hljs-title function_">interpret</span><span class="hljs-params">()</span>&#123;<br>		<span class="hljs-keyword">return</span> left.interpret()-right.interpret();<br>	&#125;<br>&#125;<br><br><span class="hljs-comment">// 定义一个Calculator 执行运算步骤</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Calculator</span>&#123;<br>	<span class="hljs-keyword">public</span> <span class="hljs-type">int</span> <span class="hljs-title function_">calculate</span><span class="hljs-params">(String statement)</span>&#123;<br>		String[] strs = statement.split(<span class="hljs-string">&quot; &quot;</span>);<br>	<br>		<span class="hljs-type">Expression</span> <span class="hljs-variable">left</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ValueExpression</span>(Integer.valueOf(strs[<span class="hljs-number">0</span>]));<br>		<span class="hljs-type">Expression</span> <span class="hljs-variable">right</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ValueExpression</span>(Integer.valueOf(strs[<span class="hljs-number">2</span>]));<br>	<br>		<span class="hljs-type">String</span> <span class="hljs-variable">symbol</span> <span class="hljs-operator">=</span> strs[<span class="hljs-number">1</span>];<br>		<span class="hljs-type">Expression</span> <span class="hljs-variable">symbolExpression</span> <span class="hljs-operator">=</span> <span class="hljs-literal">null</span> ;<br>		<span class="hljs-keyword">if</span>(<span class="hljs-string">&quot;+&quot;</span>.equals(symbol))&#123;<br>			symbolExpression = <span class="hljs-keyword">new</span> <span class="hljs-title class_">AddExpression</span>(left , right);<br>		&#125;	<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (<span class="hljs-string">&quot;-&quot;</span>.equals(symbol))&#123;<br>			symbolExpression = <span class="hljs-keyword">new</span> <span class="hljs-title class_">SubExpression</span>(left , right);<br>		&#125;<br>		<span class="hljs-keyword">return</span> symbolExpression.interpret();<br>	&#125;<br>&#125;<br><span class="hljs-comment">// 调用</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Client</span> &#123;<br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span>&#123;<br>			<span class="hljs-type">String</span> <span class="hljs-variable">statement</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;1+2&quot;</span>;<br>			<span class="hljs-type">Calculator</span> <span class="hljs-variable">calculator</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Calculator</span>();<br>			<span class="hljs-type">int</span> <span class="hljs-variable">rs</span> <span class="hljs-operator">=</span> calculator.calculate(statement);<br>			System.out.println(statement+<span class="hljs-string">&quot;=&quot;</span> + rs );<br>		<br>			statement = <span class="hljs-string">&quot;5-3&quot;</span>;<br>			rs = calculator.calculate(statement);<br>			System.out.println(statement+<span class="hljs-string">&quot;=&quot;</span> + rs );<br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+                <p>; &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;<br>; 函数调用的完整汇编执行过程示例<br>; 演示: int result &#x3D; add_numbers(10, 20);<br>; &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;</p>
+<p>.text<br>.global _start</p>
+<p>_start:<br>; &#x3D;&#x3D;&#x3D;&#x3D;&#x3D; 程序开始执行，栈初始状态 &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;<br>; ESP &#x3D; 0x7FFF0000 (假设的栈顶地址)<br>; EBP &#x3D; 0x7FFF0000 (帧指针初始化)</p>
+<p>main:<br>; &#x3D;&#x3D;&#x3D;&#x3D;&#x3D; 建立main函数的栈帧 &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;<br>push %ebp               ; 保存调用者的帧指针<br>; ESP &#x3D; 0x7FFFEFFC, [ESP] &#x3D; old_EBP<br>mov %esp, %ebp          ; 建立当前函数的帧指针<br>; EBP &#x3D; 0x7FFFEFFC<br>sub $16, %esp           ; 为局部变量分配空间(16字节)<br>; ESP &#x3D; 0x7FFFEFEC</p>
+<figure class="highlight llvm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs llvm"><span class="hljs-comment">; ===== 准备调用add_numbers(10, 20) =====</span><br><span class="hljs-comment">; 按C调用约定，参数从右到左压栈</span><br><br><span class="hljs-comment">; 压入第二个参数 (20)</span><br>push $<span class="hljs-number">20</span>                <span class="hljs-comment">; ESP -= 4, [ESP] = 20</span><br>                        <span class="hljs-comment">; ESP = 0x7FFFEFE8, 栈顶现在是20</span><br><br><span class="hljs-comment">; 压入第一个参数 (10)</span><br>push $<span class="hljs-number">10</span>                <span class="hljs-comment">; ESP -= 4, [ESP] = 10</span><br>                        <span class="hljs-comment">; ESP = 0x7FFFEFE4, 栈顶现在是10</span><br><br><span class="hljs-comment">; ===== 执行函数调用 =====</span><br><span class="hljs-keyword">call</span> add_numbers        <span class="hljs-comment">; call指令执行两个动作:</span><br>                        <span class="hljs-comment">; 1) push 返回地址: ESP -= 4, [ESP] = 返回地址</span><br>                        <span class="hljs-comment">;    ESP = 0x7FFFEFE0</span><br>                        <span class="hljs-comment">; 2) jmp add_numbers: EIP = add_numbers地址</span><br><br><span class="hljs-comment">; ===== 此时控制权转移到add_numbers函数 =====</span><br><br></code></pre></td></tr></table></figure>
 
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>解释器模式（Interpreter Pattern）用于构建一个解释器，对给定语言中的语句或表达式进行求值。它定义了一个语言的文法规则，并用类来表示文法中的各个规则，最终通过组合这些规则来解析表达式。解释器模式适用于语言规则较简单、语法稳定的场景，比如计算器、脚本语言、正则表达式等。</p>
+<p>add_numbers:<br>; &#x3D;&#x3D;&#x3D;&#x3D;&#x3D; 函数序言 - 建立新的栈帧 &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;<br>push %ebp               ; 保存调用者(main)的帧指针<br>; ESP &#x3D; 0x7FFFEFD C, [ESP] &#x3D; main的EBP<br>mov %esp, %ebp          ; 建立add_numbers的帧指针<br>; EBP &#x3D; 0x7FFFEFDC<br>sub $8, %esp            ; 为局部变量分配空间<br>; ESP &#x3D; 0x7FFFEFD4</p>
+<figure class="highlight llvm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs llvm"><span class="hljs-comment">; ===== 当前栈布局 (从高地址到低地址) =====</span><br><span class="hljs-comment">; [EBP+12] = 20        (第二个参数)</span><br><span class="hljs-comment">; [EBP+8]  = 10        (第一个参数)</span><br><span class="hljs-comment">; [EBP+4]  = 返回地址   (call指令保存的)</span><br><span class="hljs-comment">; [EBP]    = main的EBP  (push %ebp保存的)</span><br><span class="hljs-comment">; [EBP-4]  = 局部变量1  (可用空间)</span><br><span class="hljs-comment">; [EBP-8]  = 局部变量2  (可用空间) ← ESP指向这里</span><br><br><span class="hljs-comment">; ===== 函数体 - 执行实际计算 =====</span><br>mov <span class="hljs-number">8</span>(<span class="hljs-variable">%ebp</span>)<span class="hljs-punctuation">,</span> <span class="hljs-variable">%eax</span>       <span class="hljs-comment">; 将第一个参数(10)加载到EAX</span><br>                        <span class="hljs-comment">; EAX = 10</span><br><span class="hljs-keyword">add</span> <span class="hljs-number">12</span>(<span class="hljs-variable">%ebp</span>)<span class="hljs-punctuation">,</span> <span class="hljs-variable">%eax</span>      <span class="hljs-comment">; 将第二个参数(20)加到EAX</span><br>                        <span class="hljs-comment">; EAX = 10 + 20 = 30</span><br>mov <span class="hljs-variable">%eax</span><span class="hljs-punctuation">,</span> <span class="hljs-number">-4</span>(<span class="hljs-variable">%ebp</span>)      <span class="hljs-comment">; 将结果存储到局部变量</span><br>                        <span class="hljs-comment">; [EBP-4] = 30</span><br><br><span class="hljs-comment">; ===== 准备返回值 =====</span><br>mov <span class="hljs-number">-4</span>(<span class="hljs-variable">%ebp</span>)<span class="hljs-punctuation">,</span> <span class="hljs-variable">%eax</span>      <span class="hljs-comment">; 将结果放入EAX寄存器(返回值约定)</span><br>                        <span class="hljs-comment">; EAX = 30</span><br><br><span class="hljs-comment">; ===== 函数尾声 - 清理栈帧并返回 =====</span><br>mov <span class="hljs-variable">%ebp</span><span class="hljs-punctuation">,</span> <span class="hljs-variable">%esp</span>          <span class="hljs-comment">; 恢复栈指针，释放局部变量空间</span><br>                        <span class="hljs-comment">; ESP = 0x7FFFEFDC</span><br>pop <span class="hljs-variable">%ebp</span>                <span class="hljs-comment">; 恢复调用者的帧指针</span><br>                        <span class="hljs-comment">; EBP = main的EBP, ESP = 0x7FFFEFE0</span><br><span class="hljs-keyword">ret</span>                     <span class="hljs-comment">; 返回指令执行两个动作:</span><br>                        <span class="hljs-comment">; 1) pop 返回地址到EIP: EIP = [ESP], ESP += 4</span><br>                        <span class="hljs-comment">; 2) 跳转回调用点: ESP = 0x7FFFEFE4</span><br><br><span class="hljs-comment">; ===== 控制权返回到main函数 =====</span><br><br></code></pre></td></tr></table></figure>
+
+<p>back_to_main:<br>; &#x3D;&#x3D;&#x3D;&#x3D;&#x3D; 清理参数 (C调用约定: 调用者负责清理) &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;<br>add $8, %esp            ; 清理两个参数 (2 × 4字节)<br>; ESP &#x3D; 0x7FFFEFEC (回到调用前状态)</p>
+<figure class="highlight llvm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs llvm"><span class="hljs-comment">; ===== 保存返回值 =====</span><br>mov <span class="hljs-variable">%eax</span><span class="hljs-punctuation">,</span> <span class="hljs-number">-4</span>(<span class="hljs-variable">%ebp</span>)      <span class="hljs-comment">; 将返回值(30)保存到局部变量result</span><br>                        <span class="hljs-comment">; [EBP-4] = 30</span><br><br><span class="hljs-comment">; ===== main函数结束 =====</span><br>mov <span class="hljs-variable">%ebp</span><span class="hljs-punctuation">,</span> <span class="hljs-variable">%esp</span>          <span class="hljs-comment">; 恢复栈指针</span><br>pop <span class="hljs-variable">%ebp</span>                <span class="hljs-comment">; 恢复帧指针</span><br><br><span class="hljs-comment">; ===== 程序退出 =====</span><br>mov $<span class="hljs-number">1</span><span class="hljs-punctuation">,</span> <span class="hljs-variable">%eax</span>            <span class="hljs-comment">; 系统调用号: exit</span><br>mov $<span class="hljs-number">0</span><span class="hljs-punctuation">,</span> <span class="hljs-variable">%ebx</span>            <span class="hljs-comment">; 退出状态码</span><br>int $<span class="hljs-number">0x80</span>               <span class="hljs-comment">; 调用内核</span><br><br></code></pre></td></tr></table></figure>
+
+<p>; &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;<br>; 栈的变化过程总结:<br>;<br>; 1. 初始状态:     ESP &#x3D; 0x7FFF0000<br>; 2. main序言后:   ESP &#x3D; 0x7FFFEFEC</p>
+<p>; 3. push 20后:    ESP &#x3D; 0x7FFFEFE8  (参数2)<br>; 4. push 10后:    ESP &#x3D; 0x7FFFEFE4  (参数1)<br>; 5. call后:       ESP &#x3D; 0x7FFFEFE0  (返回地址)<br>; 6. func序言后:   ESP &#x3D; 0x7FFFEFD4  (新栈帧)<br>; 7. ret后:        ESP &#x3D; 0x7FFFEFE4  (清理栈帧)<br>; 8. add $8后:     ESP &#x3D; 0x7FFFEFEC  (清理参数)<br>;<br>; 关键点:<br>; - push指令: 修改ESP并存储数据<br>; - call指令: 保存返回地址并跳转<br>; - 函数序言: 建立新栈帧<br>; - 函数尾声: 清理栈帧<br>; - ret指令: 恢复返回地址并跳转<br>; - 参数清理: 调用者负责(C约定)<br>; &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;</p>
 
                 
               </div>
@@ -324,7 +321,7 @@
     
       <span class="category-chain">
         
-  <a href="/categories/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" class="category-chain-item">设计模式</a>
+  <a href="/categories/%E9%80%9F%E6%9F%A5%E4%BF%A1%E6%81%AF/" class="category-chain-item">速查信息</a>
   
   
 
@@ -336,13 +333,6 @@
     </div>
   
   
-    <div class="post-meta">
-      <i class="iconfont icon-tags"></i>
-      
-        <a href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" class="print-no-link">#设计模式</a>
-      
-    </div>
-  
 </div>
 
 
@@ -351,8 +341,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>解释器模式</div>
-      <div>http://gadoid.io/2025/07/28/解释器模式/</div>
+      <div>函数调用过程</div>
+      <div>http://gadoid.io/2025/07/29/函数调用过程/</div>
     </div>
     <div class="license-meta">
       
@@ -364,7 +354,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2025年7月28日</div>
+          <div>2025年7月29日</div>
         </div>
       
       
@@ -396,18 +386,12 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2025/07/29/%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E8%BF%87%E7%A8%8B/" title="函数调用过程">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">函数调用过程</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2025/07/28/%E8%AE%BF%E9%97%AE%E8%80%85%E6%A8%A1%E5%BC%8F/" title="访问者模式">
-                        <span class="hidden-mobile">访问者模式</span>
+                      <a href="/2025/07/28/%E8%A7%A3%E9%87%8A%E5%99%A8%E6%A8%A1%E5%BC%8F/" title="解释器模式">
+                        <span class="hidden-mobile">解释器模式</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
