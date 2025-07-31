@@ -1,0 +1,854 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/bg/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Codfish">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="JVM虚拟机运行时数据区 私有部分程序计数器 ： 通过改变这个计数器的值来选取下一条需要执行的字节码指令，存放在线程私有内存中。 Java虚拟机栈 ：它的生命周期与线程相同，虚拟机栈描述的是Java方法执行的线程内存模型，每个方法被执行的时候，Java虚拟机都会同步创建一个栈帧用于存储局部变量表，操作数栈，动态连接，方法出口等信息。每一个方法被调用直至执行完毕的过程，对应着一个栈帧在虚拟机栈中从入">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JVM对象内存布局">
+<meta property="og:url" content="http://gadoid.io/2025/07/31/JVM%E5%AF%B9%E8%B1%A1%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80/index.html">
+<meta property="og:site_name" content="西北有高楼">
+<meta property="og:description" content="JVM虚拟机运行时数据区 私有部分程序计数器 ： 通过改变这个计数器的值来选取下一条需要执行的字节码指令，存放在线程私有内存中。 Java虚拟机栈 ：它的生命周期与线程相同，虚拟机栈描述的是Java方法执行的线程内存模型，每个方法被执行的时候，Java虚拟机都会同步创建一个栈帧用于存储局部变量表，操作数栈，动态连接，方法出口等信息。每一个方法被调用直至执行完毕的过程，对应着一个栈帧在虚拟机栈中从入">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://i.111666.best/image/ebS5kXB0uP27GDW5eFhj4f.png">
+<meta property="og:image" content="https://i.111666.best/image/z3epcSwH89m1mRn8LnQUF0.png">
+<meta property="og:image" content="https://i.111666.best/image/D5rMx2kKI4YRJr86FwZFZ4.png">
+<meta property="og:image" content="https://i.111666.best/image/CydLYhuDkBYGgRumlroTv8.png">
+<meta property="article:published_time" content="2025-07-31T06:14:29.000Z">
+<meta property="article:modified_time" content="2025-07-31T06:18:47.125Z">
+<meta property="article:author" content="Codfish">
+<meta property="article:tag" content="JVM">
+<meta property="article:tag" content="JAVA">
+<meta property="article:tag" content="内存模型">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://i.111666.best/image/ebS5kXB0uP27GDW5eFhj4f.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>JVM对象内存布局 - 西北有高楼</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"gadoid.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>西北有高楼</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/downloads/" target="_self">
+                <i class="iconfont icon-books-fill"></i>
+                <span>资源下载</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/bg/img/ice.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="JVM对象内存布局"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-07-31 14:14" pubdate>
+          2025年7月31日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          18 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">JVM对象内存布局</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="JVM虚拟机运行时数据区"><a href="#JVM虚拟机运行时数据区" class="headerlink" title="JVM虚拟机运行时数据区"></a>JVM虚拟机运行时数据区</h2><p><img src="https://i.111666.best/image/ebS5kXB0uP27GDW5eFhj4f.png" srcset="/img/loading.gif" lazyload alt="JAVA虚拟机的内存模型"></p>
+<h2 id="私有部分"><a href="#私有部分" class="headerlink" title="私有部分"></a>私有部分</h2><p><strong>程序计数器</strong> ： 通过改变这个计数器的值来选取下一条需要执行的字节码指令，存放在线程私有内存中。</p>
+<p><strong>Java虚拟机栈</strong> ：它的生命周期与线程相同，虚拟机栈描述的是Java方法执行的线程内存模型，每个方法被执行的时候，Java虚拟机都会同步创建一个栈帧用于存储局部变量表，操作数栈，动态连接，方法出口等信息。每一个方法被调用直至执行完毕的过程，对应着一个栈帧在虚拟机栈中从入栈到出栈的过程。</p>
+<p><img src="https://i.111666.best/image/z3epcSwH89m1mRn8LnQUF0.png" srcset="/img/loading.gif" lazyload alt="栈帧结构信息"></p>
+<p><strong>局部变量表</strong> ：  存放了编译期可知的各种Java虚拟机基本数据结构，对象引用和返回地址类型。在存储空间中以局部变量槽来表示。当进入方法时，局部变量所需的内存空间大小是完全确定的。</p>
+<p><strong>本地方法栈</strong>  ： ****为虚拟机用到的本地方法服务</p>
+<h2 id="公有部分"><a href="#公有部分" class="headerlink" title="公有部分"></a>公有部分</h2><h3 id="堆"><a href="#堆" class="headerlink" title="堆"></a>堆</h3><p>堆是虚拟机所管理的内存中最大的一块，Java堆是被所有线程共享的一块内存区域，在虚拟机启动时创建。堆的唯一目的是用于存放对象实例，理论上所有的对象实例和数组都应当在堆上分配。</p>
+<p>堆是垃圾收集器管理的内存区域。从回收内存的角度看，由于现代垃圾收集器大部分是基于分代收集理论设计的，所有Java堆中经常会出现 “新生代”，“老年代”。本质上是由于垃圾回收策略不同而创建出的不同内存管理区域。</p>
+<p>堆中还存在多个线程私有的分批额缓冲区（TLAB）</p>
+<h3 id="方法区"><a href="#方法区" class="headerlink" title="方法区"></a>方法区</h3><p>方法区也是各个线程共享的内存区域，它用于存储被虚拟机加载的类型，常量，静态变量，以及代码缓存数据。</p>
+<h3 id="运行时常量池"><a href="#运行时常量池" class="headerlink" title="运行时常量池"></a>运行时常量池</h3><p>运行时常量池是方法区的一部分，用于存放编译期生成的各种字面量与符号引用。</p>
+<h2 id="直接内存与本地内存"><a href="#直接内存与本地内存" class="headerlink" title="直接内存与本地内存"></a>直接内存与本地内存</h2><table>
+<thead>
+<tr>
+<th>名称</th>
+<th>是否堆外</th>
+<th>是否 GC 管理</th>
+<th>分配者</th>
+<th>主要用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>直接内存</td>
+<td>是</td>
+<td>部分（引用可见）</td>
+<td>Java（ByteBuffer）</td>
+<td>高性能 I&#x2F;O、Netty</td>
+</tr>
+<tr>
+<td>本地内存</td>
+<td>是</td>
+<td>否</td>
+<td>JVM &#x2F; JNI</td>
+<td>类元空间、线程栈、JNI</td>
+</tr>
+</tbody></table>
+<p>直接内存是 JVM 提供给 Java 程序使用的“受控的”本地内存；而本地内存是 JVM 和本地代码自己使用的“非受控”内存。</p>
+<h2 id="Java对象的创建过程"><a href="#Java对象的创建过程" class="headerlink" title="Java对象的创建过程"></a>Java对象的创建过程</h2><h3 id="由new-启动-对象的过程"><a href="#由new-启动-对象的过程" class="headerlink" title="由new 启动 对象的过程"></a>由new 启动 对象的过程</h3><ol>
+<li>定位所需创建类的符号引用</li>
+<li>判断类是否已完成加载与初始化，若未初始化则先触发类初始化流程</li>
+<li>创建对象，为新对象分配内存，在类加载过程中可以确定新对象所使用的内存大小</li>
+<li>内存分配过程<ol>
+<li>通过指针偏移获取对应对象大小的内存空间进行创建 （如果是规整的内存布局）<ol>
+<li>使用标记-整理算法的收集器 选择指针碰撞</li>
+</ol>
+</li>
+<li>通过列表维护一个列表记录管理内存中的布局，查询可用大小的内存块进行分配<ol>
+<li>使用标记-清除算法的收集器 选择空闲列表</li>
+</ol>
+</li>
+</ol>
+</li>
+<li>多线程情况下的内存分配<ol>
+<li>分配内存空间时进行同步处理—— 实际上虚拟机采用CAS + 失败重试保证更新操作的原子性</li>
+<li>将内存分配动作按照线程划分到不同的空间中，即线程在java堆中预先分配的一小块内存中，当这一块内存使用完了，再使用同步锁定进行内存分配 使用tlab 可以使用-XX：+&#x2F;-UseTLAB参数来设定</li>
+</ol>
+</li>
+<li>初始化过程<ol>
+<li>在内存分配完毕后进行 → 在使用了同步锁定时</li>
+<li>在分配TLAB时直接进行了初始化</li>
+</ol>
+</li>
+</ol>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">if</span> (!constans-&gt;<span class="hljs-built_in">tag_at</span>(index).<span class="hljs-built_in">is_unresolved_klass</span>())&#123;<br>	oop entry = (klassOop)* constans-&gt;<span class="hljs-built_in">obj_at_addr</span>(index);<br>	<span class="hljs-built_in">assert</span>(entry-&gt;<span class="hljs-built_in">is_klass</span>(), <span class="hljs-string">&quot;should be resolved klass&quot;</span>);<br>	klassOop k_entry = (klassOop) entry ;<br>	<span class="hljs-built_in">assert</span>(k_entry-&gt;<span class="hljs-built_in">klass_part</span>()-&gt;<span class="hljs-built_in">oop_is_instance</span>(), <span class="hljs-string">&quot;should be instance Klass&quot;</span>);<br>	instanceKlass* ik = (instanceKlass*) k_entry-&gt;<span class="hljs-built_in">klass_part</span>();<br>	<span class="hljs-keyword">if</span>( ik-&gt;<span class="hljs-built_in">is_initialized</span>() &amp;&amp; ik -&gt; <span class="hljs-built_in">can_be_fast_path_allocated</span>())&#123;<br>		<span class="hljs-type">size_t</span> obj_size = ik-&gt;<span class="hljs-built_in">size_helper</span>();<br>		oop result = <span class="hljs-literal">NULL</span> ;<br>		<span class="hljs-type">bool</span> need_zero = !ZeroTLAB;<br>		<span class="hljs-keyword">if</span> (UseTLAB)&#123;<br>			result = (oop)THREAD -&gt;<span class="hljs-built_in">tlab</span>().<span class="hljs-built_in">allocate</span>(obj_size);<br>		&#125;<br>		<span class="hljs-keyword">if</span>(result == <span class="hljs-literal">NULL</span>)&#123;<br>			need_zero = <span class="hljs-literal">true</span> ;<br>	retry <br>			HeapWord* compare_to =  *Universe::<span class="hljs-built_in">heap</span>()-&gt;<span class="hljs-built_in">top_addr</span>();<br>			HeapWord* new_top = compare_to + obj_size ;<br>			<span class="hljs-keyword">if</span>(new_top &lt;= *Universe::<span class="hljs-built_in">heap</span>()-&gt;<span class="hljs-built_in">end_addr</span>())&#123;<br>				<span class="hljs-keyword">if</span>(Atomic::<span class="hljs-built_in">cmpxchg_ptr</span>(new_top, Universe::<span class="hljs-built_in">heap</span>()-&gt;<span class="hljs-built_in">top_addr</span>(),compare_to)!= compare_to)&#123;<br>					<span class="hljs-keyword">goto</span> retry ;<br>				&#125;<br>				result = (oop) compare_to <br>			&#125;<br>		&#125;<br>		<span class="hljs-keyword">if</span>(resulte != <span class="hljs-literal">NULL</span>)&#123;<br>			<span class="hljs-keyword">if</span>(need_zero)&#123;<br>				HeapWord * to_zero = (HeapWord*)result + <span class="hljs-built_in">sizeof</span>(oopDesc)/ oopSize;<br>				obj_size -= <span class="hljs-built_in">sizeof</span>(oopDesc) / oopSize ;<br>				<span class="hljs-keyword">if</span>(obj_size &gt; <span class="hljs-number">0</span> )&#123;<br>					<span class="hljs-built_in">memset</span>(to_zero , <span class="hljs-number">0</span> , obj_size * HeapWordSize);<br>				&#125;<br> 			&#125;<br> 			<span class="hljs-keyword">if</span>(UseBiasedLocking)&#123;<br>	 			result-&gt;<span class="hljs-built_in">set_mark</span>(ik-&gt;<span class="hljs-built_in">prototype_header</span>());<br> 			&#125; <span class="hljs-keyword">else</span> &#123;<br>	 			result-&gt;<span class="hljs-built_in">set_mark</span>(markOopDesc::<span class="hljs-built_in">prototype</span>());<br> 			&#125;<br> 			result-&gt;<span class="hljs-built_in">set_klass_gap</span>(<span class="hljs-number">0</span>);<br> 			result-&gt;<span class="hljs-built_in">set_klass</span>(k_entry);<br> 			<span class="hljs-built_in">SET_STACK_OBJECT</span>(result,<span class="hljs-number">0</span>);<br> 			<span class="hljs-built_in">UPDATE_PC_AND_TOS_AND_CONTINUTE</span>(<span class="hljs-number">3</span>,<span class="hljs-number">1</span>);<br>		&#125;<br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ol>
+<li>对象结构</li>
+</ol>
+<p><img src="https://i.111666.best/image/D5rMx2kKI4YRJr86FwZFZ4.png" srcset="/img/loading.gif" lazyload alt="对象内存结构"></p>
+<p>主要由三部分组成 ： 对象头 ， 实例数据和对齐填充</p>
+<p>对象头结构</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs cpp">[<span class="hljs-built_in">markword</span> (<span class="hljs-number">32</span>/<span class="hljs-number">64</span>)][类型指针(<span class="hljs-number">32</span>/<span class="hljs-number">64</span>)][数组长度]<br><br>[markword]<br>[<span class="hljs-built_in">hashcode</span>(<span class="hljs-number">25</span><span class="hljs-number">-31</span>) 分代年龄(<span class="hljs-number">15</span>) 标志位(<span class="hljs-number">2</span>) 固定标志位(<span class="hljs-number">0</span>)]<br></code></pre></td></tr></table></figure>
+
+<p><strong>markword</strong></p>
+<p>mark word 是位于对象最顶部的一块内存区域，它是一个复用字段，即根据标志位的不同决定了当前它所被使用的用途。</p>
+<table>
+<thead>
+<tr>
+<th>存储内容</th>
+<th>标志位</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>对象哈希码，对象分代年龄</td>
+<td>01</td>
+<td>未锁定</td>
+</tr>
+<tr>
+<td>指向锁记录的指针</td>
+<td>00</td>
+<td>轻量级锁定</td>
+</tr>
+<tr>
+<td>指向重量级锁的指针</td>
+<td>10</td>
+<td>膨胀</td>
+</tr>
+<tr>
+<td>一般被设置为非法模式或者转发指针</td>
+<td>11</td>
+<td>GC标记</td>
+</tr>
+<tr>
+<td>偏向线程ID,偏向事件戳，对象分代年龄</td>
+<td>01</td>
+<td>可偏向</td>
+</tr>
+</tbody></table>
+<p>实例数据</p>
+<p>实例数据是受虚拟机分配策略参数和字段在Java源码中定义顺序的应用</p>
+<p>Hotspot 虚拟机默认的分配顺序为longs&#x2F;doubles , ints , shorts&#x2F;chars , bytesbooleans,oops(Ordinary Object Pointers )</p>
+<p>相同宽度的字段总是被分配到一起存放，在满足这个前提条件的情况下，在父类中定义的变量会出现在子类之前。如果设置+XX：CompactFields参数，则子类中较窄的变量也允许插入父类变量的空隙中节省空间</p>
+<p>对齐填充</p>
+<p>HotSpot虚拟机的自动内存管理系统要求对象起始地址必须是8字节的整数倍，如果没有对齐的话，就需要通过对齐填充补全</p>
+<ol>
+<li>访问对象</li>
+</ol>
+<p>java中使用引用去访问具体的对象</p>
+<ol>
+<li>使用句柄访问，在堆中划分一块内存作为句柄池，句柄池中包含了实例数据信息和类型数据信息，这样在实例数据中就不需要存储地址类型指针</li>
+<li>指针访问，需要在对象模型中放入类型指针以查询类型信息</li>
+<li>句柄的优势在于引用是间接查询实例对象数据的，这意味着在GC阶段移动对象可以间接更改句柄中的实例数据地址，而不需要修改引用本身</li>
+<li>指针的优势在于访问速度更快，节省了一次指针定位的时间</li>
+</ol>
+<p><img src="https://i.111666.best/image/CydLYhuDkBYGgRumlroTv8.png" srcset="/img/loading.gif" lazyload alt="句柄访问和指针访问对比"></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>JVM 对象的创建与内存布局，是理解 Java 程序执行原理、优化内存使用、调试性能问题的基础。在本文中，我们从运行时数据区的划分入手，梳理了线程私有与共享内存的职责与作用，随后深入剖析了对象创建的完整过程，包括类加载检查、内存分配策略（如指针碰撞与空闲列表）、线程本地缓冲（TLAB）机制与初始化流程。</p>
+<p>在对象布局方面，我们重点讲解了对象头（Mark Word 和类型指针）的结构及其状态复用机制，分析了实例数据的内存对齐与压缩布局策略。同时，结合句柄与指针访问两种模型，比较了它们在对象定位与 GC 移动过程中的适用性和性能差异。</p>
+<p>通过对这些机制的理解，开发者可以更准确地把握 JVM 如何管理内存、调度对象生命周期、以及背后隐藏的性能优化点。这不仅有助于编写更高效的 Java 程序，也为深入掌握 GC 策略、对象逃逸分析、内存模型优化等更高级主题打下了坚实基础。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/JVM/" class="category-chain-item">JVM</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/JVM/" class="print-no-link">#JVM</a>
+      
+        <a href="/tags/JAVA/" class="print-no-link">#JAVA</a>
+      
+        <a href="/tags/%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/" class="print-no-link">#内存模型</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>JVM对象内存布局</div>
+      <div>http://gadoid.io/2025/07/31/JVM对象内存布局/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Codfish</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年7月31日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/07/29/%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E8%BF%87%E7%A8%8B/" title="函数调用过程">
+                        <span class="hidden-mobile">函数调用过程</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"lQzCvqmOtewLtpMfvfxKLomU-MdYXbMMI","appKey":"daMNlw5XcjN8TelT6GCHh8RF","path":"window.location.pathname","placeholder":"让灵感在这里发生","avatar":"monsterid","meta":["nick","mail"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":true,"recordIP":true,"serverURLs":"https://lQzCvqmO.api.lncldglobal.com","emojiCDN":null,"emojiMaps":null,"enableQQ":false,"enable":true,"visitor":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      &copy; 2025 - 2025 <a target="_blank" rel="noopener" href="https://github.com/username">CODFISH</a>
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+<!-- hexo injector body_end start --><script src="/js/chatbot-loader.js" defer></script><!-- hexo injector body_end end --></body>
+</html>
