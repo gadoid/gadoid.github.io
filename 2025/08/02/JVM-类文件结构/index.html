@@ -21,14 +21,14 @@
   
     <meta name="description" content="结构Class 文件是一组以8个字节为基础的二进制流，各个数据项目严格按照顺序紧凑地排列在文件之中，中间没有添加任何分隔符，这使得整个文件中存储的内容几乎全部是程序运行的必要数据，没有空隙存在。这种结构中主要使用了两种数据类型 无符号数 ： 无符号数属于基本数据类型，以u1,u2,u4,u8来分别代表1个字节，2个字节，4个字节和8个字节的无符号数，可以用来描述数字，索引引用，数量值或者以UT8-">
 <meta property="og:type" content="article">
-<meta property="og:title" content="JVM 类文件结构">
+<meta property="og:title" content="JVM类文件结构">
 <meta property="og:url" content="http://gadoid.io/2025/08/02/JVM-%E7%B1%BB%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84/index.html">
 <meta property="og:site_name" content="西北有高楼">
 <meta property="og:description" content="结构Class 文件是一组以8个字节为基础的二进制流，各个数据项目严格按照顺序紧凑地排列在文件之中，中间没有添加任何分隔符，这使得整个文件中存储的内容几乎全部是程序运行的必要数据，没有空隙存在。这种结构中主要使用了两种数据类型 无符号数 ： 无符号数属于基本数据类型，以u1,u2,u4,u8来分别代表1个字节，2个字节，4个字节和8个字节的无符号数，可以用来描述数字，索引引用，数量值或者以UT8-">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://i.111666.best/image/s1CSv3RtDDSmOvw9aHlpMM.png">
 <meta property="article:published_time" content="2025-08-02T11:35:20.000Z">
-<meta property="article:modified_time" content="2025-08-02T11:40:15.198Z">
+<meta property="article:modified_time" content="2025-08-02T11:49:53.471Z">
 <meta property="article:author" content="Codfish">
 <meta property="article:tag" content="JVM">
 <meta name="twitter:card" content="summary_large_image">
@@ -38,7 +38,7 @@
     <meta name="referrer" content="no-referrer-when-downgrade">
   
   
-  <title>JVM 类文件结构 - 西北有高楼</title>
+  <title>JVM类文件结构 - 西北有高楼</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -216,7 +216,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="JVM 类文件结构"></span>
+            <span id="subtitle" data-typed-text="JVM类文件结构"></span>
           
         </div>
 
@@ -287,7 +287,7 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">JVM 类文件结构</h1>
+            <h1 id="seo-header">JVM类文件结构</h1>
             
             
               <div class="markdown-body">
@@ -1562,11 +1562,11 @@
 </tbody></table>
 <p>在java中实例变量赋值和 静态变量赋值发生在不同的阶段：</p>
 <p>对于实例变量</p>
-<p>是在实例构造器<code>&lt;init&gt;</code>()方法中进行的</p>
+<p>是在实例构造器 <code>&lt;init&gt;</code>()方法中进行的</p>
 <p>对于类变量</p>
-<p>在类构造器<code>&lt;clinit&gt;</code> 或者 使用ConstantValue属性。</p>
+<p>在类构造器 <code>&lt;clinit&gt;</code> 或者 使用ConstantValue属性。</p>
 <p>Oracle 实现 ：</p>
-<p>如果同时使用final和static 修饰一个变量，并且这个变量的数据类型是基本类型或者java.lang.String的话，就会生成ConstantValue 属性来进行初始化，如果没有被final修饰，或者并非基本类型及字符串会在<code>&lt;clinit&gt;</code>中进行初始化。因为字面量中只有基本属性和字符串的字面量，所以ConstantValue 无法支持其他类型</p>
+<p>如果同时使用final和static 修饰一个变量，并且这个变量的数据类型是基本类型或者java.lang.String的话，就会生成ConstantValue 属性来进行初始化，如果没有被final修饰，或者并非基本类型及字符串会在 <code>&lt;clinit&gt;</code>中进行初始化。因为字面量中只有基本属性和字符串的字面量，所以ConstantValue 无法支持其他类型</p>
 <table>
 <thead>
 <tr>
@@ -2195,7 +2195,7 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>JVM 类文件结构</div>
+      <div>JVM类文件结构</div>
       <div>http://gadoid.io/2025/08/02/JVM-类文件结构/</div>
     </div>
     <div class="license-meta">
