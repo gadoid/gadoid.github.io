@@ -1,0 +1,849 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/bg/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Codfish">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="Java类的生命周期Java类型的生命周期主要分为7个阶段 ： 加载→ 验证→ 准备→ 解析→ 初始化→ 使用→ 卸载 触发加载的条件 在遇到new ,getstatic ,putstatic或invokestatic 这四条字节码指令时，如果对应类型没有被初始化，则需要先触发其初始化阶段，这几条指令通常会在以下情况被调用 使用new关键字实例化对象的时候 读取或设置一个类型的静态字段的时候 调用">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JVM 类加载过程">
+<meta property="og:url" content="http://gadoid.io/2025/08/03/JVM-%E7%B1%BB%E5%8A%A0%E8%BD%BD%E8%BF%87%E7%A8%8B/index.html">
+<meta property="og:site_name" content="西北有高楼">
+<meta property="og:description" content="Java类的生命周期Java类型的生命周期主要分为7个阶段 ： 加载→ 验证→ 准备→ 解析→ 初始化→ 使用→ 卸载 触发加载的条件 在遇到new ,getstatic ,putstatic或invokestatic 这四条字节码指令时，如果对应类型没有被初始化，则需要先触发其初始化阶段，这几条指令通常会在以下情况被调用 使用new关键字实例化对象的时候 读取或设置一个类型的静态字段的时候 调用">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-08-03T08:45:18.000Z">
+<meta property="article:modified_time" content="2025-08-03T08:46:37.515Z">
+<meta property="article:author" content="Codfish">
+<meta property="article:tag" content="JVM">
+<meta property="article:tag" content="Java">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>JVM 类加载过程 - 西北有高楼</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"gadoid.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>西北有高楼</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/downloads/" target="_self">
+                <i class="iconfont icon-books-fill"></i>
+                <span>资源下载</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/bg/img/ice.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="JVM 类加载过程"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-08-03 16:45" pubdate>
+          2025年8月3日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.7k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          31 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">JVM 类加载过程</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="Java类的生命周期"><a href="#Java类的生命周期" class="headerlink" title="Java类的生命周期"></a>Java类的生命周期</h1><p>Java类型的生命周期主要分为7个阶段 ：</p>
+<p>加载→ 验证→ 准备→ 解析→ 初始化→ 使用→ 卸载</p>
+<h2 id="触发加载的条件"><a href="#触发加载的条件" class="headerlink" title="触发加载的条件"></a>触发加载的条件</h2><ol>
+<li>在遇到new ,getstatic ,putstatic或invokestatic 这四条字节码指令时，如果对应类型没有被初始化，则需要先触发其初始化阶段，这几条指令通常会在以下情况被调用<ol>
+<li>使用new关键字实例化对象的时候</li>
+<li>读取或设置一个类型的静态字段的时候</li>
+<li>调用一个类型的静态方法的时候</li>
+</ol>
+</li>
+<li>使用java.lang.reflect包的方法对类型进行反射调用的时候，如果类型没有进行过初始化，则触发初始化</li>
+<li>当初始化类的时候，如果发现其父类还没进行过初始化，则需要先触发其父类的初始化</li>
+<li>当虚拟机启动时，用户需要指定又给要执行的主类，虚拟机会先初始化这个主类</li>
+<li>当需要使用反射调用方法时，对应的类没有进行过初始化，则触发初始化</li>
+<li>当一个接口中定义默认方法时，如果有这个接口的实现类发生了初始化，那接口要在其之前被初始化</li>
+</ol>
+<h2 id="加载"><a href="#加载" class="headerlink" title="加载"></a>加载</h2><p>加载阶段的目标 ：</p>
+<ol>
+<li>通过一个类的限定名来获取定义此类的二进制字节流</li>
+<li>将这个字节流所代表的静态存储结构转化为方法区的运行时数据结构</li>
+<li>在内存中生成一个代表整个类的java.lang.Class对象，作为方法区整个类的各种数据的访问入口</li>
+</ol>
+<p>对于数组类</p>
+<p>数组类本身不通过类加载器创建，它是由java虚拟机直接在内存中动态构造出来的。但数组类与类加载器仍然有很密切的关系，因为数组类的元素类型，最终还是要靠类加载器来完成加载。</p>
+<p>数组类的创建过程</p>
+<ol>
+<li>如果数组的组件类型是引用类型，那就递归采用本节中定义的加载过程区加载这个组件类型，数组C将被标识在加载该组件类型的类加载器的类命名空间上。</li>
+<li>如果数组的组件类型不是引用类型，java虚拟机将会把数组C标记为与引导类加载器关联</li>
+<li>数组类的可访问性与它的组件类型的可访问性一致，如果组件类型不是引用类型，它的数组类的可访问性将默认为public</li>
+</ol>
+<h2 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h2><p>验证用于确保Class文件的字节流中包含信息复合规范的全部约束要求</p>
+<h3 id="文件格式验证"><a href="#文件格式验证" class="headerlink" title="文件格式验证"></a>文件格式验证</h3><p>验证字节流是否符合Class文件格式的规范,包括</p>
+<ol>
+<li>是否以魔数0xCAFEBABE开头</li>
+<li>主，次版本号是否在当前Java虚拟机接受范围之内</li>
+<li>常量池的常量中是否有不被支持的常量类型</li>
+<li>CONSTANT_Utf8_info型的常量中是否有不符合UTF-8编码的数据</li>
+<li>Class文件中各个部分及文件本身是否有被删除的或附加的其他信息</li>
+</ol>
+<h3 id="元数据验证"><a href="#元数据验证" class="headerlink" title="元数据验证"></a>元数据验证</h3><p>第二阶段 对字节码描述的信息进行语义分析，以保证其描述的信息符合规范要求。</p>
+<ol>
+<li>这个类是否有父类</li>
+<li>这个类的父类是否继承了不允许被继承的类</li>
+<li>如果这个类不是抽象类，是否实现了其父类或接口之中要求实现的所有方法</li>
+<li>类中的字段，方法是否与父类产生矛盾</li>
+</ol>
+<h3 id="字节码验证"><a href="#字节码验证" class="headerlink" title="字节码验证"></a>字节码验证</h3><p>第三阶段 通过数据流分析和控制流分析，确定程序语义是合法的，符合逻辑的。</p>
+<ol>
+<li>保证任意时刻操作数栈的数据类型与指令代码序列都能配合工作。</li>
+<li>保证任何跳转指令都不会跳转到方法体以外的字节码上</li>
+<li>保证方法体中的类型转换总是有效的</li>
+</ol>
+<h3 id="符合引用验证"><a href="#符合引用验证" class="headerlink" title="符合引用验证"></a>符合引用验证</h3><ol>
+<li>符号引用中通过字符串描述的全限定名是否能找到对应的类</li>
+<li>在指定类中是否存在符合方法的字段描述符及简单名称所描述的方法和字段</li>
+<li>符号引用中的类，字段，方法的可访问性</li>
+</ol>
+<h2 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h2><p>准备阶段是正式为类中定义的变量分配内存并设置类变量初始值的阶段。</p>
+<p>通过这个步骤就将定义的类变量值设置为0，只有当声明的变量中存在final关键字时，会直接将对应的值设置为ConstantValue 属性。并在准备阶段将属性直接赋值给对应的变量</p>
+<h3 id="解析"><a href="#解析" class="headerlink" title="解析"></a>解析</h3><p>解析阶段是Java虚拟机将常量池内的符号引用替换为直接引用的过程。</p>
+<p><strong>符号引用</strong> ：符号引用以一组符号来描述所引用的目标，符号可以是任何形式的字面量，只要使用时能无歧义地定位到目标即可。符号引用与虚拟机实现的内存布局无关，引用的目标并不一定是已经加载到虚拟机内存当中的内容。</p>
+<p><strong>直接引用 ：</strong>直接引用是可以直接指向目标的指针，相对偏移量或者是一个能间接定位到目标的句柄。直接引用是和虚拟机实现的内存布局直接相关的。</p>
+<h3 id="动态解析"><a href="#动态解析" class="headerlink" title="动态解析"></a>动态解析</h3><p>在处理多次解析请求时，如果是除invokedynamic指令外的解析过程，虚拟机实现可以对第一次解析的结果进行缓存，无论是否真正执行了多次解析动作，java虚拟机都需要保证的是在同一个实体中。</p>
+<p>而对于invokedynamic指令，则会在程序实际运行到这条指令时，解析动作才能进行，而其他的触发解析的指令都是静态的，可以在加载阶段完成</p>
+<h3 id="类或接口解析"><a href="#类或接口解析" class="headerlink" title="类或接口解析"></a>类或接口解析</h3><p>假设当前代码所处的类为D，如果把一个从未解析过的符号引用N解析为一个类或接口C的直接引用，则需要</p>
+<ol>
+<li>当C不是一个数组类型时，虚拟机会将N的全限定名传递给D的类加载器去加载类C。在加载过程中，又会触发其他相关加载动作。</li>
+<li>当C是一个数组类型，并且数组的元素类型为对象，那会按照1中的规则加载数组元素类型，接着由虚拟机生成一个代表该数组维度和元素的数组对象</li>
+<li>如果上述两步执行完毕，那么C在虚拟机中已经是一个有效的类或者接口了，再之后需要进行符号引用验证。</li>
+</ol>
+<h3 id="字段解析"><a href="#字段解析" class="headerlink" title="字段解析"></a>字段解析</h3><p>要解析一个未被解析过的字段符号引用，需要先解析字段所属的类或接口的符号引用。</p>
+<ol>
+<li>如果C中本身包含了简单名称和字段描述符都与目标相匹配的字段，则返回这个字段的直接引用，查找结束</li>
+<li>否则，如果在C中实现了接口，将会按照继承关系从下往上搜索各个接口和它的父接口，如果查询到了对应的字段，则返回这个字段的直接引用，查找结束</li>
+<li>否则，如果C不是Object的话，将会按照继承关系从上往下递归搜索其父类，如果在父类中包含对应字段，则返回该字段的直接引用，查找结束</li>
+<li>否则，查找失败，抛出异常</li>
+</ol>
+<h3 id="方法解析"><a href="#方法解析" class="headerlink" title="方法解析"></a>方法解析</h3><p>方法解析也需要优先解析方法所属类或接口的符号引用</p>
+<ol>
+<li>判断 所需要解析的信息的类型与表中的类型不一致的话，抛出异常</li>
+<li>查询C中简单名称与描述符都与目标相匹配的方法，如果存在返回该方法的直接引用，查找结束</li>
+<li>否则，在类C的父类中递归查找是否有简单名称和描述符都与目标相匹配的方法，如果存在返回该方法直接引用，查找结束</li>
+<li>否则，在C实现的接口列表及父接口之中查找是否有简单名称和描述符都与目标相匹配的方法，如果存在匹配的方法，说明类C是一个抽象类。抛出异常</li>
+<li>否则，查找失败</li>
+</ol>
+<h3 id="接口方法解析"><a href="#接口方法解析" class="headerlink" title="接口方法解析"></a>接口方法解析</h3><p>也需要查询所属的类或接口已经被解析</p>
+<ol>
+<li>如果查询到索引是个类而不是接口，则直接抛出异常</li>
+<li>否则，在接口C中查找是否有简单名称和描述符都与目标相匹配的方法，如果有，则返回该方法的直接引用，查找结束</li>
+<li>否则，在接口C的父接口中递归查找，直到Object类为止</li>
+<li>如果C的不同父接口中存在多个简单名称和描述符都与目标类相匹配的方法，则会从中返回其中一个并结束查找</li>
+<li>否则，查找失败</li>
+</ol>
+<h2 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h2><p>初始化阶段，Java虚拟机才真正开始执行类中编写的Java程序代码，将主导权移交给应用程序</p>
+<p>初始化阶段 ，会根据编程人员通过程序编码制定的主管计划去初始化类变量和其他资源。</p>
+<p>初始化过程就是执行类构造器<code>&lt;clinit&gt;</code>方法的过程。它由javac编译器自动生成</p>
+<p><code>&lt;clinit&gt;</code>() 方法是由编译器自动收集类中的所有类变量的赋值动作和静态语句块中的语句合并产生的</p>
+<p>静态语句块中只能访问到定义在静态语句块之前的变量，定义在它之后的变量，在前面的静态语句块可以赋值，但不能访问</p>
+<p><code>&lt;clinit&gt;</code> 不需要显式的执行父类的构造器，由于父类构造器先执行，则父类中定义的静态代码优先于子类的赋值操作</p>
+<p><code>&lt;clinit&gt;</code>() 方法对于类或者接口来说不是必须的</p>
+<p>多个线程同时去初始化一个类，那么就只会有其中一个线程去执行这个类的<code>&lt;clinit&gt;</code>方法</p>
+<h2 id="类加载器"><a href="#类加载器" class="headerlink" title="类加载器"></a>类加载器</h2><p>JVM在设计时有意把类加载阶段中的“通过一个类的全限定名来获取描述该类的二进制字节流”放在外部实现，这一部分的代码实现被称为 类加载器</p>
+<p>类加载器只用于实现类的加载动作，它和类本身一起共同确立类在java虚拟机中的唯一性。是否由同一个类加载器加载 是两个类是否相等的 判定标准之一。</p>
+<h3 id="双亲委派机制"><a href="#双亲委派机制" class="headerlink" title="双亲委派机制"></a>双亲委派机制</h3><p>启动类加载器</p>
+<p>启动类加载器负责加载存放在<JAVA_HOME>\lib目录，或者被-Xbootclasspath参数所指定的路径中存储的，而且是java虚拟机能够识别的类库加载到虚拟机的内存中，启动类加载器无法被java程序直接引用，用户如果需要将加载请求委派给引导类加载器处理，直接使用null代替</p>
+<p>扩展类加载器</p>
+<p>扩展类加载器负责加载<JAVA_HOME>\lib\ext中 或者被java.ext.dirs 指定路径中的所有类库</p>
+<p>应用程序类加载器</p>
+<p>应用程序类加载器，负责加载用户类路径上的所有类库。</p>
+<p><strong>双亲委派</strong></p>
+<p>如果一个类加载器受到了类加载的请求，会先将这个请求委派给父类加载器去完成，最终都会将请求传递到最顶层的启动类加载器中，当父加载里中没有查询到该类，再由子类尝试完成加载。</p>
+<p><strong>双亲委派的作用</strong></p>
+<ul>
+<li><strong>安全隔离</strong> ：防止恶意代码通过自定义java.lang.String等核心类来破坏系统</li>
+<li><strong>命名空间管理</strong> ：同一个类加载器加载的类属于同一个命名空间</li>
+<li><strong>版本控制</strong> ：不同类加载器可以加载同名但不同版本的类，实现隔离</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">synchronized</span> Class&lt;?&gt; loadClass(String name , <span class="hljs-type">boolean</span> resolve) <span class="hljs-keyword">throws</span> <br>	ClassNotFoundException<br>	&#123;<br>		<span class="hljs-type">Class</span> <span class="hljs-variable">c</span> <span class="hljs-operator">=</span> findLoadedClass(name);<br>		<span class="hljs-keyword">if</span>(c==<span class="hljs-literal">null</span>)&#123;<br>			<span class="hljs-keyword">try</span> &#123;<br>				<span class="hljs-keyword">if</span>(parent != <span class="hljs-literal">null</span>)&#123;<br>					 c = parent.loadClass(name,<span class="hljs-literal">false</span>);<br>				&#125;<span class="hljs-keyword">else</span> &#123;<br>					 c = findBootstrapClassOrNull(name);<br>				&#125;<br>			&#125;<span class="hljs-keyword">catch</span>(ClassNotFoundException e)&#123;<br>				<span class="hljs-comment">// 如果父类抛出异常 则说明父类无法完成加载请求</span><br>			<br>			&#125;<br>			<span class="hljs-keyword">if</span> (c == <span class="hljs-literal">null</span>)&#123;<br>				<span class="hljs-comment">// 父类无法完成加载时，由本类尝试加载</span><br>				c = findClass(name);<br>			&#125;<br>		&#125;<br>		<span class="hljs-keyword">if</span>(resolve)&#123;<br>			resolveClass(c);<br>		&#125;<br>	&#125; <br></code></pre></td></tr></table></figure>
+
+<h3 id="破坏双亲委派"><a href="#破坏双亲委派" class="headerlink" title="破坏双亲委派"></a>破坏双亲委派</h3><ol>
+<li>SPI 双亲委派机制只能解决各个类加载器协作时的一致性问题。对于一些用于对资源进行查询和管理的业务，它本身就需要完成管理类的加载过程，通过线程上下文加载器，去加载所需的SPI服务代码， 实际上是通过父类加载器请求子类加载器完成类加载的行为。</li>
+<li>OSGi 有些模块需要对自身所依赖的类进行更何时的定制化加载管理，每一个程序模块都有一个自己的类加载器，当需要更换一个Bundle时，就把Bundle连同类加载器一起换掉以实现代码的热替换。这样对于一个模块来说，它本身掌握了该子系统所需的类加载逻辑，可以实现更好的定制化加载，其加载逻辑 ：<ol>
+<li>将以java.* 开头的类委派给父类加载器加载</li>
+<li>否则，将委派列表名单内的类，委派给父类加载器加载</li>
+<li>否则，将Import列表中的类，委派给Export 这个类的Bundle的类加载器加载</li>
+<li>否则，查找当前Bundle的ClassPath，使用自己的类加载器加载</li>
+<li>否则，查找类是否在自己的Fragment Bundle中，如果在，则委派给Fragment Bundle的类加载器加载</li>
+<li>否则，查找Dynamic Import 列表的Bundle，委派给对应Bundle的类加载器加载</li>
+<li>否则，类查找失败</li>
+</ol>
+</li>
+<li>我们可以理解到双亲委派机制本身的作用是用于控制类来源的一致性，保证基础类是通过有确定来源的位置被加载并使用的，但是为了满足实际场景中的不同需求，同一个类的不同版本被加载到同一个项目中，或者热部署的切换需求，需要有更加灵活的类加载过程，才能保证系统的定制化实现。</li>
+</ol>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/JVM/" class="category-chain-item">JVM</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/JVM/" class="print-no-link">#JVM</a>
+      
+        <a href="/tags/Java/" class="print-no-link">#Java</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>JVM 类加载过程</div>
+      <div>http://gadoid.io/2025/08/03/JVM-类加载过程/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Codfish</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年8月3日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/08/02/JVM-%E7%B1%BB%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84/" title="JVM类文件结构">
+                        <span class="hidden-mobile">JVM类文件结构</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"lQzCvqmOtewLtpMfvfxKLomU-MdYXbMMI","appKey":"daMNlw5XcjN8TelT6GCHh8RF","path":"window.location.pathname","placeholder":"让灵感在这里发生","avatar":"monsterid","meta":["nick","mail"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":true,"recordIP":true,"serverURLs":"https://lQzCvqmO.api.lncldglobal.com","emojiCDN":null,"emojiMaps":null,"enableQQ":false,"enable":true,"visitor":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      &copy; 2025 - 2025 <a target="_blank" rel="noopener" href="https://github.com/username">CODFISH</a>
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+<!-- hexo injector body_end start --><script src="/js/chatbot-loader.js" defer></script><!-- hexo injector body_end end --></body>
+</html>
