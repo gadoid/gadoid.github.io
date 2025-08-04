@@ -1,0 +1,892 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/bg/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Codfish">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="调用Java中设置了不同的指令来完成不同的调用过程 ：  invokestatic 用于调用静态方法 invokespecial 用于调用实例构造器&lt;init&gt;方法，私有方法和父类中的方法 invokevirtual 用于调用所有的虚方法 invokeinterface 用于调用接口方法，会在运行时再确定一个实现接口的对象 invokedynamic 先在运行时动态解析处调用点限定符所">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JVM字节码执行引擎">
+<meta property="og:url" content="http://gadoid.io/2025/08/04/JVM%E5%AD%97%E8%8A%82%E7%A0%81%E6%89%A7%E8%A1%8C%E5%BC%95%E6%93%8E/index.html">
+<meta property="og:site_name" content="西北有高楼">
+<meta property="og:description" content="调用Java中设置了不同的指令来完成不同的调用过程 ：  invokestatic 用于调用静态方法 invokespecial 用于调用实例构造器&lt;init&gt;方法，私有方法和父类中的方法 invokevirtual 用于调用所有的虚方法 invokeinterface 用于调用接口方法，会在运行时再确定一个实现接口的对象 invokedynamic 先在运行时动态解析处调用点限定符所">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-08-04T06:29:23.000Z">
+<meta property="article:modified_time" content="2025-08-04T06:41:12.539Z">
+<meta property="article:author" content="Codfish">
+<meta property="article:tag" content="JVM">
+<meta property="article:tag" content="Java">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>JVM字节码执行引擎 - 西北有高楼</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"gadoid.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>西北有高楼</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/downloads/" target="_self">
+                <i class="iconfont icon-books-fill"></i>
+                <span>资源下载</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/bg/img/ice.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="JVM字节码执行引擎"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-08-04 14:29" pubdate>
+          2025年8月4日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.5k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          21 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">JVM字节码执行引擎</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="调用"><a href="#调用" class="headerlink" title="调用"></a>调用</h1><p>Java中设置了不同的指令来完成不同的调用过程 ：</p>
+<ol>
+<li>invokestatic 用于调用静态方法</li>
+<li>invokespecial 用于调用实例构造器<code>&lt;init&gt;</code>方法，私有方法和父类中的方法</li>
+<li>invokevirtual 用于调用所有的虚方法</li>
+<li>invokeinterface 用于调用接口方法，会在运行时再确定一个实现接口的对象</li>
+<li>invokedynamic 先在运行时动态解析处调用点限定符所引用的方法，再执行该方法</li>
+</ol>
+<h2 id="解析"><a href="#解析" class="headerlink" title="解析"></a>解析</h2><p>对于静态方法，私有方法，实例构造器，父类方法，被final修饰的方法都会在类加载时将符号引用转为直接引用。</p>
+<h3 id="静态方法"><a href="#静态方法" class="headerlink" title="静态方法"></a>静态方法</h3><p>对于静态方法，其调用版本在编译后就是确定的。相应的 静态方法和私有方法在类加载阶段进行解析</p>
+<h1 id="分派"><a href="#分派" class="headerlink" title="分派"></a>分派</h1><h2 id="静态分派与重载"><a href="#静态分派与重载" class="headerlink" title="静态分派与重载"></a>静态分派与重载</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">StaticDispatch</span>&#123;<br>	<span class="hljs-keyword">static</span> <span class="hljs-keyword">abstract</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Human</span>&#123;<br><br>	&#125;<br>	<span class="hljs-keyword">static</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Man</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">Human</span>&#123;<br><br>	&#125;<br>	<span class="hljs-keyword">static</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Woman</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">Human</span>&#123;<br><br>	&#125;<br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">sayHello</span><span class="hljs-params">(Human guy)</span>&#123;<br>		System.out.println(<span class="hljs-string">&quot;hello guy&quot;</span>);<br>	&#125;<br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">sayHello</span><span class="hljs-params">(Woman guy)</span>&#123;<br>		System.out.println(<span class="hljs-string">&quot;hello lady&quot;</span>);<br>	&#125;<br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">sayHello</span><span class="hljs-params">(Man guy)</span>&#123;<br>		System.out.println(<span class="hljs-string">&quot;hello gentleman&quot;</span>);<br>	&#125;<br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span>&#123;<br>		<span class="hljs-type">Human</span> <span class="hljs-variable">man</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Man</span>();<br>		<span class="hljs-type">Human</span> <span class="hljs-variable">woman</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Woman</span>();<br>		<span class="hljs-type">StaticDispatch</span> <span class="hljs-variable">sr</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">StaticDispatch</span>();<br>		sr.sayHello(man);<br>		sr.sayHello(woman);<br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>静态分派是通过编译时的方法绑定确定了具体使用的方法。</p>
+<p>即在编译时，通过引用声明，确定了变量的类型，再根据其类型，由编译器选择帮绑定对应的方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Overload</span>&#123; <br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">sayHello</span><span class="hljs-params">(Object arg)</span>&#123;<br>		System.out.println(<span class="hljs-string">&quot;hello Object&quot;</span>);   <br>	&#125;<br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">sayHello</span><span class="hljs-params">(<span class="hljs-type">int</span> arg)</span>&#123;<br>		System.out.println(<span class="hljs-string">&quot;hello int&quot;</span>);<br>	&#125;<br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">sayHello</span><span class="hljs-params">(<span class="hljs-type">long</span> arg)</span>&#123;<br>		System.out.println(<span class="hljs-string">&quot;hello long&quot;</span>);<br>	&#125;<br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">sayHello</span><span class="hljs-params">(Character arg)</span>&#123;<br>		System.out.println(<span class="hljs-string">&quot;hello char&quot;</span>);<br>	&#125;<br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">sayHello</span><span class="hljs-params">(<span class="hljs-type">char</span> arg)</span>&#123;<br>		System.out.println(<span class="hljs-string">&quot;hello char ...&quot;</span>);<br>	&#125;<br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">sayHello</span><span class="hljs-params">(Serializable arg)</span>&#123;<br>		System.out.println(<span class="hljs-string">&quot;hello Serializable&quot;</span>);<br>	&#125;<br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span>&#123;<br>		sayHello(<span class="hljs-string">&#x27;a&#x27;</span>);<br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="优先级"><a href="#优先级" class="headerlink" title="优先级"></a>优先级</h3><p><code>精确匹配 → 自动类型提升 → 自动装箱/拆箱 → 父类型匹配 → 可变参数匹配</code></p>
+<h3 id="完整的调用过程分析"><a href="#完整的调用过程分析" class="headerlink" title="完整的调用过程分析"></a>完整的调用过程分析</h3><p>对于 <code>sayHello(&#39;a&#39;)</code> 的调用：</p>
+<ol>
+<li><strong>第一次调用</strong> ：精确匹配到 <code>sayHello(char arg)</code></li>
+</ol>
+<ul>
+<li>输出：<code>&quot;hello char ...&quot;</code></li>
+</ul>
+<ol>
+<li><strong>屏蔽 char 参数方法</strong> ：自动类型提升 char → int</li>
+</ol>
+<ul>
+<li>匹配到 <code>sayHello(int arg)</code></li>
+<li>输出：<code>&quot;hello int&quot;</code></li>
+</ul>
+<ol>
+<li><strong>屏蔽 int 参数方法</strong> ：自动类型提升 int → long</li>
+</ol>
+<ul>
+<li>匹配到 <code>sayHello(long arg)</code></li>
+<li>输出：<code>&quot;hello long&quot;</code></li>
+</ul>
+<ol>
+<li><strong>屏蔽 long 参数方法</strong> ：自动装箱 char → Character</li>
+</ol>
+<ul>
+<li>匹配到 <code>sayHello(Character arg)</code></li>
+<li>输出：<code>&quot;hello char&quot;</code></li>
+</ul>
+<ol>
+<li><strong>屏蔽 Character 参数方法</strong> ：父类型匹配，Character → Serializable</li>
+</ol>
+<ul>
+<li>匹配到 <code>sayHello(Serializable arg)</code></li>
+<li>输出：<code>&quot;hello Serializable&quot;</code></li>
+<li>（因为Character实现了Serializable接口）</li>
+</ul>
+<ol>
+<li><strong>屏蔽 Serializable 参数方法</strong> ：最终父类型匹配</li>
+</ol>
+<ul>
+<li>匹配到 <code>sayHello(Object arg)</code></li>
+<li>输出：<code>&quot;hello Object&quot;</code></li>
+</ul>
+<h2 id="动态分派"><a href="#动态分派" class="headerlink" title="动态分派"></a>动态分派</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">DynamicDispatch</span>&#123;<br>	<span class="hljs-keyword">static</span> <span class="hljs-keyword">abstract</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Human</span> &#123;<br>		<span class="hljs-keyword">protected</span> <span class="hljs-keyword">abstract</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">sayHello</span><span class="hljs-params">()</span>;<br>	&#125;<br><br>	<span class="hljs-keyword">static</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Man</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">Human</span>&#123;<br>		<span class="hljs-meta">@Override</span><br>		<span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">sayHello</span><span class="hljs-params">()</span>&#123;<br>			System.out.println(<span class="hljs-string">&quot;man say hello&quot;</span>);<br>		&#125;<br>	&#125;<br>	<span class="hljs-keyword">static</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Woman</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">Human</span>&#123;<br>		<span class="hljs-meta">@Override</span><br>		<span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">sayHello</span><span class="hljs-params">()</span>&#123;<br>			System.out.println(<span class="hljs-string">&quot;woman say hello&quot;</span>);<br>		&#125;<br>	&#125;<br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span>&#123;<br>		<span class="hljs-type">Human</span> <span class="hljs-variable">man</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Man</span>();<br>		<span class="hljs-type">Human</span> <span class="hljs-variable">woman</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Woman</span>();<br>		man.sayHello();<br>		woman.sayHello();<br>		man = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Woman</span>();<br>		man.sayHello();<br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>对应字节码</p>
+<figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs arduino"><span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-type">static</span> <span class="hljs-type">void</span> <span class="hljs-title">main</span><span class="hljs-params">(java.lang.<span class="hljs-type">String</span>[])</span></span>;<br>	Code:<br>		Stack = <span class="hljs-number">2</span> , Locals = <span class="hljs-number">3</span> , Args_size = <span class="hljs-number">1</span><br>			<span class="hljs-number">0</span>: <span class="hljs-keyword">new</span>             <span class="hljs-comment">// 创建Man对象</span><br>			<span class="hljs-number">3</span>: dup             <span class="hljs-comment">// 复制对象引用（栈顶现在有两个相同引用）</span><br>			<span class="hljs-number">4</span>: invokespecial   <span class="hljs-comment">// 调用Man的构造方法（消耗一个引用）</span><br>			<span class="hljs-number">7</span>: astore_1        <span class="hljs-comment">// 将剩余的对象引用存储到局部变量槽位1（man变量）</span><br>			<span class="hljs-number">8</span>: <span class="hljs-keyword">new</span>             <span class="hljs-comment">// 创建Woman对象</span><br>			<span class="hljs-number">11</span>: dup            <span class="hljs-comment">// 复制对象引用</span><br>			<span class="hljs-number">12</span>: invokespecial  <span class="hljs-comment">// 调用Woman的构造方法</span><br>			<span class="hljs-number">15</span>: astore_2       <span class="hljs-comment">// 存储到局部变量槽位2（woman变量）</span><br>			<span class="hljs-number">16</span>: aload_1        <span class="hljs-comment">// 从槽位1加载man对象引用到操作数栈</span><br>			<span class="hljs-number">17</span>: invokevirtual  <span class="hljs-comment">// 虚方法调用sayHello()（动态分派）</span><br>			<span class="hljs-number">20</span>: aload_2        <span class="hljs-comment">// 从槽位2加载woman对象引用</span><br>			<span class="hljs-number">21</span>: invokevirtual  <span class="hljs-comment">// 虚方法调用sayHello()（动态分派）</span><br>			<span class="hljs-number">24</span>: <span class="hljs-keyword">new</span>            <span class="hljs-comment">// 创建新的Woman对象</span><br>			<span class="hljs-number">27</span>: dup            <span class="hljs-comment">// 复制引用</span><br>			<span class="hljs-number">28</span>: invokespecial  <span class="hljs-comment">// 调用Woman构造方法</span><br>			<span class="hljs-number">31</span>: astore_1       <span class="hljs-comment">// 重新赋值给槽位1（覆盖原来的man引用）</span><br>			<span class="hljs-number">32</span>: aload_1        <span class="hljs-comment">// 加载槽位1中的对象（现在是Woman实例）</span><br>			<span class="hljs-number">33</span>: invokevirtual  <span class="hljs-comment">// 虚方法调用sayHello()</span><br>			<span class="hljs-number">36</span>: <span class="hljs-keyword">return</span>         <span class="hljs-comment">// 方法返回</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="动态分派过程"><a href="#动态分派过程" class="headerlink" title="动态分派过程"></a>动态分派过程</h3><ol>
+<li>找到操作栈数栈顶的第一个元素所指向的对象的实例类型，记作C</li>
+<li>如果在类型C中找到与常量中的描述符和简单名称都相符的方法，则进行访问权限校验，如果通过则返回这个方法的直接引用，查找过程结束；不通过则返回java.lang.IllegalAccessErrorc异常</li>
+<li>否则，按照继承关系从下往上依次对C的各个父类进行第二步的搜索和验证过程</li>
+<li>如果始终没有找到合适的方法，则抛出java.lang.AbstractMethodError异常</li>
+</ol>
+<h3 id="单分派与多分派"><a href="#单分派与多分派" class="headerlink" title="单分派与多分派"></a>单分派与多分派</h3><p>单分派与多分派的区别是，在查询需要执行的方法是 是由某个量来决定需要执行的方法（单分派）还是由多个量来决定需要执行的方法（多分派）</p>
+<p><strong>单分派：</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs java"><br>javaclass Printer &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">print</span><span class="hljs-params">(Object obj)</span> &#123; <br>        System.out.println(<span class="hljs-string">&quot;打印Object: &quot;</span> + obj); <br>    &#125;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">print</span><span class="hljs-params">(String str)</span> &#123; <br>        System.out.println(<span class="hljs-string">&quot;打印String: &quot;</span> + str); <br>    &#125;<br>&#125;<br><br><span class="hljs-type">Object</span> <span class="hljs-variable">obj</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;Hello&quot;</span>;  <span class="hljs-comment">// 运行时是String，但编译时类型是Object</span><br><span class="hljs-type">Printer</span> <span class="hljs-variable">printer</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Printer</span>();<br>printer.print(obj);    <span class="hljs-comment">// 输出：打印Object: Hello</span><br>                       <span class="hljs-comment">// 只考虑编译时参数类型Object，不考虑运行时的String</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>多分派 ：</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs java">*<span class="hljs-comment">// 假设的多分派行为*</span><br><span class="hljs-type">Object</span> <span class="hljs-variable">obj</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;Hello&quot;</span>;  *<span class="hljs-comment">// 运行时是String*</span><br>printer.print(obj);    *<span class="hljs-comment">// 输出：打印String: Hello// 同时考虑运行时参数类型String*</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>实际查找过程</strong></p>
+<p> <strong>单分派查找</strong> ：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs java">方法调用：receiver.method(arg1, arg2)<br>查找依据：receiver的运行时类型 + method名称 + 参数的编译时类型<br></code></pre></td></tr></table></figure>
+
+<p> <strong>多分派查找</strong> ：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs java">方法调用：receiver.method(arg1, arg2)<br>查找依据：receiver的运行时类型 + method名称 + 所有参数的运行时类型<br></code></pre></td></tr></table></figure>
+
+<h2 id="虚拟机动态分派实现"><a href="#虚拟机动态分派实现" class="headerlink" title="虚拟机动态分派实现"></a>虚拟机动态分派实现</h2><p>动态分派主要通过虚方法表来实现动态分派的支持。</p>
+<p>虚方法表中存放着各个方法的实际入口地址，如果某个方法在子类中没有重写，那么子类中的虚方法表与父类中相同方法的地址入口是一致的。如果发生了重写，则将指向子类自己实现的方法入口。同时 父子类的虚方法表索引维持一致。这样在查找方法时，同一索引可以直接查询父类或者子类中的入口地址。</p>
+<h1 id="Java对动态语言特性的支持"><a href="#Java对动态语言特性的支持" class="headerlink" title="Java对动态语言特性的支持"></a>Java对动态语言特性的支持</h1><p>Java中的动态语言实现是通过字节码指令invokedynamic来实现的</p>
+<h2 id="动态语言"><a href="#动态语言" class="headerlink" title="动态语言"></a>动态语言</h2><p>动态类型语言的关键特征是它的类型检查的主体过程是在运行期而不是编译期。</p>
+<h2 id="Invoke包"><a href="#Invoke包" class="headerlink" title="Invoke包"></a>Invoke包</h2><p>通过MethodHandle 允许定义一个对象接受一个方法名。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MethodHandleTest</span>&#123;<br>	<span class="hljs-keyword">static</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">ClassA</span>&#123;<br>		<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">println</span><span class="hljs-params">(String a)</span>&#123;<br>			System.out.println(s);<br>		&#125;<br>	&#125;<br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> <span class="hljs-keyword">throws</span> Throwable&#123;<br>		<span class="hljs-type">Object</span> <span class="hljs-variable">obj</span> <span class="hljs-operator">=</span> System.currentTimeMills() %<span class="hljs-number">2</span> == <span class="hljs-number">0</span> ? System.out : <span class="hljs-keyword">new</span> <span class="hljs-title class_">ClassA</span>();<br>		getPrintlnMH(obj).invokeExact(<span class="hljs-string">&quot;icyfenix&quot;</span>);<br>	&#125;<br>	<span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> MethodHandle <span class="hljs-title function_">getPrintlnMH</span><span class="hljs-params">(Object reveiver)</span> <span class="hljs-keyword">throw</span> Throwable&#123;<br>			<span class="hljs-type">MethodType</span> <span class="hljs-variable">mt</span> <span class="hljs-operator">=</span> MethodType.methodType(<span class="hljs-keyword">void</span>.class,String.class);<br>			<span class="hljs-keyword">return</span> lookup().findVirtual(reveiver.getClass(),<span class="hljs-string">&quot;println&quot;</span>,mt).bindTo(reveiver);<br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="句柄与反射"><a href="#句柄与反射" class="headerlink" title="句柄与反射"></a>句柄与反射</h3><ul>
+<li>Reflection 与MethodHandle 机制本质上都是在模拟方法调用，但是Reflection是在模拟Java代码层次的方法调用，但是Reflection是在模拟Java代码层次的方法调用，而MethodHandle是在模拟字节码层次的方法调用。</li>
+<li>Reflection 的Method对象比MethodHandle 所包含的信息来得多，而MethodHandle中仅包含执行该方法的相关信息</li>
+</ul>
+<h2 id="Invoke指令"><a href="#Invoke指令" class="headerlink" title="Invoke指令"></a>Invoke指令</h2><p>JVM中有5种invoke指令，分别用于不同类型的方法调用。它们在绑定时机、查找机制和性能上各有特点。</p>
+<h3 id="invokestatic-静态方法调用"><a href="#invokestatic-静态方法调用" class="headerlink" title="invokestatic - 静态方法调用"></a>invokestatic - 静态方法调用</h3><ul>
+<li><strong>绑定时机</strong> : 编译时静态绑定</li>
+<li><strong>需要实例</strong> : 否</li>
+<li><strong>支持多态</strong> : 否</li>
+<li><strong>性能</strong> : 最高</li>
+</ul>
+<p><strong>使用场景</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MathUtils</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">add</span><span class="hljs-params">(<span class="hljs-type">int</span> a, <span class="hljs-type">int</span> b)</span> &#123;<br>        <span class="hljs-keyword">return</span> a + b;<br>    &#125;<br>&#125;<br><br>*<span class="hljs-comment">// 调用*</span><br><span class="hljs-type">int</span> <span class="hljs-variable">result</span> <span class="hljs-operator">=</span> MathUtils.add(<span class="hljs-number">5</span>, <span class="hljs-number">3</span>);`<br><br>字节码示例<br><br>iconst_5<br>iconst_3<br>invokestatic #<span class="hljs-number">2</span> <span class="hljs-comment">// Method MathUtils.add:(II)I</span><br>istore_1<br></code></pre></td></tr></table></figure>
+
+<p><strong>特点</strong></p>
+<ul>
+<li>直接根据类名和方法签名调用</li>
+<li>无需运行时查找，性能最优</li>
+<li>方法地址在编译时确定</li>
+</ul>
+<h3 id="invokespecial-特殊方法调用"><a href="#invokespecial-特殊方法调用" class="headerlink" title="invokespecial - 特殊方法调用"></a>invokespecial - 特殊方法调用</h3><ul>
+<li><strong>绑定时机</strong> : 编译时静态绑定</li>
+<li><strong>调用对象</strong> : 构造方法、私有方法、super方法</li>
+<li><strong>支持重写</strong> : 否</li>
+<li><strong>性能</strong> : 高</li>
+</ul>
+<p><strong>使用场景</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Animal</span> &#123;<br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">privateMethod</span><span class="hljs-params">()</span> &#123; &#125;<br>  <br>    <span class="hljs-keyword">public</span> <span class="hljs-title function_">Animal</span><span class="hljs-params">()</span> &#123;        *<span class="hljs-comment">// 构造方法*</span><br>        <span class="hljs-built_in">super</span>();            *<span class="hljs-comment">// super调用*</span><br>        privateMethod();    *<span class="hljs-comment">// 私有方法调用*</span><br>    &#125;<br>&#125;<br><br>字节码示例<br><br>aload_0<br>invokespecial #<span class="hljs-number">1</span> <span class="hljs-comment">// Method java/lang/Object.&quot;&lt;init&gt;&quot;:()V</span><br>aload_0<br>invokespecial #<span class="hljs-number">2</span> <span class="hljs-comment">// Method privateMethod:()V</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>特点</strong></p>
+<ul>
+<li>用于不能被重写的方法调用</li>
+<li>编译时确定目标，安全且高效</li>
+<li>包括构造器、私有方法、父类方法调用</li>
+</ul>
+<h3 id="invokevirtual-虚方法调用"><a href="#invokevirtual-虚方法调用" class="headerlink" title="invokevirtual - 虚方法调用"></a>invokevirtual - 虚方法调用</h3><ul>
+<li><strong>绑定时机</strong> : 运行时动态绑定</li>
+<li><strong>查找结构</strong> : 虚方法表(vtable)</li>
+<li><strong>支持多态</strong> : 是</li>
+<li><strong>性能</strong> : 中等</li>
+</ul>
+<p><strong>使用场景</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Animal</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">makeSound</span><span class="hljs-params">()</span> &#123;<br>        System.out.println(<span class="hljs-string">&quot;Animal sound&quot;</span>);<br>    &#125;<br>&#125;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Dog</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">Animal</span> &#123;<br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">makeSound</span><span class="hljs-params">()</span> &#123;<br>        System.out.println(<span class="hljs-string">&quot;Woof!&quot;</span>);<br>    &#125;<br>&#125;<br><br><span class="hljs-type">Animal</span> <span class="hljs-variable">animal</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Dog</span>();<br>animal.makeSound();  *<span class="hljs-comment">// 调用Dog的实现*</span><br><br>字节码示例<br><br>aload_1<br>invokevirtual #<span class="hljs-number">3</span> <span class="hljs-comment">// Method Animal.makeSound:()V</span><br><br>查找机制<br><br>*<span class="hljs-comment">// vtable结构示例*</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Animal</span> &#123;<br>    vtable[<span class="hljs-number">0</span>] = toString()    *<span class="hljs-comment">// 继承自Object*</span><br>    vtable[<span class="hljs-number">1</span>] = hashCode()    *<span class="hljs-comment">// 继承自Object*</span><br>    vtable[<span class="hljs-number">2</span>] = makeSound()   *<span class="hljs-comment">// Animal自定义*</span><br>&#125;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Dog</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">Animal</span> &#123;<br>    vtable[<span class="hljs-number">0</span>] = toString()    *<span class="hljs-comment">// 继承自Object*</span><br>    vtable[<span class="hljs-number">1</span>] = hashCode()    *<span class="hljs-comment">// 继承自Object*  </span><br>    vtable[<span class="hljs-number">2</span>] = makeSound()   *<span class="hljs-comment">// Dog重写版本*</span><br>&#125;<br><br>*<span class="hljs-comment">// 调用：object.vtable[method_index] - O(1)操作*</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>特点</strong></p>
+<ul>
+<li>通过vtable进行O(1)查找</li>
+<li>平衡了多态性和性能</li>
+<li>支持方法重写和动态分派</li>
+</ul>
+<hr>
+<h3 id="invokeinterface-接口方法调用"><a href="#invokeinterface-接口方法调用" class="headerlink" title="invokeinterface - 接口方法调用"></a>invokeinterface - 接口方法调用</h3><p><strong>基本特性</strong></p>
+<ul>
+<li><strong>绑定时机</strong> : 运行时动态绑定</li>
+<li><strong>查找结构</strong> : 接口方法表(itable)</li>
+<li><strong>多接口支持</strong> : 是</li>
+<li><strong>性能</strong> : 较低</li>
+</ul>
+<p><strong>使用场景</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">interface</span> <span class="hljs-title class_">Drawable</span> &#123;<br>    <span class="hljs-keyword">void</span> <span class="hljs-title function_">draw</span><span class="hljs-params">()</span>;<br>&#125;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Circle</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Drawable</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">draw</span><span class="hljs-params">()</span> &#123;<br>        System.out.println(<span class="hljs-string">&quot;Drawing circle&quot;</span>);<br>    &#125;<br>&#125;<br><br><span class="hljs-type">Drawable</span> <span class="hljs-variable">drawable</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Circle</span>();<br>drawable.draw();  *<span class="hljs-comment">// 接口方法调用*</span><br><br>字节码示例<br><br>aload_1<br>invokeinterface #<span class="hljs-number">4</span>, <span class="hljs-number">1</span> <span class="hljs-comment">// InterfaceMethod Drawable.draw:()V</span><br><br>查找机制<br><br>java<br><br>*<span class="hljs-comment">// itable结构示例*</span><br><span class="hljs-keyword">interface</span> <span class="hljs-title class_">Drawable</span> &#123; <span class="hljs-keyword">void</span> <span class="hljs-title function_">draw</span><span class="hljs-params">()</span>; &#125;<br><span class="hljs-keyword">interface</span> <span class="hljs-title class_">Movable</span> &#123; <span class="hljs-keyword">void</span> <span class="hljs-title function_">move</span><span class="hljs-params">()</span>; &#125;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Circle</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Drawable</span>, Movable &#123;<br>    *<span class="hljs-comment">// 需要维护多个接口的方法映射*</span><br>    itable_Drawable[<span class="hljs-number">0</span>] = draw()<br>    itable_Movable[<span class="hljs-number">0</span>] = move()<br>&#125;<br><br>*<span class="hljs-comment">// 调用：需要先找到对应接口的itable，再访问方法*</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>特点</strong></p>
+<ul>
+<li>需要在多个接口表中查找</li>
+<li>支持多接口实现</li>
+<li>性能开销较大，但提供了高度的灵活性</li>
+</ul>
+<hr>
+<h3 id="invokedynamic-动态方法调用"><a href="#invokedynamic-动态方法调用" class="headerlink" title="invokedynamic - 动态方法调用"></a>invokedynamic - 动态方法调用</h3><ul>
+<li><strong>引入版本</strong> : Java 7</li>
+<li><strong>绑定时机</strong> : 首次调用时动态绑定</li>
+<li><strong>主要用途</strong> : Lambda表达式、动态语言支持</li>
+<li><strong>性能</strong> : 优化后较高</li>
+</ul>
+<p><strong>使用场景</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs java">*<span class="hljs-comment">// Lambda表达式*</span><br>List&lt;String&gt; list = Arrays.asList(<span class="hljs-string">&quot;a&quot;</span>, <span class="hljs-string">&quot;b&quot;</span>, <span class="hljs-string">&quot;c&quot;</span>);<br>list.forEach(s -&gt; System.out.println(s));<br><br>*<span class="hljs-comment">// 方法引用*</span><br>list.forEach(System.out::println);<br><br>### 字节码示例<br><br>invokedynamic #<span class="hljs-number">2</span>, <span class="hljs-number">0</span> <span class="hljs-comment">// InvokeDynamic</span><br>    <span class="hljs-comment">// Bootstrap: java/lang/invoke/LambdaMetafactory.metafactory</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>特点</strong></p>
+<ul>
+<li>通过BootstrapMethod在运行时决定调用目标</li>
+<li>支持现代Java特性和动态语言</li>
+<li>首次调用后会缓存结果，后续调用性能较高</li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/JVM/" class="category-chain-item">JVM</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/JVM/" class="print-no-link">#JVM</a>
+      
+        <a href="/tags/Java/" class="print-no-link">#Java</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>JVM字节码执行引擎</div>
+      <div>http://gadoid.io/2025/08/04/JVM字节码执行引擎/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Codfish</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年8月4日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/08/03/JVM-%E7%B1%BB%E5%8A%A0%E8%BD%BD%E8%BF%87%E7%A8%8B/" title="JVM 类加载过程">
+                        <span class="hidden-mobile">JVM 类加载过程</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"lQzCvqmOtewLtpMfvfxKLomU-MdYXbMMI","appKey":"daMNlw5XcjN8TelT6GCHh8RF","path":"window.location.pathname","placeholder":"让灵感在这里发生","avatar":"monsterid","meta":["nick","mail"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":true,"recordIP":true,"serverURLs":"https://lQzCvqmO.api.lncldglobal.com","emojiCDN":null,"emojiMaps":null,"enableQQ":false,"enable":true,"visitor":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      &copy; 2025 - 2025 <a target="_blank" rel="noopener" href="https://github.com/username">CODFISH</a>
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+<!-- hexo injector body_end start --><script src="/js/chatbot-loader.js" defer></script><!-- hexo injector body_end end --></body>
+</html>
