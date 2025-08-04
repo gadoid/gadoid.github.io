@@ -1,0 +1,876 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/bg/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Codfish">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="类与对象的建构在Java中对类进行的查询主要通过SystemDictionary 管理。当需要的类已经被加载了或者通过Class对象查询目标Class对象时，通过SystemDictionary 使用”类名+类加载器”作为类的唯一标识查询底层的原类型指针获取到原类型。 12345Class.forName(&quot;Person&quot;)                ↓">
+<meta property="og:type" content="article">
+<meta property="og:title" content="反射,锁与线程">
+<meta property="og:url" content="http://gadoid.io/2025/08/05/%E5%8F%8D%E5%B0%84-%E9%94%81%E4%B8%8E%E7%BA%BF%E7%A8%8B/index.html">
+<meta property="og:site_name" content="西北有高楼">
+<meta property="og:description" content="类与对象的建构在Java中对类进行的查询主要通过SystemDictionary 管理。当需要的类已经被加载了或者通过Class对象查询目标Class对象时，通过SystemDictionary 使用”类名+类加载器”作为类的唯一标识查询底层的原类型指针获取到原类型。 12345Class.forName(&quot;Person&quot;)                ↓">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-08-04T16:49:17.000Z">
+<meta property="article:modified_time" content="2025-08-04T16:49:45.052Z">
+<meta property="article:author" content="Codfish">
+<meta property="article:tag" content="JVM">
+<meta property="article:tag" content="Java">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>反射,锁与线程 - 西北有高楼</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"gadoid.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>西北有高楼</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/downloads/" target="_self">
+                <i class="iconfont icon-books-fill"></i>
+                <span>资源下载</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/bg/img/ice.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="反射,锁与线程"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-08-05 00:49" pubdate>
+          2025年8月5日 凌晨
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.6k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          30 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">反射,锁与线程</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="类与对象的建构"><a href="#类与对象的建构" class="headerlink" title="类与对象的建构"></a>类与对象的建构</h1><p>在Java中对类进行的查询主要通过SystemDictionary 管理。当需要的类已经被加载了或者通过Class对象查询目标Class对象时，通过SystemDictionary 使用”类名+类加载器”作为类的唯一标识查询底层的原类型指针获取到原类型。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs java">Class.forName(<span class="hljs-string">&quot;Person&quot;</span>)         <br>       ↓                         <br>   SystemDictionary 哈希查找       <br>   Key: (类名 + 类加载器)           <br>   Value: Klass* 指针    <br></code></pre></td></tr></table></figure>
+
+<p>对于对象来说，所有的对象创建过程都是存在一个创建顺序的，所以其上层的对象必然存储了对它的引用。而对已经被废弃的对象来说，GC通过图遍历完成对所有存活对象的可达性访问，另一方面又通过堆对所有对象的管理来进行遍历堆检查所有对象是否存活。所以对于对象的管理来说，使用性能开销较大的查询方式不如由对象进行相互的引用管理来的直接高效。</p>
+<h1 id="类的形式"><a href="#类的形式" class="headerlink" title="类的形式"></a>类的形式</h1><p>因为 Java是解释语言，所以它的类以三种形式互相关联，完成不同的功能</p>
+<ol>
+<li>由类创建的实例对象。用于在内存中存储实例数据</li>
+<li>提供给编程人员访问的类对象。以Class对象为例，主要是提供了一个接口用于对运行时的实际元类对象进行访问</li>
+<li>最底层由C++定义的实际上的原类对象InstanceClass 存储了编码中定义的类的完整信息</li>
+</ol>
+<p><strong>关系</strong></p>
+<figure class="highlight scss"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs scss">编译期Java源码 → 字节码文件(.class)<br>                     ↓<br>运行期类加载 → <span class="hljs-built_in">InstanceKlass</span>(C++元类对象) ←→ Class对象(Java镜像)<br>                     ↓<br>对象实例化 → 具体Java对象实例<br></code></pre></td></tr></table></figure>
+
+<p>另一方面，根据类所能访问到的资源的不同，还可以分为</p>
+<figure class="highlight pgsql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs pgsql">模式<span class="hljs-number">1</span>: 纯Java对象 (Pure Java Objects)<br>├── 完全通过InstanceKlass创建<br>├── 所有字段都在Java堆中<br>└── 例子：普通业务对象、集合类<br><br>模式<span class="hljs-number">2</span>: Java包装器对象 (Java <span class="hljs-keyword">Wrapper</span> Objects)  <br>├── Java对象通过InstanceKlass创建<br>├── 内部持有native资源的句柄/指针<br>└── 例子：Thread、Socket、File<br><br>模式<span class="hljs-number">3</span>: JVM内部对象 (JVM <span class="hljs-type">Internal</span> Objects)<br>├── 完全在C++层创建和管理<br>├── Java层不可见或只能通过特殊API访问<br>└── 例子：ObjectMonitor、Parker、GC对象<br></code></pre></td></tr></table></figure>
+
+<p>纯java对象就是平时创建的基本类，定义了一些基本类型和对象信息，它所引用的资源都在堆上创建</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs css">ObjectA<br>Refer <span class="hljs-selector-tag">Object</span> <span class="hljs-selector-tag">B</span> ---------&gt; <span class="hljs-selector-tag">Object</span> <span class="hljs-selector-tag">B</span><br>Refer <span class="hljs-selector-tag">Object</span> C --------------&gt; <span class="hljs-selector-tag">Object</span> C<br></code></pre></td></tr></table></figure>
+
+<p>而对于java包装器对象，它的作用是用于在定义时，用户有一个可以操作的目标对象，而这个对象在内存中创建后，调用方法来创建底层资源（创建时机视资源类型而定），在应用与底层中间管理这些资源</p>
+<figure class="highlight wren"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs wren"><span class="hljs-title class_">Object</span>A<br><span class="hljs-title class_">Refer</span> <span class="hljs-title class_">Object</span> <span class="hljs-variable">B</span> <span class="hljs-operator">-</span><span class="hljs-operator">-</span><span class="hljs-operator">-</span><span class="hljs-operator">-</span><span class="hljs-operator">-</span><span class="hljs-operator">-</span><span class="hljs-operator">-</span><span class="hljs-operator">-</span><span class="hljs-operator">-</span><span class="hljs-operator">&gt;</span> <span class="hljs-title class_">Object</span>B(存储调用底层资源创建方法的参数)<br>																					<span class="hljs-operator">|</span><br>																					<span class="hljs-operator">|</span><br>																					<span class="hljs-operator">|</span><br>																					<span class="hljs-variable">v</span><br>												    创建资源最终返回对象引用给<span class="hljs-title class_">Object</span>B<br></code></pre></td></tr></table></figure>
+
+<p>如 socket 的实际创建过程</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// Java层：通过InstanceKlass创建Java对象</span><br><span class="hljs-type">Socket</span> <span class="hljs-variable">socket</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Socket</span>();  <span class="hljs-comment">// 正常的Java对象创建流程</span><br><br><span class="hljs-comment">// Socket.java内部结构</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Socket</span> &#123;<br>    SocketImpl impl;           <span class="hljs-comment">// Java对象引用</span><br>    <span class="hljs-comment">// ... 其他Java字段</span><br>&#125;<br><br><span class="hljs-comment">// SocketImpl内部持有native句柄</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">PlainSocketImpl</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">AbstractPlainSocketImpl</span> &#123;<br>    <span class="hljs-type">int</span> <span class="hljs-variable">fd</span> <span class="hljs-operator">=</span> -<span class="hljs-number">1</span>;              <span class="hljs-comment">// 文件描述符 - 这是关键！</span><br>    InetAddress address;      <span class="hljs-comment">// Java对象</span><br>    <span class="hljs-type">int</span> port;                 <span class="hljs-comment">// Java字段</span><br>    <span class="hljs-type">int</span> localport;            <span class="hljs-comment">// Java字段</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 1. Java对象创建 - 正常InstanceKlass流程</span><br><span class="hljs-type">Socket</span> <span class="hljs-variable">socket</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Socket</span>();<br><span class="hljs-comment">// ↓ JVM执行new指令</span><br><span class="hljs-comment">// ↓ 查询Socket的InstanceKlass  </span><br><span class="hljs-comment">// ↓ 分配Java堆内存</span><br><span class="hljs-comment">// ↓ 初始化Java字段为默认值</span><br><br><span class="hljs-comment">// 2. Native资源创建 - 在需要时触发</span><br>socket.connect(address, port);<br><span class="hljs-comment">// ↓ 调用native方法</span><br><span class="hljs-comment">// ↓ 在C++层创建系统socket</span><br><span class="hljs-comment">// ↓ 将文件描述符存储到Java对象的fd字段</span><br><br><span class="hljs-comment">// C++实现</span><br>JNIEXPORT <span class="hljs-keyword">void</span> JNICALL<br><span class="hljs-title function_">Java_java_net_PlainSocketImpl_socketCreate</span><span class="hljs-params">(JNIEnv *env, jobject <span class="hljs-built_in">this</span>, jboolean stream)</span> &#123;<br>    <span class="hljs-comment">// 创建系统socket - 这是原生C++创建！</span><br>    <span class="hljs-type">int</span> <span class="hljs-variable">fd</span> <span class="hljs-operator">=</span> socket(AF_INET, stream ? SOCK_STREAM : SOCK_DGRAM, <span class="hljs-number">0</span>);<br>  <br>    <span class="hljs-comment">// 将句柄存储到Java对象中</span><br>    (*env)-&gt;SetIntField(env, <span class="hljs-built_in">this</span>, psi_fdID, fd);  <span class="hljs-comment">// fd字段赋值</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>对于JVM内部对象，大部分时间直接对上述两种对象进行管理，如monitor</p>
+<figure class="highlight wren"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs wren"><span class="hljs-title class_">Object</span>A.<span class="hljs-property">synchronized_method</span>()<br>           ↓<br><span class="hljs-variable">JVM</span>检查<span class="hljs-title class_">Object</span>A的对象头<br>           ↓<br>如果无锁 → 尝试轻量级锁(栈上锁记录)<br>           ↓<br>如果竞争 → 创建<span class="hljs-title class_">ObjectMonitor</span>对象 → 关联到<span class="hljs-title class_">Object</span>A的<span class="hljs-variable">mark</span> <span class="hljs-variable">word</span><br>           ↓  <br>线程进入<span class="hljs-title class_">Monitor</span>的等待队列或获得锁继续执行<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// ObjectMonitor - 完全C++原生创建</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">ObjectMonitor</span> &#123;<br>    <span class="hljs-keyword">volatile</span> markOop _header;       <span class="hljs-comment">// 对象头备份</span><br>    <span class="hljs-keyword">void</span>* <span class="hljs-keyword">volatile</span> _object;         <span class="hljs-comment">// 关联的Java对象</span><br>    <span class="hljs-keyword">void</span>* <span class="hljs-keyword">volatile</span> _owner;          <span class="hljs-comment">// 锁拥有者线程</span><br>    <span class="hljs-keyword">volatile</span> jlong _previous_owner_tid;<br>    <span class="hljs-keyword">volatile</span> intptr_t _recursions;  <span class="hljs-comment">// 重入次数</span><br>    ObjectWaiter* <span class="hljs-keyword">volatile</span> _cxq;    <span class="hljs-comment">// 竞争队列</span><br>    ParkEvent* _event;              <span class="hljs-comment">// 阻塞事件 </span><br>  <br>    <span class="hljs-comment">// 构造函数 - 原生创建</span><br>    ObjectMonitor() &#123;<br>        _header = NULL;<br>        _count = <span class="hljs-number">0</span>;<br>        _recursions = <span class="hljs-number">0</span>;<br>        _object = NULL;<br>        _owner = NULL;<br>        _WaitSet = NULL;<br>        _cxq = NULL;<br>        _event = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ParkEvent</span>();  <span class="hljs-comment">// 创建另一个C++对象</span><br>    &#125;<br>&#125;;<br><br>    <span class="hljs-comment">// 获取ObjectMonitor的过程</span><br>		ObjectMonitor* ObjectSynchronizer::inflate(Thread* Self, oop object) &#123;<br>    <span class="hljs-comment">// 不通过InstanceKlass，直接C++分配！</span><br>    ObjectMonitor* m = omAlloc(Self);  <span class="hljs-comment">// 从对象池分配</span><br>  <br>    <span class="hljs-comment">// 设置关联</span><br>    m-&gt;set_object(object);<br>    m-&gt;set_owner(NULL);<br>  <br>    <span class="hljs-comment">// 通过CAS设置到对象头</span><br>    <span class="hljs-type">markOop</span> <span class="hljs-variable">cmp</span> <span class="hljs-operator">=</span> (markOop) Atomic::cmpxchg_ptr(markOopDesc::encode(m), <br>                                               object-&gt;mark_addr(), mark);<br>    <span class="hljs-keyword">return</span> m;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h1 id="反射"><a href="#反射" class="headerlink" title="反射"></a>反射</h1><p>基于类的多重实现，我们可以看到反射本身通过接受一个java层的类对象，根据类对象中的指针查询真正的原类信息对象结构的执行器。</p>
+<p>其工作过程</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 三种方式获取Class对象</span><br>Class&lt;?&gt; clazz1 = Class.forName(<span class="hljs-string">&quot;com.example.MyClass&quot;</span>);<br><span class="hljs-number">1.</span> 类加载器查找类文件<br><span class="hljs-number">2.</span> 读取字节码文件<br><span class="hljs-number">3.</span> 验证字节码合法性<br><span class="hljs-number">4.</span> 准备阶段：为静态变量分配内存<br><span class="hljs-number">5.</span> 解析阶段：符号引用转换为直接引用<br><span class="hljs-number">6.</span> 初始化阶段：执行静态代码块和静态变量初始化<br><span class="hljs-number">7.</span> 返回Class对象<br>Class&lt;?&gt; clazz2 = MyClass.class;<br>Class&lt;?&gt; clazz3 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MyClass</span>().getClass();<br><br><span class="hljs-comment">// 获取构造器</span><br>Constructor&lt;?&gt; constructor = clazz.getDeclaredConstructor(String.class, <span class="hljs-type">int</span>.class);<br>constructor.setAccessible(<span class="hljs-literal">true</span>); <span class="hljs-comment">// 如果是私有构造器</span><br><br><span class="hljs-comment">// 创建实例</span><br><span class="hljs-type">Object</span> <span class="hljs-variable">instance</span> <span class="hljs-operator">=</span> constructor.newInstance(<span class="hljs-string">&quot;参数1&quot;</span>, <span class="hljs-number">123</span>);<br>分配内存空间<br>调用构造函数<br>初始化对象头信息<br>返回对象引用<br><span class="hljs-comment">// 获取方法</span><br><span class="hljs-type">Method</span> <span class="hljs-variable">method</span> <span class="hljs-operator">=</span> clazz.getDeclaredMethod(<span class="hljs-string">&quot;methodName&quot;</span>, parameterTypes);<br>method.setAccessible(<span class="hljs-literal">true</span>); <span class="hljs-comment">// 如果是私有方法</span><br><br><span class="hljs-comment">// 调用方法</span><br><span class="hljs-type">Object</span> <span class="hljs-variable">result</span> <span class="hljs-operator">=</span> method.invoke(instance, args);<br><span class="hljs-comment">// 调用过程</span><br><span class="hljs-keyword">public</span> Object <span class="hljs-title function_">invoke</span><span class="hljs-params">(Object obj, Object... args)</span> &#123;<br>    <span class="hljs-comment">// 1. 访问权限检查</span><br>    <span class="hljs-keyword">if</span> (!override &amp;&amp; !Reflection.quickCheckMemberAccess(clazz, modifiers)) &#123;<br>        checkAccess();<br>    &#125;<br>  <br>    <span class="hljs-comment">// 2. 参数校验和装箱</span><br>    Object[] argsArray = checkAndConvertArgs(args);<br>  <br>    <span class="hljs-comment">// 3. 委托给MethodAccessor</span><br>    <span class="hljs-keyword">return</span> methodAccessor.invoke(obj, argsArray);<br>&#125;<br><br><span class="hljs-comment">// 前15次调用使用native方法</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">NativeMethodAccessorImpl</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">MethodAccessorImpl</span> &#123;<br>    <span class="hljs-keyword">public</span> Object <span class="hljs-title function_">invoke</span><span class="hljs-params">(Object obj, Object[] args)</span> &#123;<br>        <span class="hljs-keyword">return</span> invoke0(method, obj, args); <span class="hljs-comment">// native方法</span><br>    &#125;<br>&#125;<br><br><span class="hljs-comment">// 第16次调用后生成专门的字节码类</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">GeneratedMethodAccessor1</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">MethodAccessorImpl</span> &#123;<br>    <span class="hljs-keyword">public</span> Object <span class="hljs-title function_">invoke</span><span class="hljs-params">(Object obj, Object[] args)</span> &#123;<br>        <span class="hljs-comment">// 直接调用目标方法，避免native调用开销</span><br>        <span class="hljs-keyword">return</span> ((TargetClass)obj).targetMethod((String)args[<span class="hljs-number">0</span>]);<br>    &#125;<br>&#125;<br><br>用户代码<br>    ↓<br>Method.invoke()<br>    ↓<br>权限检查 &amp; 参数验证<br>    ↓<br>MethodAccessor.invoke()<br>    ↓<br>┌─────────────────┬─────────────────┐<br>│  前<span class="hljs-number">15</span>次调用     │   第<span class="hljs-number">16</span>次开始    │<br>│     ↓           │       ↓         │<br>│ Native调用      │ 字节码生成调用  │<br>│     ↓           │       ↓         │<br>│ JNI → C++       │ 直接方法调用    │<br>│     ↓           │                 │<br>│ 目标方法        │ 目标方法        │<br>└─────────────────┴─────────────────┘<br></code></pre></td></tr></table></figure>
+
+<h1 id="锁"><a href="#锁" class="headerlink" title="锁"></a>锁</h1><p>在其他内容中已经讨论过临界区与锁的使用。这里主要讨论锁的设计以及锁的关联关系</p>
+<h2 id="volatile关键字"><a href="#volatile关键字" class="headerlink" title="volatile关键字"></a>volatile关键字</h2><p>在java 中 volatile 具有两个功能</p>
+<ol>
+<li>可见性</li>
+</ol>
+<p>被volatile修饰的对象，在获取时，会先刷新缓存，获取最新的对象状态信息，在写入完毕后会所有工作缓存信息。即可见性，意味着对该对象操作会立即得到更新。但是不能保证原子操作因为一个执行过程并不一定只对volatile修饰的对象产生影响</p>
+<ol>
+<li>有序性</li>
+</ol>
+<p>通过volatile关键字提供了内存屏障，所有在volatile 执行前的指令必须在volatile前执行完毕，所有在volatile执行后执行的指令必须等待volatile执行后执行。</p>
+<h2 id="通过对象头中markword字段完成的资源控制"><a href="#通过对象头中markword字段完成的资源控制" class="headerlink" title="通过对象头中markword字段完成的资源控制"></a>通过对象头中markword字段完成的资源控制</h2><p>定义在对象头部的markword 字段是一个动态结构，用于描述当前对象的访问状态。</p>
+<table>
+<thead>
+<tr>
+<th><strong>存储内容</strong></th>
+<th><strong>标志位</strong></th>
+<th><strong>状态</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>对象哈希码，对象分代年龄</td>
+<td>01</td>
+<td>未锁定</td>
+</tr>
+<tr>
+<td>指向锁记录的指针</td>
+<td>00</td>
+<td>轻量级锁定</td>
+</tr>
+<tr>
+<td>指向重量级锁的指针</td>
+<td>10</td>
+<td>膨胀</td>
+</tr>
+<tr>
+<td>一般被设置为非法模式或者转发指针</td>
+<td>11</td>
+<td>GC标记</td>
+</tr>
+<tr>
+<td>偏向线程ID,偏向事件戳，对象分代年龄</td>
+<td>01</td>
+<td>可偏向</td>
+</tr>
+</tbody></table>
+<p>当对象被创建后，markword中 的标志位为01 ， 这个时候是未被锁定的状态。</p>
+<p>当对象被标记为(synchronized)后，markword中的标志位会被重新设置，用于存储当前请求该对象的线程ID。</p>
+<p>处于偏向锁状态下的对象，会在被使用时只判断调用线程是否和存储的ID一致，如果一致则可以直接获取对象，不需要再进行其他检查。</p>
+<p>当该对象再次被其他线程请求后，其他线程会先尝试设置线程ID信息，若设置失败，则目标对象的markword会升级为轻量级锁定，这时会在栈空间设置一条锁记录，将markword设置为指向锁记录。这样当其他线程请求时，同样会设置一条锁记录，并尝试对该对象进行CAS操作(向markword中尝试将记录替换为自己的锁记录)</p>
+<p>当该对象被持续请求到阈值时，或者存在多个线程请求该对象时，则将轻量级锁升级为重量级锁，在堆中创建Objectmonitor对象，这样后续线程请求对象时，会通过markword查询Objectmonitor，如果当前的Objectmontior属于其他线程，则将请求线程加入等待队列。阻塞等待。</p>
+<h2 id="ReentrantLock"><a href="#ReentrantLock" class="headerlink" title="ReentrantLock"></a>ReentrantLock</h2><p>ReentrantLock 锁</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// Java对象创建 - 完全通过InstanceKlass</span><br><span class="hljs-type">ReentrantLock</span> <span class="hljs-variable">lock</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ReentrantLock</span>();<br><br><span class="hljs-comment">// ReentrantLock内部结构 - 都是Java对象</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">ReentrantLock</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Lock</span> &#123;<br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> Sync sync;           <span class="hljs-comment">// Java对象</span><br>  <br>    <span class="hljs-keyword">static</span> <span class="hljs-keyword">abstract</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Sync</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">AbstractQueuedSynchronizer</span> &#123;<br>        <span class="hljs-comment">// 继承AQS的state字段和队列</span><br>    &#125;<br>&#125;<br><br><span class="hljs-comment">// AbstractQueuedSynchronizer - 纯Java实现</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">abstract</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">AbstractQueuedSynchronizer</span> &#123;<br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">volatile</span> <span class="hljs-type">int</span> state;        <span class="hljs-comment">// Java int字段 - 锁状态！</span><br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">transient</span> <span class="hljs-keyword">volatile</span> Node head;  <span class="hljs-comment">// Java对象引用 - 等待队列</span><br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">transient</span> <span class="hljs-keyword">volatile</span> Node tail;  <span class="hljs-comment">// Java对象引用</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>可重入性</strong> ：同一线程可以多次获取同一把锁</li>
+<li><strong>可中断性</strong> ：支持响应中断</li>
+<li><strong>可超时性</strong> ：支持尝试获取锁的超时机制</li>
+<li><strong>公平性</strong> ：支持公平锁和非公平锁</li>
+<li><strong>条件变量</strong> ：支持多个条件等待</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">import</span> java.util.concurrent.locks.ReentrantLock;<br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">BasicExample</span> &#123;<br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> <span class="hljs-type">ReentrantLock</span> <span class="hljs-variable">lock</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ReentrantLock</span>();<br>    <span class="hljs-keyword">private</span> <span class="hljs-type">int</span> <span class="hljs-variable">count</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>;<br>  <br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">increment</span><span class="hljs-params">()</span> &#123;<br>        lock.lock();  <span class="hljs-comment">// 获取锁</span><br>        <span class="hljs-keyword">try</span> &#123;<br>            count++;  <span class="hljs-comment">// 临界区代码</span><br>        &#125; <span class="hljs-keyword">finally</span> &#123;<br>            lock.unlock();  <span class="hljs-comment">// 释放锁（必须在finally块中）</span><br>        &#125;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>可重入</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">ReentrantExample</span> &#123;<br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> <span class="hljs-type">ReentrantLock</span> <span class="hljs-variable">lock</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ReentrantLock</span>();<br>  <br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">outerMethod</span><span class="hljs-params">()</span> &#123;<br>        lock.lock();<br>        <span class="hljs-keyword">try</span> &#123;<br>            System.out.println(<span class="hljs-string">&quot;外层方法&quot;</span>);<br>            innerMethod();  <span class="hljs-comment">// 同一线程再次获取锁</span><br>        &#125; <span class="hljs-keyword">finally</span> &#123;<br>            lock.unlock();<br>        &#125;<br>    &#125;<br>  <br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">innerMethod</span><span class="hljs-params">()</span> &#123;<br>        lock.lock();  <span class="hljs-comment">// 重入成功，计数器+1</span><br>        <span class="hljs-keyword">try</span> &#123;<br>            System.out.println(<span class="hljs-string">&quot;内层方法&quot;</span>);<br>        &#125; <span class="hljs-keyword">finally</span> &#123;<br>            lock.unlock();  <span class="hljs-comment">// 计数器-1</span><br>        &#125;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>可中断</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">InterruptibleExample</span> &#123;<br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> <span class="hljs-type">ReentrantLock</span> <span class="hljs-variable">lock</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ReentrantLock</span>();<br>  <br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">interruptibleTask</span><span class="hljs-params">()</span> <span class="hljs-keyword">throws</span> InterruptedException &#123;<br>        lock.lockInterruptibly();  <span class="hljs-comment">// 可被中断的锁获取</span><br>        <span class="hljs-keyword">try</span> &#123;<br>            <span class="hljs-comment">// 长时间运行的任务</span><br>            Thread.sleep(<span class="hljs-number">10000</span>);<br>        &#125; <span class="hljs-keyword">finally</span> &#123;<br>            lock.unlock();<br>        &#125;<br>    &#125;<br>  <br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">testInterrupt</span><span class="hljs-params">()</span> &#123;<br>        <span class="hljs-type">Thread</span> <span class="hljs-variable">t1</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Thread</span>(() -&gt; &#123;<br>            <span class="hljs-keyword">try</span> &#123;<br>                interruptibleTask();<br>            &#125; <span class="hljs-keyword">catch</span> (InterruptedException e) &#123;<br>                System.out.println(<span class="hljs-string">&quot;线程被中断了&quot;</span>);<br>            &#125;<br>        &#125;);<br>      <br>        t1.start();<br>        <span class="hljs-comment">// 1秒后中断线程</span><br>        <span class="hljs-keyword">try</span> &#123;<br>            Thread.sleep(<span class="hljs-number">1000</span>);<br>            t1.interrupt();  <span class="hljs-comment">// 中断等待锁的线程</span><br>        &#125; <span class="hljs-keyword">catch</span> (InterruptedException e) &#123;<br>            Thread.currentThread().interrupt();<br>        &#125;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>尝试获取</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">import</span> java.util.concurrent.TimeUnit;<br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">TryLockExample</span> &#123;<br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> <span class="hljs-type">ReentrantLock</span> <span class="hljs-variable">lock</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ReentrantLock</span>();<br>  <br>    <span class="hljs-keyword">public</span> <span class="hljs-type">boolean</span> <span class="hljs-title function_">tryDoSomething</span><span class="hljs-params">()</span> &#123;<br>        <span class="hljs-comment">// 尝试获取锁，最多等待3秒</span><br>        <span class="hljs-keyword">try</span> &#123;<br>            <span class="hljs-keyword">if</span> (lock.tryLock(<span class="hljs-number">3</span>, TimeUnit.SECONDS)) &#123;<br>                <span class="hljs-keyword">try</span> &#123;<br>                    <span class="hljs-comment">// 执行业务逻辑</span><br>                    <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>                &#125; <span class="hljs-keyword">finally</span> &#123;<br>                    lock.unlock();<br>                &#125;<br>            &#125; <span class="hljs-keyword">else</span> &#123;<br>                System.out.println(<span class="hljs-string">&quot;获取锁超时&quot;</span>);<br>                <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>            &#125;<br>        &#125; <span class="hljs-keyword">catch</span> (InterruptedException e) &#123;<br>            Thread.currentThread().interrupt();<br>            <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>        &#125;<br>    &#125;<br>  <br>    <span class="hljs-keyword">public</span> <span class="hljs-type">boolean</span> <span class="hljs-title function_">tryImmediately</span><span class="hljs-params">()</span> &#123;<br>        <span class="hljs-comment">// 立即尝试获取锁，不等待</span><br>        <span class="hljs-keyword">if</span> (lock.tryLock()) &#123;<br>            <span class="hljs-keyword">try</span> &#123;<br>                <span class="hljs-comment">// 执行业务逻辑</span><br>                <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>            &#125; <span class="hljs-keyword">finally</span> &#123;<br>                lock.unlock();<br>            &#125;<br>        &#125; <span class="hljs-keyword">else</span> &#123;<br>            System.out.println(<span class="hljs-string">&quot;锁被其他线程持有&quot;</span>);<br>            <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>        &#125;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="公平锁与非公平锁"><a href="#公平锁与非公平锁" class="headerlink" title="公平锁与非公平锁"></a>公平锁与非公平锁</h3><p><strong>非公平锁</strong></p>
+<ul>
+<li>新来的线程可能直接获取锁，无需排队</li>
+<li><strong>性能更好</strong> ，吞吐量更高</li>
+<li>可能导致某些线程长时间等待（饥饿现象）</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 默认创建非公平锁</span><br><span class="hljs-type">ReentrantLock</span> <span class="hljs-variable">unfairLock</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ReentrantLock</span>();<br><span class="hljs-comment">// 或显式指定</span><br><span class="hljs-type">ReentrantLock</span> <span class="hljs-variable">unfairLock2</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ReentrantLock</span>(<span class="hljs-literal">false</span>);<br></code></pre></td></tr></table></figure>
+
+<p><strong>公平锁</strong></p>
+<ul>
+<li>严格按照请求顺序分配锁</li>
+<li>避免线程饥饿</li>
+<li><strong>性能较低</strong> ，因为需要维护队列</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 创建公平锁</span><br><span class="hljs-type">ReentrantLock</span> <span class="hljs-variable">fairLock</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ReentrantLock</span>(<span class="hljs-literal">true</span>);<br></code></pre></td></tr></table></figure>
+
+<h2 id="其他层面上的锁区分"><a href="#其他层面上的锁区分" class="headerlink" title="其他层面上的锁区分"></a>其他层面上的锁区分</h2><h3 id="悲观锁与乐观锁"><a href="#悲观锁与乐观锁" class="headerlink" title="悲观锁与乐观锁"></a>悲观锁与乐观锁</h3><p><strong>悲观锁</strong></p>
+<p>悲观锁优先控制临界区资源，并在处理过程中一直保持锁定状态，等到线程释放锁后其他线程才能获取。</p>
+<p><strong>乐观锁</strong></p>
+<p>乐观锁默认其他线程不会对资源进行修改，只需要对比版本号变动来决定自己的行为</p>
+<h3 id="公平锁与非公平锁-1"><a href="#公平锁与非公平锁-1" class="headerlink" title="公平锁与非公平锁"></a>公平锁与非公平锁</h3><p><strong>公平锁</strong></p>
+<p>公平锁会在线程请求锁资源时，将线程直接加入等待队列。优点是线程不会被饿死，缺点是整体效率较低，因为当执行速度较慢的线程在执行时，其他线程必须等待，导致线程堆积</p>
+<p><strong>非公平锁</strong></p>
+<p>非公平锁则在线程请求锁资源时，先去尝试获取所所资源，如果未获取到锁，则加入等待队列等待。优点是整体执行效率较高，缺点是可能会出现因为一个线程一直获取不到锁资源导致，线程饥饿的问题</p>
+<h3 id="可重入锁与不可重入锁"><a href="#可重入锁与不可重入锁" class="headerlink" title="可重入锁与不可重入锁"></a>可重入锁与不可重入锁</h3><p><strong>可重入锁</strong></p>
+<p>可重入锁，指同一个线程可以多次占用同一个锁，在解锁是需要相同次数的解锁</p>
+<p><strong>不可重入锁</strong></p>
+<p>不可重入锁，指线程只能获取一次锁</p>
+<h3 id="读-写锁"><a href="#读-写锁" class="headerlink" title="读&#x2F;写锁"></a>读&#x2F;写锁</h3><p><strong>读锁</strong></p>
+<p>能够对共享资源进行读操作</p>
+<p><strong>写作</strong></p>
+<p>只有一个线程允许进行写入</p>
+<h3 id="自旋锁"><a href="#自旋锁" class="headerlink" title="自旋锁"></a>自旋锁</h3><p>自旋锁指某个线程没有获取到锁时，不会进入阻塞状态，而是不断尝试获取锁，直到释放锁。</p>
+<p>优点是 对于可以快速执行的任务，能够提高效率，因为不需要进入阻塞状态</p>
+<p>缺点是 对于执行效率较低的任务，持续的请求会白白占用CPU资源</p>
+<h2 id="死锁问题"><a href="#死锁问题" class="headerlink" title="死锁问题"></a>死锁问题</h2><p>出现原因</p>
+<ol>
+<li>互斥条件</li>
+</ol>
+<p>标识一段时间内，某个或某些资源只能被一个线程占有，此时如果有其他线程需要访问，则只能等待</p>
+<ol>
+<li>不可剥夺条件</li>
+</ol>
+<p>不可剥夺条件表示线程所有的资源在使用完毕之前，不能被其他线程强行夺走，只能由获取到资源的线程主动释放</p>
+<ol>
+<li>请求与保持条件</li>
+</ol>
+<p>请求与保持条件表示当线程占有至少一个资源，又需要抢占新的资源，而需要抢占的资源已经被其他线程占有时，需要抢占新资源的线程被阻塞，但是又不会释放其已占的资源</p>
+<ol>
+<li>循环等待条件</li>
+</ol>
+<p>循环等待条件表示发生死锁时，必然存在一个线程与资源的循环等待链</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/JVM/" class="category-chain-item">JVM</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/JVM/" class="print-no-link">#JVM</a>
+      
+        <a href="/tags/Java/" class="print-no-link">#Java</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>反射,锁与线程</div>
+      <div>http://gadoid.io/2025/08/05/反射-锁与线程/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Codfish</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年8月5日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/08/04/JVM%E8%A7%92%E5%BA%A6%E7%9A%84Java%E7%A8%8B%E5%BA%8F%E6%89%A7%E8%A1%8C%E8%BF%87%E7%A8%8B/" title="JVM角度的Java程序执行过程">
+                        <span class="hidden-mobile">JVM角度的Java程序执行过程</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"lQzCvqmOtewLtpMfvfxKLomU-MdYXbMMI","appKey":"daMNlw5XcjN8TelT6GCHh8RF","path":"window.location.pathname","placeholder":"让灵感在这里发生","avatar":"monsterid","meta":["nick","mail"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":true,"recordIP":true,"serverURLs":"https://lQzCvqmO.api.lncldglobal.com","emojiCDN":null,"emojiMaps":null,"enableQQ":false,"enable":true,"visitor":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      &copy; 2025 - 2025 <a target="_blank" rel="noopener" href="https://github.com/username">CODFISH</a>
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+<!-- hexo injector body_end start --><script src="/js/chatbot-loader.js" defer></script><!-- hexo injector body_end end --></body>
+</html>
