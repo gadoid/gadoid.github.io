@@ -1,0 +1,951 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/bg/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Codfish">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="线程池状态设计RUNNING  ： 表示线程池处于运行状态，此时线程池能够接收新提交的任务，并且能够处理阻塞队列中的任务 SHUTDOWN ： 表示线程池处于关闭状态，此时线程池不能接收新提交的任务，但是不会中断正在执行任务的线程，能够继续执行正在执行的任务，也能够处理阻塞队列中已经保存的任务。如果线程池处于RUNNING状态，那么调用线程池的shutdown()方法会使线程池进入SHUTDOWN">
+<meta property="og:type" content="article">
+<meta property="og:title" content="线程相关">
+<meta property="og:url" content="http://gadoid.io/2025/08/06/%E7%BA%BF%E7%A8%8B%E7%9B%B8%E5%85%B3/index.html">
+<meta property="og:site_name" content="西北有高楼">
+<meta property="og:description" content="线程池状态设计RUNNING  ： 表示线程池处于运行状态，此时线程池能够接收新提交的任务，并且能够处理阻塞队列中的任务 SHUTDOWN ： 表示线程池处于关闭状态，此时线程池不能接收新提交的任务，但是不会中断正在执行任务的线程，能够继续执行正在执行的任务，也能够处理阻塞队列中已经保存的任务。如果线程池处于RUNNING状态，那么调用线程池的shutdown()方法会使线程池进入SHUTDOWN">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-08-05T16:37:27.000Z">
+<meta property="article:modified_time" content="2025-08-05T16:38:52.872Z">
+<meta property="article:author" content="Codfish">
+<meta property="article:tag" content="Java">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>线程相关 - 西北有高楼</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"gadoid.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>西北有高楼</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/downloads/" target="_self">
+                <i class="iconfont icon-books-fill"></i>
+                <span>资源下载</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/bg/img/ice.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="线程相关"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-08-06 00:37" pubdate>
+          2025年8月6日 凌晨
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          6.1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          51 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">线程相关</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="线程池"><a href="#线程池" class="headerlink" title="线程池"></a>线程池</h1><h3 id="状态设计"><a href="#状态设计" class="headerlink" title="状态设计"></a>状态设计</h3><p>RUNNING  ： 表示线程池处于运行状态，此时线程池能够接收新提交的任务，并且能够处理阻塞队列中的任务</p>
+<p>SHUTDOWN ： 表示线程池处于关闭状态，此时线程池不能接收新提交的任务，但是不会中断正在执行任务的线程，能够继续执行正在执行的任务，也能够处理阻塞队列中已经保存的任务。如果线程池处于RUNNING状态，那么调用线程池的shutdown()方法会使线程池进入SHUTDOWN状态</p>
+<p>STOP ：表示线程池处于停止状态，此时线程池不能接收新提交的任务，也不能继续处理阻塞队列中的任务，同时会中断正在执行任务的线程，那么调用线程池的shutdownNow()方法会使线程池进入STOP状态</p>
+<p>TIDYING ：如果线程池中所有的任务都已经终止，有效线程数为0，线程池就会进入TIDYING状态。换句话说，线程池中已经没有正在执行的任务，并且线程池中的阻塞队列为空，同时线程池中的工作线程数量为0，线程池就会进入TIDYING状态</p>
+<p>TERMINATED ： 如果线程池处于TIDYING状态，此时调用线程池的terminated()方法，线程池就会进入TERMINATED状态</p>
+<h3 id="状态转移过程"><a href="#状态转移过程" class="headerlink" title="状态转移过程"></a>状态转移过程</h3><ol>
+<li>当线程池处于RUNNING状态时，显式调用线程池的shutdown 方法，或者隐式调用finalize()方法，线程池会由RUNNING状态转换为SHUTDOWN状态</li>
+<li>当线程池处于RUNNING状态时，显式调用线程池的shutdownNow()方法，线程池会由RUNNING状态转换为STOP状态</li>
+<li>当线程池处于SHUTDONW状态时，显式调用线程池的shutdownNow()方法，线程池会由SHUTDOWN状态转换为STOP状态</li>
+<li>当线程池处于SHUTDOWN状态时，如果线程池中无工作线程，并且阻塞队列为空，则线程池会由SHUTDOWN状态转换为TIDYING状态</li>
+<li>当线程池处于STOP状态时，如果线程池中无工作线程，则线程池会由STOP状态转换为TIDYING状态</li>
+<li>当线程池处于TIDYING状态时，调用线程池的terminated()方法，线程池会由TIDYING状态变为TERMINATED状态</li>
+</ol>
+<h3 id="创建线程池"><a href="#创建线程池" class="headerlink" title="创建线程池"></a>创建线程池</h3><p><strong>Executors</strong></p>
+<p>executors 提供了多种线程池创建方式</p>
+<ul>
+<li>Executors.newCachedThreadPool 方法<br>创建一个可缓存的线程池，如果线程池中的线程超过了运行任务的需要，则可以灵活地回收线程，再向线程池中提交任务，则会新建线程来执行任务</li>
+<li>Executors.newFixedThreadPool方法<br>创建一个线程数量固定的线程池，能够有效地控制线程池的最大并发数，当向线程池中提交任务时，如果线程池中有空闲线程，则执行任务。如果线程池中无空闲线程，则将任务放入阻塞队列中，待线程池中出现空闲线程，再执行阻塞队列中的任务。</li>
+<li>Executors.newScheduledThreadPool 方法</li>
+</ul>
+<p>创建一个计划线程池</p>
+<ul>
+<li>Executors.newSingleThreadExecutor 方法<br>创建一个只有一个线程的线程池，能够保证提交到线程池中的所有任务按照先进先出的顺序，或者按照某个优先级的顺序来执行，当向线程池中提交任务时，如果线程池中无空闲线程，则会将任务保存在阻塞队列中。</li>
+<li>Executors.newSingleThreadScheduledExecutor方法<br>创建一个只有一个线程的线程池，并进行周期性执行任务</li>
+</ul>
+<p><strong>ThreadPoolExecutors</strong></p>
+<p><strong>Executors 在ThreadPoolExecutors 的基础上进行扩展</strong></p>
+<p>ThreadPoolExecutors 的基础构造器</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-title function_">ThreadPoolExecutor</span><span class="hljs-params">(<span class="hljs-type">int</span> corePoolSize , </span><br><span class="hljs-params">													<span class="hljs-type">int</span> maximumPoolSize,</span><br><span class="hljs-params">													<span class="hljs-type">long</span> keepAliveTime ,</span><br><span class="hljs-params">													BlockingQueue&lt;Runnale&gt; workQueue,</span><br><span class="hljs-params">													ThreadFactory threadFactory,</span><br><span class="hljs-params">													RejectedExecutionHandler handler)</span>&#123;<br>	<span class="hljs-keyword">if</span> (corePoolSize &gt; <span class="hljs-number">0</span> || <br>			maximumPoolSize&lt;= <span class="hljs-number">0</span> ||<br>			maximumPoolSize&lt; corePoolSize || <br>			keepAliveTime &lt; <span class="hljs-number">0</span>)<br>			<span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">IllegalArgumentException</span>();<br>	<span class="hljs-keyword">if</span> (workQueue == <span class="hljs-literal">null</span> || threadFactory == <span class="hljs-literal">null</span> || handler == <span class="hljs-literal">null</span>)<br>			<span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">NullPointerException</span>();<br>	<span class="hljs-built_in">this</span>.acc = System.getSecurityManager() == <span class="hljs-literal">null</span> ?<br>			<span class="hljs-literal">null</span> : AccessController.getContext();<br>	<span class="hljs-built_in">this</span>.corePoolSize = corePoolSize ;<br>	<span class="hljs-built_in">this</span>.maximumPoolSize = maximumPoolSize ;<br>	<span class="hljs-built_in">this</span>.workQueue = workQueue;<br>	<span class="hljs-built_in">this</span>.keepAliveTime = unit.toNanos(keepAliveTime);<br>	<span class="hljs-built_in">this</span>.threadFactory = threadFactory ;<br>	<span class="hljs-built_in">this</span>.handler = handler ;<br>	&#125;														&#125;<br></code></pre></td></tr></table></figure>
+
+<p>corePoolSize : 表示线程池中的核心线程数</p>
+<p>maximumPoolSize : 表示线程池中的最大线程数</p>
+<p>keepAliveTime : 在表示线程池中的线程空闲时，能够保持的最长时间</p>
+<p>unit : 表示keepAliveTime的单位时间</p>
+<p>workQueue : 表示线程中的阻塞队列</p>
+<p>threadFactory : 表示用来创建线程的线程工厂</p>
+<p>handler : 表示线程池拒绝处理任务的时的策略</p>
+<ol>
+<li>当线程池中运行的线程数小于corePoolSize时，如果向 线程池中提交任务，那么即使线程池中存在空闲队列，也会直接创建新线程来执行任务</li>
+<li>如果线程池中运行的线程数大于corePoolSize，并且小于maximumPoolSize，那么只有当workQueue队列已满时，才会创建新的线程来执行新提交的任务</li>
+<li>在调用ThreadPoolExecutor类的构造方法时，如果传递的corePoolSize和maximumPoolSize参数相同，那么创建的线程池大小是固定的，此时如果向线程池中提交任务，并且workQueue队列未满，就会将新提交的任务保存到workQueue队列中，等待空闲的线程，从workQueue队列中获取任务并执行</li>
+<li>如果线程池中运行的线程数大于maximumPoolSize，并且此时workQueue队列已满，则会触发指定的拒绝策略来拒绝任务的执行</li>
+</ol>
+<h3 id="拒绝策略"><a href="#拒绝策略" class="headerlink" title="拒绝策略"></a>拒绝策略</h3><p>如果线程池中的workQueue阻塞队列已满，同时线程池中的线程数已经达到maximumPoolSize,且没有空闲线程，此时继续有任务提交到线程池，就需要采取某种策略来拒绝任务的执行</p>
+<p>在ThreadPoolExecutor类的executor()方法中,会在适当时机调用reject(command)方法来执行拒绝策略</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">final</span> <span class="hljs-keyword">void</span>  <span class="hljs-title function_">reject</span><span class="hljs-params">(Runnable command)</span>&#123;<br>	handler.rejectedExecution(command,<span class="hljs-built_in">this</span>);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>在reject(command)方法中调用了handler的rejectedExecution()方法，这里，在ThreadPoolExecutor类中声明了handler变量，</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">private</span> <span class="hljs-keyword">volatile</span> RejctedExecutionHandler handler;<br></code></pre></td></tr></table></figure>
+
+<p>拒绝策略执行</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">interface</span> <span class="hljs-title class_">RejectedExecutionHandler</span>&#123;<br>	<span class="hljs-keyword">void</span> <span class="hljs-title function_">rejectedExecution</span><span class="hljs-params">(Runnable r, ThreadPoolExecutor executor)</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>RejctedExecutionHandler 有四个默认实现 分别代表</p>
+<ul>
+<li>AbortPolicy                              当线程池无法处理新任务时，直接抛出RejectedExecutionException异常</li>
+<li>CallerRunsPolicy                     当线程池无法处理新任务时，让提交任务的线程（调用者线程）直接执行该任务</li>
+<li>DiscardOldestPolicy              丢弃队列中最老的（等待时间最长的）任务</li>
+<li>DiscardPolicy                           直接丢弃无法处理的新任务</li>
+</ul>
+<p>根据最初的传入参数来选择对应的策略</p>
+<h2 id="线程池关闭"><a href="#线程池关闭" class="headerlink" title="线程池关闭"></a>线程池关闭</h2><p>使用shutdown 或者shutdownNow关闭线程池</p>
+<h2 id="线程池线程数设置"><a href="#线程池线程数设置" class="headerlink" title="线程池线程数设置"></a>线程池线程数设置</h2><p>I&#x2F;O 密集 ： 使用I&#x2F;O阻塞时间 所以是 I&#x2F;O阻塞时间&#x2F;CPU计算耗时</p>
+<p>CPU 密集 ： 一般与CPU核心数有关，或者+1 防止所有线程都在阻塞状态CPU闲置</p>
+<h1 id="ThreadLocal"><a href="#ThreadLocal" class="headerlink" title="ThreadLocal"></a>ThreadLocal</h1><p>ThreadLocal 是 Java 提供的一种线程隔离机制，它为每个使用该变量的线程提供独立的变量副本，每个线程都可以独立地改变自己的副本，而不会影响其他线程所对应的副本。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span>  <span class="hljs-keyword">class</span> <span class="hljs-title class_">ThreadLocalTest</span>&#123;<br>	<span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> ThreadLocal&lt;String&gt; THREAD_LOCAL = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ThreadLocal</span>&lt;String&gt;();<br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span>&#123;<br>		<span class="hljs-type">Thread</span> <span class="hljs-variable">threadA</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Thread</span>( ()-&gt; &#123;<br>				THREAD_LOCAL.set(<span class="hljs-string">&quot;ThreadA: &quot;</span> +  Thread.currentThread().getName());<br>				System.out.println(Thread.currentThread().getName()+<span class="hljs-string">&quot;本地变量中的值为&quot;</span>+ THREAD_LOCAL.get());<br>		&#125;,<span class="hljs-string">&quot;Thread-A&quot;</span>);<br><br>		<span class="hljs-type">Thread</span> <span class="hljs-variable">threadB</span> <span class="hljs-operator">=</span>  <span class="hljs-keyword">new</span> <span class="hljs-title class_">Thread</span>( ()-&gt; &#123;<br>				THREAD_LOCAL.set(<span class="hljs-string">&quot;ThreadB: &quot;</span> +  Thread.currentThread().getName());<br>				System.out.println(Thread.currentThread().getName()+<span class="hljs-string">&quot;本地变量中的值为&quot;</span>+ THREAD_LOCAL.get());<br>		&#125;,<span class="hljs-string">&quot;Thread-B&quot;</span>);<br>		threadA.start();<br>		threadB.start();<br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>threadlocal的核心原理是</p>
+<p>在编译时，给出了定义内容</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> ThreadLocal&lt;String&gt; THREAD_LOCAL = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ThreadLocal</span>&lt;String&gt;();<br></code></pre></td></tr></table></figure>
+
+<p>当运行时线程结构中定义了存储线程局部变量的结构</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 线程服务被加载起来</span><br><span class="hljs-comment">// 这时候在线程实现中存在</span><br>ThreadLocal.<span class="hljs-type">ThreadLocalMap</span> <span class="hljs-variable">threadLocals</span> <span class="hljs-operator">=</span> <span class="hljs-literal">null</span>;<br>ThreadLocal.<span class="hljs-type">ThreadLocalMap</span> <span class="hljs-variable">inheritableThreadLocals</span> <span class="hljs-operator">=</span> <span class="hljs-literal">null</span>;<br></code></pre></td></tr></table></figure>
+
+<p>当使用set方法时,ThreadLocal 先获取当前线程，再通过getMap获取到本地的ThreadLocalMap 之后向Map中设置局部变量。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">set</span><span class="hljs-params">(T value)</span>&#123;<br>	<span class="hljs-type">Thread</span> <span class="hljs-variable">t</span> <span class="hljs-operator">=</span> Thread.currentThread();<br>	<span class="hljs-type">ThreadLocalMap</span> <span class="hljs-variable">map</span> <span class="hljs-operator">=</span> getMap(t);<br>	<span class="hljs-keyword">if</span>(map!=<span class="hljs-literal">null</span>)<br>		map.set(<span class="hljs-built_in">this</span>,value);<br>	<span class="hljs-keyword">else</span> <br>		createMap(t,value);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// getMap实现</span><br>ThreadLocalMap <span class="hljs-title function_">getMap</span><span class="hljs-params">(Thread t)</span>&#123;<br>	retun t.threadLocals<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>get方法, 与set一样 获取thread 的本地变量容器结构，从中获取对象，并转换为目标类型对象</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> T <span class="hljs-title function_">get</span><span class="hljs-params">()</span>&#123;<br>	<span class="hljs-type">Thread</span> <span class="hljs-variable">t</span> <span class="hljs-operator">=</span> Thread.currentThread();<br>	<span class="hljs-type">ThreadLocalMap</span> <span class="hljs-variable">map</span> <span class="hljs-operator">=</span> getMap(t);<br>	<span class="hljs-keyword">if</span>(map != <span class="hljs-literal">null</span>)&#123;<br>		ThreadLocalMap.<span class="hljs-type">Entry</span> <span class="hljs-variable">e</span> <span class="hljs-operator">=</span> map.getEntry(<span class="hljs-built_in">this</span>);<br>		<span class="hljs-keyword">if</span>(e != <span class="hljs-literal">null</span>)&#123;<br>				<span class="hljs-meta">@SuppressWarnings(&quot;unchecked&quot;)</span><br>				<span class="hljs-type">T</span> <span class="hljs-variable">result</span> <span class="hljs-operator">=</span> (T)e.value;<br>				<span class="hljs-keyword">return</span> result ;<br>		&#125;<br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>setInitialvalue()方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">private</span> T <span class="hljs-title function_">setInitialvalue</span><span class="hljs-params">()</span>&#123;<br>	<span class="hljs-type">T</span> <span class="hljs-variable">value</span> <span class="hljs-operator">=</span> initialvalue();<br>	<span class="hljs-type">Thread</span> <span class="hljs-variable">t</span> <span class="hljs-operator">=</span> Thread.currentThread();<br>	<span class="hljs-type">ThreadLocalMap</span> <span class="hljs-variable">map</span> <span class="hljs-operator">=</span> getMap(t);<br>	<span class="hljs-keyword">if</span>(map!=<span class="hljs-literal">null</span>)<br>		map.set(<span class="hljs-built_in">this</span>,value);<br>	<span class="hljs-keyword">else</span> <br>		createMap(t,value);<br>	<span class="hljs-keyword">return</span> value ;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">protected</span> T <span class="hljs-title function_">initialvalue</span><span class="hljs-params">()</span>&#123;<br>	<span class="hljs-keyword">return</span> <span class="hljs-literal">null</span> ;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>remove 方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">remove</span><span class="hljs-params">()</span>&#123;<br>	<span class="hljs-type">ThreadLocalMap</span> <span class="hljs-variable">m</span> <span class="hljs-operator">=</span> getMap(Thread.currentThread());<br>	<span class="hljs-keyword">if</span>(m!=<span class="hljs-literal">null</span>)&#123;<br>		m.remove(<span class="hljs-built_in">this</span>);<br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="InheritableThreadLocal"><a href="#InheritableThreadLocal" class="headerlink" title="InheritableThreadLocal"></a>InheritableThreadLocal</h2><p>InheritableThreadLocal 会获得在主线程中存储的值</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">InheritableThreadLocalTest</span>&#123;<br>	<span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> ThreadLocal&lt;String&gt; THREAD_LOCAL = <span class="hljs-keyword">new</span> <span class="hljs-title class_">InheritableThreadLocal</span>&lt;String&gt;();<br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span>&#123;<br>		THREAD_LOCAL.set(<span class="hljs-string">&quot;codfish&quot;</span>);<br>	&#125;<br><br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span>&#123;<br>		<span class="hljs-keyword">new</span> <span class="hljs-title class_">Thread</span>(()-&gt;&#123;<br>			System.out.println(<span class="hljs-string">&quot;子线程中的本地变量值为&quot;</span>+THREAD_LOCAL.get());<br>		&#125;).start();<br>		System.out.println(<span class="hljs-string">&quot;在主线程中获取到的本地变量值为&quot;</span>+THREAD_LOCAL.get());<br>	&#125;<br>&#125;<br><span class="hljs-comment">// 两者最终输出结果相同</span><br></code></pre></td></tr></table></figure>
+
+<p>InheritableThreadLocal 的定义</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">InheritableThreadLocal</span>&lt;T&gt; <span class="hljs-keyword">extends</span> <span class="hljs-title class_">ThreadLocal</span>&lt;T&gt;&#123;<br>	<span class="hljs-keyword">protected</span> T <span class="hljs-title function_">childvalue</span><span class="hljs-params">(T parentvalue)</span>&#123;<br>		<span class="hljs-keyword">return</span> parentvalue ;<br>	&#125;<br>	ThreadLocalMap <span class="hljs-title function_">getMap</span><span class="hljs-params">(Thread t)</span>&#123;<br>		<span class="hljs-keyword">return</span> t.inheritableThreadLocals;<br>	&#125;<br>	<span class="hljs-keyword">void</span> <span class="hljs-title function_">createMap</span><span class="hljs-params">(Thread t , T firstvalue)</span>&#123;<br>		t.inheritableThreadLocals = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ThreadLocalMap</span>(<span class="hljs-built_in">this</span>,firstvalue);<br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>Thread的构造方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-title function_">Thread</span><span class="hljs-params">()</span>&#123;<br>	init(<span class="hljs-literal">null</span>,<span class="hljs-literal">null</span>, <span class="hljs-string">&quot;Thread-&quot;</span> + nextThreadNum(),<span class="hljs-number">0</span>);<br>&#125;<br><span class="hljs-keyword">public</span> <span class="hljs-title function_">Thread</span><span class="hljs-params">(Runnable target)</span>&#123;<br>	init(<span class="hljs-literal">null</span>,target,<span class="hljs-string">&quot;Thread-&quot;</span> + nextThreadNum(),<span class="hljs-number">0</span>);<br>&#125;<br>Thread(Runnable target, AccessControlContext acc)&#123;<br>	init(<span class="hljs-literal">null</span>,target,<span class="hljs-string">&quot;Thread-&quot;</span> + nextThreadNum(),<span class="hljs-number">0</span>,acc,<span class="hljs-literal">false</span>);<br>&#125;<br><span class="hljs-keyword">public</span> <span class="hljs-title function_">Thread</span><span class="hljs-params">(ThreadGroup group , Runnable target)</span>&#123;<br>	init(group,target, <span class="hljs-string">&quot;Thread-&quot;</span> + nextThreadNum(),<span class="hljs-number">0</span>);<br>&#125;<br><span class="hljs-keyword">public</span> <span class="hljs-title function_">Thread</span><span class="hljs-params">(String name)</span>&#123;<br>	init(<span class="hljs-literal">null</span>,<span class="hljs-literal">null</span>,name,<span class="hljs-number">0</span>);<br>&#125;<br><span class="hljs-keyword">public</span> <span class="hljs-title function_">Thread</span><span class="hljs-params">(ThreadGroup group , String name)</span>&#123;<br>	init(group,<span class="hljs-literal">null</span>,name,<span class="hljs-number">0</span>);<br>&#125;<br><span class="hljs-keyword">public</span> <span class="hljs-title function_">Thread</span><span class="hljs-params">(ThreadGroup group , Runnable target, String name )</span>&#123;<br>	init(group,target,name,<span class="hljs-number">0</span>);<br>&#125;<br><span class="hljs-keyword">public</span> <span class="hljs-title function_">Thread</span><span class="hljs-params">(ThreadGroup group , Runnable target, String name , <span class="hljs-type">long</span> stackSize)</span>&#123;<br>	init(group,target,name,stackSize);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>而初始化方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">init</span><span class="hljs-params">(ThreadGroup g, Runnable target , String name , <span class="hljs-type">long</span> stackSize , AccessContext acc , <span class="hljs-type">boolean</span> inheritThreadLocals)</span>&#123;<br>	<span class="hljs-keyword">if</span>(inheritThreadLocals &amp;&amp; parent.inheritableThreadLocals !=<span class="hljs-literal">null</span>)<br>	<span class="hljs-built_in">this</span>.inheritableThreadLocals = ThreadLocal.createInheritedMap(parent.inheritableThreadLocals);<br>	<span class="hljs-built_in">this</span>.stackSize = stackSize;<br>	tid = nextThreadID();<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>当父线程中的inheritableThreadLocals成员变量为true 是存在的，且不为null，则进行子线程中的inheritable 创建过程</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">static</span> ThreadLocalMap <span class="hljs-title function_">createInheritedMap</span><span class="hljs-params">(ThreadLocalMap parentMap)</span>&#123;<br>	<span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ThreadLocalMap</span>(parentMap);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">private</span> <span class="hljs-title function_">ThreadLocalMap</span><span class="hljs-params">(ThreadLocalMap parentMap)</span>&#123;<br>	Entry[] parentTable = parentMap.table ;<br>	<span class="hljs-type">int</span> <span class="hljs-variable">len</span> <span class="hljs-operator">=</span> parentTable.length ;<br>	setThreadhold(len);<br>	table = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Entry</span>[len];<br>	<span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> j=<span class="hljs-number">0</span> ; j &lt; len ;  j++)&#123;<br>		<span class="hljs-keyword">if</span>(e != <span class="hljs-literal">null</span>)&#123;<br>			<span class="hljs-meta">@SuppressWarnings(&quot;unchecked&quot;)</span><br>			ThreadLocal&lt;Object&gt; key = (ThreadLocal&lt;Object&gt;) e.get();<br>			<span class="hljs-keyword">if</span> (key != <span class="hljs-literal">null</span>)&#123;<br>				<span class="hljs-meta">@SuppressWarnings(&quot;unchecked&quot;)</span><br>				ThreadLocal&lt;Object&gt; key = (ThreadLocal&lt;Object&gt;) e.get();<br>				<span class="hljs-keyword">if</span>(key != <span class="hljs-literal">null</span>)&#123;<br>					<span class="hljs-type">Object</span> <span class="hljs-variable">value</span> <span class="hljs-operator">=</span> key.childvalue(e.value);<br>					<span class="hljs-type">Entry</span> <span class="hljs-variable">c</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Entry</span>(key, value);<br>					<span class="hljs-type">int</span> <span class="hljs-variable">h</span> <span class="hljs-operator">=</span> key.threadLocalHashCode &amp; (len - <span class="hljs-number">1</span>);<br>					<span class="hljs-keyword">while</span> (table[h] != <span class="hljs-literal">null</span>)&#123;<br>							h = nextIndex(h,len);<br>					&#125;<br>					table[h] = c;<br>					size ++ ;<br>			   &#125;<br>		  &#125;<br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h1 id="线程池与ThreadLocal技术文档"><a href="#线程池与ThreadLocal技术文档" class="headerlink" title="线程池与ThreadLocal技术文档"></a>线程池与ThreadLocal技术文档</h1><h2 id="线程池-1"><a href="#线程池-1" class="headerlink" title="线程池"></a>线程池</h2><h3 id="状态设计-1"><a href="#状态设计-1" class="headerlink" title="状态设计"></a>状态设计</h3><p> <strong>RUNNING</strong> ：表示线程池处于运行状态，此时线程池能够接收新提交的任务，并且能够处理阻塞队列中的任务。</p>
+<p> <strong>SHUTDOWN</strong> ：表示线程池处于关闭状态，此时线程池不能接收新提交的任务，但是不会中断正在执行任务的线程，能够继续执行正在执行的任务，也能够处理阻塞队列中已经保存的任务。如果线程池处于RUNNING状态，那么调用线程池的shutdown()方法会使线程池进入SHUTDOWN状态。</p>
+<p> <strong>STOP</strong> ：表示线程池处于停止状态，此时线程池不能接收新提交的任务，也不能继续处理阻塞队列中的任务，同时会中断正在执行任务的线程。调用线程池的shutdownNow()方法会使线程池进入STOP状态。</p>
+<p> <strong>TIDYING</strong> ：如果线程池中所有的任务都已经终止，有效线程数为0，线程池就会进入TIDYING状态。换句话说，线程池中已经没有正在执行的任务，并且线程池中的阻塞队列为空，同时线程池中的工作线程数量为0，线程池就会进入TIDYING状态。</p>
+<p> <strong>TERMINATED</strong> ：如果线程池处于TIDYING状态，此时调用线程池的terminated()方法，线程池就会进入TERMINATED状态。</p>
+<h3 id="状态转移过程-1"><a href="#状态转移过程-1" class="headerlink" title="状态转移过程"></a>状态转移过程</h3><ol>
+<li>当线程池处于RUNNING状态时，显式调用线程池的shutdown()方法，或者隐式调用finalize()方法，线程池会由RUNNING状态转换为SHUTDOWN状态</li>
+<li>当线程池处于RUNNING状态时，显式调用线程池的shutdownNow()方法，线程池会由RUNNING状态转换为STOP状态</li>
+<li>当线程池处于SHUTDOWN状态时，显式调用线程池的shutdownNow()方法，线程池会由SHUTDOWN状态转换为STOP状态</li>
+<li>当线程池处于SHUTDOWN状态时，如果线程池中无工作线程，并且阻塞队列为空，则线程池会由SHUTDOWN状态转换为TIDYING状态</li>
+<li>当线程池处于STOP状态时，如果线程池中无工作线程，则线程池会由STOP状态转换为TIDYING状态</li>
+<li>当线程池处于TIDYING状态时，调用线程池的terminated()方法，线程池会由TIDYING状态变为TERMINATED状态</li>
+</ol>
+<h3 id="创建线程池-1"><a href="#创建线程池-1" class="headerlink" title="创建线程池"></a>创建线程池</h3><h3 id="Executors工厂类"><a href="#Executors工厂类" class="headerlink" title="Executors工厂类"></a>Executors工厂类</h3><p>Executors提供了多种线程池创建方式：</p>
+<p> <strong>Executors.newCachedThreadPool方法</strong> ：创建一个可缓存的线程池，如果线程池中的线程超过了运行任务的需要，则可以灵活地回收线程，再向线程池中提交任务，则会新建线程来执行任务。</p>
+<p> <strong>Executors.newFixedThreadPool方法</strong> ：创建一个线程数量固定的线程池，能够有效地控制线程池的最大并发数，当向线程池中提交任务时，如果线程池中有空闲线程，则执行任务。如果线程池中无空闲线程，则将任务放入阻塞队列中，待线程池中出现空闲线程，再执行阻塞队列中的任务。</p>
+<p> <strong>Executors.newScheduledThreadPool方法</strong> ：创建一个计划线程池，支持周期性任务执行。</p>
+<p> <strong>Executors.newSingleThreadExecutor方法</strong> ：创建一个只有一个线程的线程池，能够保证提交到线程池中的所有任务按照先进先出的顺序，或者按照某个优先级的顺序来执行，当向线程池中提交任务时，如果线程池中无空闲线程，则会将任务保存在阻塞队列中。</p>
+<p> <strong>Executors.newSingleThreadScheduledExecutor方法</strong> ：创建一个只有一个线程的线程池，并进行周期性执行任务。</p>
+<h3 id="ThreadPoolExecutor详解"><a href="#ThreadPoolExecutor详解" class="headerlink" title="ThreadPoolExecutor详解"></a>ThreadPoolExecutor详解</h3><p><strong>Executors在ThreadPoolExecutor的基础上进行扩展</strong></p>
+<p>ThreadPoolExecutor的基础构造器：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-title function_">ThreadPoolExecutor</span><span class="hljs-params">(<span class="hljs-type">int</span> corePoolSize,</span><br><span class="hljs-params">                         <span class="hljs-type">int</span> maximumPoolSize,</span><br><span class="hljs-params">                         <span class="hljs-type">long</span> keepAliveTime,</span><br><span class="hljs-params">                         TimeUnit unit,</span><br><span class="hljs-params">                         BlockingQueue&lt;Runnable&gt; workQueue,</span><br><span class="hljs-params">                         ThreadFactory threadFactory,</span><br><span class="hljs-params">                         RejectedExecutionHandler handler)</span> &#123;<br>    <span class="hljs-keyword">if</span> (corePoolSize &lt; <span class="hljs-number">0</span> ||<br>        maximumPoolSize &lt;= <span class="hljs-number">0</span> ||<br>        maximumPoolSize &lt; corePoolSize ||<br>        keepAliveTime &lt; <span class="hljs-number">0</span>)<br>        <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">IllegalArgumentException</span>();<br>    <span class="hljs-keyword">if</span> (workQueue == <span class="hljs-literal">null</span> || threadFactory == <span class="hljs-literal">null</span> || handler == <span class="hljs-literal">null</span>)<br>        <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">NullPointerException</span>();<br>    <span class="hljs-built_in">this</span>.acc = System.getSecurityManager() == <span class="hljs-literal">null</span> ?<br>            <span class="hljs-literal">null</span> : AccessController.getContext();<br>    <span class="hljs-built_in">this</span>.corePoolSize = corePoolSize;<br>    <span class="hljs-built_in">this</span>.maximumPoolSize = maximumPoolSize;<br>    <span class="hljs-built_in">this</span>.workQueue = workQueue;<br>    <span class="hljs-built_in">this</span>.keepAliveTime = unit.toNanos(keepAliveTime);<br>    <span class="hljs-built_in">this</span>.threadFactory = threadFactory;<br>    <span class="hljs-built_in">this</span>.handler = handler;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<p> <strong>参数说明</strong> ：</p>
+<ul>
+<li><code>corePoolSize</code>：表示线程池中的核心线程数</li>
+<li><code>maximumPoolSize</code>：表示线程池中的最大线程数</li>
+<li><code>keepAliveTime</code>：表示线程池中的线程空闲时，能够保持的最长时间</li>
+<li><code>unit</code>：表示keepAliveTime的单位时间</li>
+<li><code>workQueue</code>：表示线程池中的阻塞队列</li>
+<li><code>threadFactory</code>：表示用来创建线程的线程工厂</li>
+<li><code>handler</code>：表示线程池拒绝处理任务时的策略</li>
+</ul>
+<h3 id="线程池工作原理详解"><a href="#线程池工作原理详解" class="headerlink" title="线程池工作原理详解"></a>线程池工作原理详解</h3><h3 id="任务提交和执行的完整流程"><a href="#任务提交和执行的完整流程" class="headerlink" title="任务提交和执行的完整流程"></a>任务提交和执行的完整流程</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// ThreadPoolExecutor.execute() 方法的核心逻辑</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">execute</span><span class="hljs-params">(Runnable command)</span> &#123;<br>    <span class="hljs-type">int</span> <span class="hljs-variable">c</span> <span class="hljs-operator">=</span> ctl.get();<br><br>    <span class="hljs-comment">// 步骤1：如果当前线程数 &lt; corePoolSize，直接创建核心线程</span><br>    <span class="hljs-keyword">if</span> (workerCountOf(c) &lt; corePoolSize) &#123;<br>        <span class="hljs-keyword">if</span> (addWorker(command, <span class="hljs-literal">true</span>))<br>            <span class="hljs-keyword">return</span>;<br>        c = ctl.get();<br>    &#125;<br><br>    <span class="hljs-comment">// 步骤2：核心线程满了，尝试加入队列</span><br>    <span class="hljs-keyword">if</span> (isRunning(c) &amp;&amp; workQueue.offer(command)) &#123;<br>        <span class="hljs-type">int</span> <span class="hljs-variable">recheck</span> <span class="hljs-operator">=</span> ctl.get();<br>        <span class="hljs-comment">// 双重检查：如果线程池状态改变，移除任务并拒绝</span><br>        <span class="hljs-keyword">if</span> (!isRunning(recheck) &amp;&amp; remove(command))<br>            reject(command);<br>        <span class="hljs-comment">// 如果没有工作线程了，创建一个非核心线程</span><br>        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (workerCountOf(recheck) == <span class="hljs-number">0</span>)<br>            addWorker(<span class="hljs-literal">null</span>, <span class="hljs-literal">false</span>);<br>    &#125;<br><br>    <span class="hljs-comment">// 步骤3：队列满了，尝试创建非核心线程</span><br>    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (!addWorker(command, <span class="hljs-literal">false</span>))<br>        reject(command); <span class="hljs-comment">// 创建失败，执行拒绝策略</span><br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<h3 id="线程复用机制"><a href="#线程复用机制" class="headerlink" title="线程复用机制"></a>线程复用机制</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// Worker线程的运行逻辑</span><br><span class="hljs-keyword">final</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">runWorker</span><span class="hljs-params">(Worker w)</span> &#123;<br>    <span class="hljs-type">Thread</span> <span class="hljs-variable">wt</span> <span class="hljs-operator">=</span> Thread.currentThread();<br>    <span class="hljs-type">Runnable</span> <span class="hljs-variable">task</span> <span class="hljs-operator">=</span> w.firstTask;<br>    w.firstTask = <span class="hljs-literal">null</span>;<br><br>    <span class="hljs-keyword">try</span> &#123;<br>        <span class="hljs-comment">// 循环获取任务执行，实现线程复用</span><br>        <span class="hljs-keyword">while</span> (task != <span class="hljs-literal">null</span> || (task = getTask()) != <span class="hljs-literal">null</span>) &#123;<br>            w.lock();<br>            <span class="hljs-keyword">try</span> &#123;<br>                beforeExecute(wt, task);<br>                task.run(); <span class="hljs-comment">// 执行任务</span><br>                afterExecute(task, <span class="hljs-literal">null</span>);<br>            &#125; <span class="hljs-keyword">finally</span> &#123;<br>                task = <span class="hljs-literal">null</span>;<br>                w.completedTasks++;<br>                w.unlock();<br>            &#125;<br>        &#125;<br>    &#125; <span class="hljs-keyword">finally</span> &#123;<br>        processWorkerExit(w, completedAbruptly);<br>    &#125;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<h3 id="执行规则详解"><a href="#执行规则详解" class="headerlink" title="执行规则详解"></a>执行规则详解</h3><ol>
+<li>当线程池中运行的线程数小于corePoolSize时，如果向线程池中提交任务，那么即使线程池中存在空闲线程，也会直接创建新线程来执行任务</li>
+<li>如果线程池中运行的线程数大于corePoolSize，并且小于maximumPoolSize，那么只有当workQueue队列已满时，才会创建新的线程来执行新提交的任务</li>
+<li>在调用ThreadPoolExecutor类的构造方法时，如果传递的corePoolSize和maximumPoolSize参数相同，那么创建的线程池大小是固定的，此时如果向线程池中提交任务，并且workQueue队列未满，就会将新提交的任务保存到workQueue队列中，等待空闲的线程，从workQueue队列中获取任务并执行</li>
+<li>如果线程池中运行的线程数大于maximumPoolSize，并且此时workQueue队列已满，则会触发指定的拒绝策略来拒绝任务的执行</li>
+</ol>
+<h3 id="拒绝策略-1"><a href="#拒绝策略-1" class="headerlink" title="拒绝策略"></a>拒绝策略</h3><p>如果线程池中的workQueue阻塞队列已满，同时线程池中的线程数已经达到maximumPoolSize，且没有空闲线程，此时继续有任务提交到线程池，就需要采取某种策略来拒绝任务的执行。</p>
+<p>在ThreadPoolExecutor类的execute()方法中，会在适当时机调用reject(command)方法来执行拒绝策略：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">final</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">reject</span><span class="hljs-params">(Runnable command)</span> &#123;<br>    handler.rejectedExecution(command, <span class="hljs-built_in">this</span>);<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<p>在reject(command)方法中调用了handler的rejectedExecution()方法，这里，在ThreadPoolExecutor类中声明了handler变量：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">private</span> <span class="hljs-keyword">volatile</span> RejectedExecutionHandler handler;<br><br></code></pre></td></tr></table></figure>
+
+<p>拒绝策略接口定义：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">interface</span> <span class="hljs-title class_">RejectedExecutionHandler</span> &#123;<br>    <span class="hljs-keyword">void</span> <span class="hljs-title function_">rejectedExecution</span><span class="hljs-params">(Runnable r, ThreadPoolExecutor executor)</span>;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<p>RejectedExecutionHandler有四个默认实现，分别代表：</p>
+<ul>
+<li><strong>AbortPolicy</strong> ：当线程池无法处理新任务时，直接抛出RejectedExecutionException异常</li>
+<li><strong>CallerRunsPolicy</strong> ：当线程池无法处理新任务时，让提交任务的线程（调用者线程）直接执行该任务</li>
+<li><strong>DiscardOldestPolicy</strong> ：丢弃队列中最老的（等待时间最长的）任务</li>
+<li><strong>DiscardPolicy</strong> ：直接丢弃无法处理的新任务</li>
+</ul>
+<h3 id="线程池关闭-1"><a href="#线程池关闭-1" class="headerlink" title="线程池关闭"></a>线程池关闭</h3><p>使用shutdown()或者shutdownNow()关闭线程池：</p>
+<ul>
+<li><code>shutdown()</code>：平滑关闭，不再接受新任务，但会执行完已提交的任务</li>
+<li><code>shutdownNow()</code>：立即关闭，尝试停止所有正在执行的任务，并返回等待执行的任务列表</li>
+</ul>
+<h3 id="线程池线程数设置建议"><a href="#线程池线程数设置建议" class="headerlink" title="线程池线程数设置建议"></a>线程池线程数设置建议</h3><p> <strong>I&#x2F;O密集型任务</strong> ：线程数 &#x3D; CPU核心数 × (1 + I&#x2F;O阻塞时间&#x2F;CPU计算时间)</p>
+<p> <strong>CPU密集型任务</strong> ：线程数 &#x3D; CPU核心数 + 1（+1是为了防止所有线程都在阻塞状态时CPU闲置）</p>
+<h2 id="ThreadLocal-1"><a href="#ThreadLocal-1" class="headerlink" title="ThreadLocal"></a>ThreadLocal</h2><p>ThreadLocal是Java提供的一种线程隔离机制，它为每个使用该变量的线程提供独立的变量副本，每个线程都可以独立地改变自己的副本，而不会影响其他线程所对应的副本。</p>
+<h3 id="基本使用示例"><a href="#基本使用示例" class="headerlink" title="基本使用示例"></a>基本使用示例</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">ThreadLocalTest</span> &#123;<br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> ThreadLocal&lt;String&gt; THREAD_LOCAL = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ThreadLocal</span>&lt;String&gt;();<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> &#123;<br>        <span class="hljs-type">Thread</span> <span class="hljs-variable">threadA</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Thread</span>(() -&gt; &#123;<br>            THREAD_LOCAL.set(<span class="hljs-string">&quot;ThreadA: &quot;</span> + Thread.currentThread().getName());<br>            System.out.println(Thread.currentThread().getName() +<br>                             <span class="hljs-string">&quot;本地变量中的值为&quot;</span> + THREAD_LOCAL.get());<br>        &#125;, <span class="hljs-string">&quot;Thread-A&quot;</span>);<br><br>        <span class="hljs-type">Thread</span> <span class="hljs-variable">threadB</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Thread</span>(() -&gt; &#123;<br>            THREAD_LOCAL.set(<span class="hljs-string">&quot;ThreadB: &quot;</span> + Thread.currentThread().getName());<br>            System.out.println(Thread.currentThread().getName() +<br>                             <span class="hljs-string">&quot;本地变量中的值为&quot;</span> + THREAD_LOCAL.get());<br>        &#125;, <span class="hljs-string">&quot;Thread-B&quot;</span>);<br><br>        threadA.start();<br>        threadB.start();<br>    &#125;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<h3 id="ThreadLocal核心原理"><a href="#ThreadLocal核心原理" class="headerlink" title="ThreadLocal核心原理"></a>ThreadLocal核心原理</h3><p>ThreadLocal的核心原理是在编译时给出了定义内容：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> ThreadLocal&lt;String&gt; THREAD_LOCAL = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ThreadLocal</span>&lt;String&gt;();<br><br></code></pre></td></tr></table></figure>
+
+<p>当运行时，线程结构中定义了存储线程局部变量的结构：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 在Thread类中存在</span><br>ThreadLocal.<span class="hljs-type">ThreadLocalMap</span> <span class="hljs-variable">threadLocals</span> <span class="hljs-operator">=</span> <span class="hljs-literal">null</span>;<br>ThreadLocal.<span class="hljs-type">ThreadLocalMap</span> <span class="hljs-variable">inheritableThreadLocals</span> <span class="hljs-operator">=</span> <span class="hljs-literal">null</span>;<br><br></code></pre></td></tr></table></figure>
+
+<h3 id="set方法实现"><a href="#set方法实现" class="headerlink" title="set方法实现"></a>set方法实现</h3><p>ThreadLocal先获取当前线程，再通过getMap获取到本地的ThreadLocalMap，之后向Map中设置局部变量：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">set</span><span class="hljs-params">(T value)</span> &#123;<br>    <span class="hljs-type">Thread</span> <span class="hljs-variable">t</span> <span class="hljs-operator">=</span> Thread.currentThread();<br>    <span class="hljs-type">ThreadLocalMap</span> <span class="hljs-variable">map</span> <span class="hljs-operator">=</span> getMap(t);<br>    <span class="hljs-keyword">if</span> (map != <span class="hljs-literal">null</span>)<br>        map.set(<span class="hljs-built_in">this</span>, value);<br>    <span class="hljs-keyword">else</span><br>        createMap(t, value);<br>&#125;<br><br>ThreadLocalMap <span class="hljs-title function_">getMap</span><span class="hljs-params">(Thread t)</span> &#123;<br>    <span class="hljs-keyword">return</span> t.threadLocals;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<h3 id="get方法实现"><a href="#get方法实现" class="headerlink" title="get方法实现"></a>get方法实现</h3><p>与set一样，获取thread的本地变量容器结构，从中获取对象，并转换为目标类型对象：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> T <span class="hljs-title function_">get</span><span class="hljs-params">()</span> &#123;<br>    <span class="hljs-type">Thread</span> <span class="hljs-variable">t</span> <span class="hljs-operator">=</span> Thread.currentThread();<br>    <span class="hljs-type">ThreadLocalMap</span> <span class="hljs-variable">map</span> <span class="hljs-operator">=</span> getMap(t);<br>    <span class="hljs-keyword">if</span> (map != <span class="hljs-literal">null</span>) &#123;<br>        ThreadLocalMap.<span class="hljs-type">Entry</span> <span class="hljs-variable">e</span> <span class="hljs-operator">=</span> map.getEntry(<span class="hljs-built_in">this</span>);<br>        <span class="hljs-keyword">if</span> (e != <span class="hljs-literal">null</span>) &#123;<br>            <span class="hljs-meta">@SuppressWarnings(&quot;unchecked&quot;)</span><br>            <span class="hljs-type">T</span> <span class="hljs-variable">result</span> <span class="hljs-operator">=</span> (T)e.value;<br>            <span class="hljs-keyword">return</span> result;<br>        &#125;<br>    &#125;<br>    <span class="hljs-keyword">return</span> setInitialValue();<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<h3 id="setInitialValue方法"><a href="#setInitialValue方法" class="headerlink" title="setInitialValue方法"></a>setInitialValue方法</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">private</span> T <span class="hljs-title function_">setInitialValue</span><span class="hljs-params">()</span> &#123;<br>    <span class="hljs-type">T</span> <span class="hljs-variable">value</span> <span class="hljs-operator">=</span> initialValue();<br>    <span class="hljs-type">Thread</span> <span class="hljs-variable">t</span> <span class="hljs-operator">=</span> Thread.currentThread();<br>    <span class="hljs-type">ThreadLocalMap</span> <span class="hljs-variable">map</span> <span class="hljs-operator">=</span> getMap(t);<br>    <span class="hljs-keyword">if</span> (map != <span class="hljs-literal">null</span>)<br>        map.set(<span class="hljs-built_in">this</span>, value);<br>    <span class="hljs-keyword">else</span><br>        createMap(t, value);<br>    <span class="hljs-keyword">return</span> value;<br>&#125;<br><br><span class="hljs-keyword">protected</span> T <span class="hljs-title function_">initialValue</span><span class="hljs-params">()</span> &#123;<br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<h3 id="remove方法"><a href="#remove方法" class="headerlink" title="remove方法"></a>remove方法</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">remove</span><span class="hljs-params">()</span> &#123;<br>    <span class="hljs-type">ThreadLocalMap</span> <span class="hljs-variable">m</span> <span class="hljs-operator">=</span> getMap(Thread.currentThread());<br>    <span class="hljs-keyword">if</span> (m != <span class="hljs-literal">null</span>) &#123;<br>        m.remove(<span class="hljs-built_in">this</span>);<br>    &#125;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<h3 id="ThreadLocal内存泄漏风险及防范"><a href="#ThreadLocal内存泄漏风险及防范" class="headerlink" title="ThreadLocal内存泄漏风险及防范"></a>ThreadLocal内存泄漏风险及防范</h3><h3 id="泄漏原理"><a href="#泄漏原理" class="headerlink" title="泄漏原理"></a>泄漏原理</h3><p>ThreadLocal的内存泄漏主要源于其内部结构：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// ThreadLocalMap的Entry是弱引用</span><br><span class="hljs-keyword">static</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Entry</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">WeakReference</span>&lt;ThreadLocal&lt;?&gt;&gt; &#123;<br>    Object value; <span class="hljs-comment">// 强引用！</span><br>    Entry(ThreadLocal&lt;?&gt; k, Object v) &#123;<br>        <span class="hljs-built_in">super</span>(k);<br>        value = v;<br>    &#125;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<h3 id="泄漏场景示例"><a href="#泄漏场景示例" class="headerlink" title="泄漏场景示例"></a>泄漏场景示例</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MemoryLeakExample</span> &#123;<br>    <span class="hljs-comment">// 问题场景：ThreadLocal被回收，但value仍被引用</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">problematicUsage</span><span class="hljs-params">()</span> &#123;<br>        ThreadLocal&lt;List&lt;String&gt;&gt; local = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ThreadLocal</span>&lt;&gt;();<br>        local.set(<span class="hljs-keyword">new</span> <span class="hljs-title class_">ArrayList</span>&lt;&gt;(Collections.nCopies(<span class="hljs-number">1000000</span>, <span class="hljs-string">&quot;data&quot;</span>))); <span class="hljs-comment">// 大对象</span><br><br>        <span class="hljs-comment">// ThreadLocal引用丢失</span><br>        local = <span class="hljs-literal">null</span>; <span class="hljs-comment">// 此时ThreadLocal可被GC</span><br><br>        <span class="hljs-comment">// 但ThreadLocalMap中的Entry.value仍然存在</span><br>        <span class="hljs-comment">// Thread -&gt; ThreadLocalMap -&gt; Entry -&gt; value (强引用链)</span><br>        <span class="hljs-comment">// 造成内存泄漏</span><br>    &#125;<br><br>    <span class="hljs-comment">// 正确做法</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">correctUsage</span><span class="hljs-params">()</span> &#123;<br>        ThreadLocal&lt;List&lt;String&gt;&gt; local = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ThreadLocal</span>&lt;&gt;();<br>        <span class="hljs-keyword">try</span> &#123;<br>            local.set(<span class="hljs-keyword">new</span> <span class="hljs-title class_">ArrayList</span>&lt;&gt;());<br>            <span class="hljs-comment">// 使用local进行业务逻辑</span><br>        &#125; <span class="hljs-keyword">finally</span> &#123;<br>            local.remove(); <span class="hljs-comment">// 主动清理，避免内存泄漏</span><br>        &#125;<br>    &#125;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<h3 id="在线程池中的风险"><a href="#在线程池中的风险" class="headerlink" title="在线程池中的风险"></a>在线程池中的风险</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">ThreadPoolLeakExample</span> &#123;<br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> ThreadLocal&lt;ExpensiveObject&gt; CACHE =<br>        <span class="hljs-keyword">new</span> <span class="hljs-title class_">ThreadLocal</span>&lt;ExpensiveObject&gt;() &#123;<br>            <span class="hljs-meta">@Override</span><br>            <span class="hljs-keyword">protected</span> ExpensiveObject <span class="hljs-title function_">initialValue</span><span class="hljs-params">()</span> &#123;<br>                <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ExpensiveObject</span>(); <span class="hljs-comment">// 大对象</span><br>            &#125;<br>        &#125;;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">processInThreadPool</span><span class="hljs-params">()</span> &#123;<br>        <span class="hljs-type">ExecutorService</span> <span class="hljs-variable">executor</span> <span class="hljs-operator">=</span> Executors.newFixedThreadPool(<span class="hljs-number">10</span>);<br><br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">1000</span>; i++) &#123;<br>            executor.submit(() -&gt; &#123;<br>                <span class="hljs-keyword">try</span> &#123;<br>                    <span class="hljs-comment">// 每个任务都会在ThreadLocal中存储对象</span><br>                    <span class="hljs-type">ExpensiveObject</span> <span class="hljs-variable">obj</span> <span class="hljs-operator">=</span> CACHE.get();<br>                    <span class="hljs-comment">// 处理逻辑...</span><br>                &#125; <span class="hljs-keyword">finally</span> &#123;<br>                    <span class="hljs-comment">// 重要：在线程池环境中必须主动清理</span><br>                    CACHE.remove();<br>                &#125;<br>            &#125;);<br>        &#125;<br><br>        executor.shutdown();<br>    &#125;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<p> <strong>关键提醒</strong> ：在线程池环境中，由于线程复用，ThreadLocal数据会在多个任务间保持，必须在每个任务结束后主动调用remove()方法清理。</p>
+<h2 id="InheritableThreadLocal-1"><a href="#InheritableThreadLocal-1" class="headerlink" title="InheritableThreadLocal"></a>InheritableThreadLocal</h2><p>InheritableThreadLocal会获得在主线程中存储的值：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">InheritableThreadLocalTest</span> &#123;<br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> ThreadLocal&lt;String&gt; THREAD_LOCAL = <span class="hljs-keyword">new</span> <span class="hljs-title class_">InheritableThreadLocal</span>&lt;String&gt;();<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> &#123;<br>        THREAD_LOCAL.set(<span class="hljs-string">&quot;codfish&quot;</span>);<br><br>        <span class="hljs-keyword">new</span> <span class="hljs-title class_">Thread</span>(() -&gt; &#123;<br>            System.out.println(<span class="hljs-string">&quot;子线程中的本地变量值为&quot;</span> + THREAD_LOCAL.get());<br>        &#125;).start();<br><br>        System.out.println(<span class="hljs-string">&quot;在主线程中获取到的本地变量值为&quot;</span> + THREAD_LOCAL.get());<br>    &#125;<br>    <span class="hljs-comment">// 两者最终输出结果相同</span><br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<h3 id="InheritableThreadLocal的定义"><a href="#InheritableThreadLocal的定义" class="headerlink" title="InheritableThreadLocal的定义"></a>InheritableThreadLocal的定义</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">InheritableThreadLocal</span>&lt;T&gt; <span class="hljs-keyword">extends</span> <span class="hljs-title class_">ThreadLocal</span>&lt;T&gt; &#123;<br>    <span class="hljs-keyword">protected</span> T <span class="hljs-title function_">childValue</span><span class="hljs-params">(T parentValue)</span> &#123;<br>        <span class="hljs-keyword">return</span> parentValue;<br>    &#125;<br><br>    ThreadLocalMap <span class="hljs-title function_">getMap</span><span class="hljs-params">(Thread t)</span> &#123;<br>        <span class="hljs-keyword">return</span> t.inheritableThreadLocals;<br>    &#125;<br><br>    <span class="hljs-keyword">void</span> <span class="hljs-title function_">createMap</span><span class="hljs-params">(Thread t, T firstValue)</span> &#123;<br>        t.inheritableThreadLocals = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ThreadLocalMap</span>(<span class="hljs-built_in">this</span>, firstValue);<br>    &#125;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<h3 id="继承机制原理"><a href="#继承机制原理" class="headerlink" title="继承机制原理"></a>继承机制原理</h3><p>Thread的构造方法最终都会调用init方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">init</span><span class="hljs-params">(ThreadGroup g, Runnable target, String name, <span class="hljs-type">long</span> stackSize,</span><br><span class="hljs-params">                 AccessControlContext acc, <span class="hljs-type">boolean</span> inheritThreadLocals)</span> &#123;<br>    <span class="hljs-comment">// ...其他初始化代码...</span><br><br>    <span class="hljs-keyword">if</span> (inheritThreadLocals &amp;&amp; parent.inheritableThreadLocals != <span class="hljs-literal">null</span>)<br>        <span class="hljs-built_in">this</span>.inheritableThreadLocals =<br>            ThreadLocal.createInheritedMap(parent.inheritableThreadLocals);<br><br>    <span class="hljs-built_in">this</span>.stackSize = stackSize;<br>    tid = nextThreadID();<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<p>创建继承映射的方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">static</span> ThreadLocalMap <span class="hljs-title function_">createInheritedMap</span><span class="hljs-params">(ThreadLocalMap parentMap)</span> &#123;<br>    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ThreadLocalMap</span>(parentMap);<br>&#125;<br><br><span class="hljs-keyword">private</span> <span class="hljs-title function_">ThreadLocalMap</span><span class="hljs-params">(ThreadLocalMap parentMap)</span> &#123;<br>    Entry[] parentTable = parentMap.table;<br>    <span class="hljs-type">int</span> <span class="hljs-variable">len</span> <span class="hljs-operator">=</span> parentTable.length;<br>    setThreshold(len);<br>    table = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Entry</span>[len];<br><br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">j</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>; j &lt; len; j++) &#123;<br>        <span class="hljs-type">Entry</span> <span class="hljs-variable">e</span> <span class="hljs-operator">=</span> parentTable[j];<br>        <span class="hljs-keyword">if</span> (e != <span class="hljs-literal">null</span>) &#123;<br>            <span class="hljs-meta">@SuppressWarnings(&quot;unchecked&quot;)</span><br>            ThreadLocal&lt;Object&gt; key = (ThreadLocal&lt;Object&gt;) e.get();<br>            <span class="hljs-keyword">if</span> (key != <span class="hljs-literal">null</span>) &#123;<br>                <span class="hljs-type">Object</span> <span class="hljs-variable">value</span> <span class="hljs-operator">=</span> key.childValue(e.value);<br>                <span class="hljs-type">Entry</span> <span class="hljs-variable">c</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Entry</span>(key, value);<br>                <span class="hljs-type">int</span> <span class="hljs-variable">h</span> <span class="hljs-operator">=</span> key.threadLocalHashCode &amp; (len - <span class="hljs-number">1</span>);<br>                <span class="hljs-keyword">while</span> (table[h] != <span class="hljs-literal">null</span>)<br>                    h = nextIndex(h, len);<br>                table[h] = c;<br>                size++;<br>            &#125;<br>        &#125;<br>    &#125;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<h3 id="InheritableThreadLocal的局限性"><a href="#InheritableThreadLocal的局限性" class="headerlink" title="InheritableThreadLocal的局限性"></a>InheritableThreadLocal的局限性</h3><h3 id="1-线程池复用场景的问题"><a href="#1-线程池复用场景的问题" class="headerlink" title="1. 线程池复用场景的问题"></a>1. 线程池复用场景的问题</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">InheritableThreadLocalProblem</span> &#123;<br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> InheritableThreadLocal&lt;String&gt; CONTEXT =<br>        <span class="hljs-keyword">new</span> <span class="hljs-title class_">InheritableThreadLocal</span>&lt;&gt;();<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> <span class="hljs-keyword">throws</span> InterruptedException &#123;<br>        <span class="hljs-type">ExecutorService</span> <span class="hljs-variable">executor</span> <span class="hljs-operator">=</span> Executors.newFixedThreadPool(<span class="hljs-number">2</span>);<br><br>        <span class="hljs-comment">// 第一个请求</span><br>        CONTEXT.set(<span class="hljs-string">&quot;Request-1&quot;</span>);<br>        executor.submit(() -&gt; &#123;<br>            System.out.println(<span class="hljs-string">&quot;Task1: &quot;</span> + CONTEXT.get()); <span class="hljs-comment">// 输出: null</span><br>            <span class="hljs-comment">// 为什么是null？因为线程池中的线程不是在设置CONTEXT后创建的</span><br>        &#125;);<br><br>        Thread.sleep(<span class="hljs-number">100</span>);<br><br>        <span class="hljs-comment">// 第二个请求</span><br>        CONTEXT.set(<span class="hljs-string">&quot;Request-2&quot;</span>);<br>        executor.submit(() -&gt; &#123;<br>            System.out.println(<span class="hljs-string">&quot;Task2: &quot;</span> + CONTEXT.get()); <span class="hljs-comment">// 可能输出: Request-1</span><br>            <span class="hljs-comment">// 复用了之前的线程，保留了旧值</span><br>        &#125;);<br><br>        executor.shutdown();<br>    &#125;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<h3 id="2-继承时机的限制"><a href="#2-继承时机的限制" class="headerlink" title="2. 继承时机的限制"></a>2. 继承时机的限制</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">InheritanceTiming</span> &#123;<br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> InheritableThreadLocal&lt;String&gt; INHERITABLE =<br>        <span class="hljs-keyword">new</span> <span class="hljs-title class_">InheritableThreadLocal</span>&lt;&gt;();<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">demonstrateInheritanceTiming</span><span class="hljs-params">()</span> &#123;<br>        <span class="hljs-comment">// 场景1：先创建线程，后设置值</span><br>        <span class="hljs-type">Thread</span> <span class="hljs-variable">thread1</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Thread</span>(() -&gt; &#123;<br>            System.out.println(<span class="hljs-string">&quot;Thread1: &quot;</span> + INHERITABLE.get()); <span class="hljs-comment">// null</span><br>        &#125;);<br><br>        INHERITABLE.set(<span class="hljs-string">&quot;ParentValue&quot;</span>); <span class="hljs-comment">// 设置在线程创建之后</span><br>        thread1.start(); <span class="hljs-comment">// 无法继承</span><br><br>        <span class="hljs-comment">// 场景2：先设置值，后创建线程</span><br>        INHERITABLE.set(<span class="hljs-string">&quot;ParentValue2&quot;</span>);<br>        <span class="hljs-type">Thread</span> <span class="hljs-variable">thread2</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Thread</span>(() -&gt; &#123;<br>            System.out.println(<span class="hljs-string">&quot;Thread2: &quot;</span> + INHERITABLE.get()); <span class="hljs-comment">// ParentValue2</span><br>        &#125;);<br>        thread2.start(); <span class="hljs-comment">// 可以继承</span><br>    &#125;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<h3 id="3-深拷贝问题"><a href="#3-深拷贝问题" class="headerlink" title="3. 深拷贝问题"></a>3. 深拷贝问题</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">InheritableDeepCopyIssue</span> &#123;<br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> InheritableThreadLocal&lt;List&lt;String&gt;&gt; LIST_CONTEXT =<br>        <span class="hljs-keyword">new</span> <span class="hljs-title class_">InheritableThreadLocal</span>&lt;List&lt;String&gt;&gt;() &#123;<br>            <span class="hljs-meta">@Override</span><br>            <span class="hljs-keyword">protected</span> List&lt;String&gt; <span class="hljs-title function_">childValue</span><span class="hljs-params">(List&lt;String&gt; parentValue)</span> &#123;<br>                <span class="hljs-comment">// 默认是浅拷贝，子线程和父线程共享同一个List对象</span><br>                <span class="hljs-comment">// return parentValue; // 问题：浅拷贝</span><br><br>                <span class="hljs-comment">// 正确做法：深拷贝</span><br>                <span class="hljs-keyword">return</span> parentValue == <span class="hljs-literal">null</span> ? <span class="hljs-literal">null</span> : <span class="hljs-keyword">new</span> <span class="hljs-title class_">ArrayList</span>&lt;&gt;(parentValue);<br>            &#125;<br>        &#125;;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">demonstrateShallowCopy</span><span class="hljs-params">()</span> <span class="hljs-keyword">throws</span> InterruptedException &#123;<br>        List&lt;String&gt; list = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ArrayList</span>&lt;&gt;();<br>        list.add(<span class="hljs-string">&quot;item1&quot;</span>);<br>        LIST_CONTEXT.set(list);<br><br>        <span class="hljs-type">Thread</span> <span class="hljs-variable">childThread</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Thread</span>(() -&gt; &#123;<br>            List&lt;String&gt; childList = LIST_CONTEXT.get();<br>            childList.add(<span class="hljs-string">&quot;item2&quot;</span>); <span class="hljs-comment">// 修改会影响父线程（如果是浅拷贝）</span><br>            System.out.println(<span class="hljs-string">&quot;Child: &quot;</span> + childList);<br>        &#125;);<br><br>        childThread.start();<br>        childThread.join();<br><br>        System.out.println(<span class="hljs-string">&quot;Parent: &quot;</span> + LIST_CONTEXT.get());<br>    &#125;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<h2 id="最佳实践建议"><a href="#最佳实践建议" class="headerlink" title="最佳实践建议"></a>最佳实践建议</h2><h3 id="ThreadLocal使用建议"><a href="#ThreadLocal使用建议" class="headerlink" title="ThreadLocal使用建议"></a>ThreadLocal使用建议</h3><ol>
+<li><strong>总是在finally块中调用remove()</strong> ，特别是在线程池环境中</li>
+<li><strong>避免在ThreadLocal中存储大对象</strong> ，减少内存泄漏风险</li>
+<li><strong>使用static final修饰ThreadLocal变量</strong> ，避免创建多个实例</li>
+<li><strong>考虑使用try-with-resources模式</strong>封装ThreadLocal操作</li>
+</ol>
+<h3 id="线程池配置建议"><a href="#线程池配置建议" class="headerlink" title="线程池配置建议"></a>线程池配置建议</h3><ol>
+<li><strong>根据任务类型合理设置线程数</strong> ：I&#x2F;O密集型和CPU密集型采用不同策略</li>
+<li><strong>选择合适的阻塞队列</strong> ：有界队列防止内存溢出</li>
+<li><strong>自定义ThreadFactory</strong> ：设置有意义的线程名称，便于问题排查</li>
+<li><strong>监控线程池状态</strong> ：定期检查活跃线程数、队列大小等指标</li>
+<li><strong>优雅关闭线程池</strong> ：先调用shutdown()，等待一定时间后再调用shutdownNow()</li>
+</ol>
+<h3 id="InheritableThreadLocal使用建议"><a href="#InheritableThreadLocal使用建议" class="headerlink" title="InheritableThreadLocal使用建议"></a>InheritableThreadLocal使用建议</h3><ol>
+<li><strong>避免在线程池环境中使用</strong> ，考虑使用其他上下文传递方案</li>
+<li><strong>重写childValue方法</strong>实现深拷贝，避免父子线程间的数据污染</li>
+<li><strong>注意继承时机</strong> ，确保在创建子线程前设置父线程的值</li>
+<li><strong>考虑使用TransmittableThreadLocal</strong>等第三方库来解决线程池场景下的上下文传递问题</li>
+</ol>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Java/" class="category-chain-item">Java</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Java/" class="print-no-link">#Java</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>线程相关</div>
+      <div>http://gadoid.io/2025/08/06/线程相关/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Codfish</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年8月6日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/08/05/%E5%8F%8D%E5%B0%84-%E9%94%81%E4%B8%8E%E7%BA%BF%E7%A8%8B/" title="反射,锁与线程">
+                        <span class="hidden-mobile">反射,锁与线程</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"lQzCvqmOtewLtpMfvfxKLomU-MdYXbMMI","appKey":"daMNlw5XcjN8TelT6GCHh8RF","path":"window.location.pathname","placeholder":"让灵感在这里发生","avatar":"monsterid","meta":["nick","mail"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":true,"recordIP":true,"serverURLs":"https://lQzCvqmO.api.lncldglobal.com","emojiCDN":null,"emojiMaps":null,"enableQQ":false,"enable":true,"visitor":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      &copy; 2025 - 2025 <a target="_blank" rel="noopener" href="https://github.com/username">CODFISH</a>
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+<!-- hexo injector body_end start --><script src="/js/chatbot-loader.js" defer></script><!-- hexo injector body_end end --></body>
+</html>
