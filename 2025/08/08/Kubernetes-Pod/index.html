@@ -1,0 +1,1784 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/bg/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Codfish">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="pod 是Kubernetes集群中的最小管理单元，其中包含一个或多个应用容器，可被看作面向应用的“逻辑主机”，是Kubernetes中核心的资源对象 标准格式123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kubernetes Pod">
+<meta property="og:url" content="http://gadoid.io/2025/08/08/Kubernetes-Pod/index.html">
+<meta property="og:site_name" content="西北有高楼">
+<meta property="og:description" content="pod 是Kubernetes集群中的最小管理单元，其中包含一个或多个应用容器，可被看作面向应用的“逻辑主机”，是Kubernetes中核心的资源对象 标准格式123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-08-07T18:32:11.000Z">
+<meta property="article:modified_time" content="2025-08-07T18:32:46.856Z">
+<meta property="article:author" content="Codfish">
+<meta property="article:tag" content="微服务">
+<meta property="article:tag" content="虚拟化">
+<meta property="article:tag" content="Kubernetes">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Kubernetes Pod - 西北有高楼</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"gadoid.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>西北有高楼</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/downloads/" target="_self">
+                <i class="iconfont icon-books-fill"></i>
+                <span>资源下载</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/bg/img/ice.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Kubernetes Pod"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-08-08 02:32" pubdate>
+          2025年8月8日 凌晨
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          9.9k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          83 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Kubernetes Pod</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>pod 是Kubernetes集群中的最小管理单元，其中包含一个或多个应用容器，可被看作面向应用的“逻辑主机”，是Kubernetes中核心的资源对象</p>
+<h1 id="标准格式"><a href="#标准格式" class="headerlink" title="标准格式"></a>标准格式</h1><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">string</span><br>	<span class="hljs-attr">namespace:</span> <span class="hljs-string">string</span><br>	<span class="hljs-attr">labels:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">string</span><br>	<span class="hljs-attr">annotations:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">string</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">containers:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">string</span><br>		<span class="hljs-attr">image:</span> <span class="hljs-string">string</span><br>		<span class="hljs-attr">imagePullpolicy:</span> [<span class="hljs-string">Always|</span> <span class="hljs-string">Never</span> <span class="hljs-string">|</span> <span class="hljs-string">IfNotPresent</span>]<br>		<span class="hljs-attr">command:</span> [<span class="hljs-string">string</span>]<br>		<span class="hljs-attr">args:</span> [<span class="hljs-string">string</span>]<br>		<span class="hljs-attr">workingDir:</span> <span class="hljs-string">string</span><br>		<span class="hljs-attr">volumeMounts:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">string</span><br>			<span class="hljs-attr">mountPath:</span> <span class="hljs-string">string</span><br>			<span class="hljs-attr">readOnly:</span> <span class="hljs-string">boolean</span><br>		<span class="hljs-attr">ports:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">string</span><br>			<span class="hljs-attr">containerPort:</span> <span class="hljs-string">int</span><br>			<span class="hljs-attr">hostPort:</span> <span class="hljs-string">int</span><br>			<span class="hljs-attr">protocol:</span> <span class="hljs-string">string</span><br>		<span class="hljs-attr">env:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">string</span><br>		  <span class="hljs-attr">value:</span> <span class="hljs-string">string</span><br>		 <span class="hljs-attr">resources:</span><br>			 <span class="hljs-attr">limits:</span><br>				 <span class="hljs-attr">cpu:</span> <span class="hljs-string">string</span><br>				 <span class="hljs-attr">memory:</span> <span class="hljs-string">string</span><br>			 <span class="hljs-attr">requests:</span><br>				 <span class="hljs-attr">cpu:</span> <span class="hljs-string">string</span><br>				 <span class="hljs-attr">memory:</span> <span class="hljs-string">string</span><br>		<span class="hljs-attr">livenessProbe:</span><br>			<span class="hljs-attr">exec:</span><br>				<span class="hljs-attr">command:</span> [<span class="hljs-string">string</span>]<br>			<span class="hljs-attr">httpGet:</span><br>				<span class="hljs-attr">path:</span> <span class="hljs-string">string</span><br>				<span class="hljs-attr">port:</span> <span class="hljs-string">number</span><br>				<span class="hljs-attr">host:</span> <span class="hljs-string">string</span><br>				<span class="hljs-attr">scheme:</span> <span class="hljs-string">string</span><br>				<span class="hljs-attr">httpHeaders:</span><br>				<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">string</span><br>				  <span class="hljs-attr">value:</span> <span class="hljs-string">string</span><br>				<span class="hljs-attr">tcpSocket:</span><br>					<span class="hljs-attr">port:</span> <span class="hljs-string">number</span><br>				<span class="hljs-attr">initialDelaySeconds:</span> <span class="hljs-number">0</span><br>				<span class="hljs-attr">timeoutSeconds:</span> <span class="hljs-number">0</span><br>				<span class="hljs-attr">periodSeconds:</span> <span class="hljs-number">0</span><br>				<span class="hljs-attr">successThreshold:</span> <span class="hljs-number">0</span><br>				<span class="hljs-attr">failureThreshold:</span> <span class="hljs-number">0</span><br>			<span class="hljs-attr">securityContext:</span><br>				<span class="hljs-attr">privileged:</span> <span class="hljs-literal">false</span><br>		<span class="hljs-attr">restartPolicy:</span> [<span class="hljs-string">Always</span> <span class="hljs-string">|</span> <span class="hljs-string">Never</span> <span class="hljs-string">|</span> <span class="hljs-string">OnFailure</span>]<br>		<span class="hljs-attr">nodeSelector:</span> <span class="hljs-string">object</span><br>		<span class="hljs-attr">imagePullSecrets:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">string</span><br>		<span class="hljs-attr">hostNetwork:</span> <span class="hljs-literal">false</span><br>		<span class="hljs-attr">volumes:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">string</span><br>			<span class="hljs-attr">emptyDir:</span> &#123;&#125;<br>			<span class="hljs-attr">hostPath:</span><br>				<span class="hljs-attr">path:</span> <span class="hljs-string">string</span><br>			<span class="hljs-attr">secret:</span><br>				<span class="hljs-attr">secretName:</span> <span class="hljs-string">string</span><br>				<span class="hljs-attr">items:</span><br>				<span class="hljs-bullet">-</span> <span class="hljs-attr">key:</span> <span class="hljs-string">string</span><br>				<span class="hljs-attr">path:</span> <span class="hljs-string">string</span><br>			<span class="hljs-attr">configMap:</span><br>				<span class="hljs-attr">name:</span> <span class="hljs-string">string</span><br>				<span class="hljs-attr">items:</span><br>				<span class="hljs-bullet">-</span> <span class="hljs-attr">key:</span> <span class="hljs-string">string</span><br>				<span class="hljs-attr">path:</span> <span class="hljs-string">string</span><br></code></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>字段路径</th>
+<th>类型</th>
+<th>说明</th>
+<th>示例 &#x2F; 可选值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>apiVersion</code></td>
+<td>string</td>
+<td>API版本</td>
+<td><code>v1</code></td>
+</tr>
+<tr>
+<td><code>kind</code></td>
+<td>string</td>
+<td>Kubernetes 资源类型</td>
+<td><code>Pod</code></td>
+</tr>
+<tr>
+<td><code>metadata.name</code></td>
+<td>string</td>
+<td>Pod 名称</td>
+<td><code>my-pod</code></td>
+</tr>
+<tr>
+<td><code>metadata.namespace</code></td>
+<td>string</td>
+<td>所属命名空间</td>
+<td><code>default</code></td>
+</tr>
+<tr>
+<td><code>metadata.labels</code></td>
+<td>map&lt;string,string&gt;</td>
+<td>标签键值对，用于选择器等</td>
+<td><code>app: nginx</code></td>
+</tr>
+<tr>
+<td><code>metadata.annotations</code></td>
+<td>map&lt;string,string&gt;</td>
+<td>注解信息，不参与选择器</td>
+<td><code>prometheus.io/scrape: &quot;true&quot;</code></td>
+</tr>
+<tr>
+<td><code>spec.containers</code></td>
+<td>array</td>
+<td>容器数组，定义一个或多个容器</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>spec.containers[].name</code></td>
+<td>string</td>
+<td>容器名称</td>
+<td><code>web</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].image</code></td>
+<td>string</td>
+<td>容器镜像</td>
+<td><code>nginx:1.25</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].imagePullPolicy</code></td>
+<td>string</td>
+<td>镜像拉取策略</td>
+<td><code>Always</code>,<code>IfNotPresent</code>,<code>Never</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].command</code></td>
+<td>array[string]</td>
+<td>容器启动命令（替代 ENTRYPOINT）</td>
+<td><code>[&quot;/bin/sh&quot;]</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].args</code></td>
+<td>array[string]</td>
+<td>容器启动参数（替代 CMD）</td>
+<td><code>[&quot;-c&quot;, &quot;echo Hello&quot;]</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].workingDir</code></td>
+<td>string</td>
+<td>工作目录</td>
+<td><code>/app</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].volumeMounts</code></td>
+<td>array</td>
+<td>挂载卷信息</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>spec.containers[].volumeMounts[].name</code></td>
+<td>string</td>
+<td>要挂载的卷名称</td>
+<td><code>data-volume</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].volumeMounts[].mountPath</code></td>
+<td>string</td>
+<td>容器内挂载路径</td>
+<td><code>/data</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].volumeMounts[].readOnly</code></td>
+<td>boolean</td>
+<td>是否只读挂载</td>
+<td><code>true/false</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].ports</code></td>
+<td>array</td>
+<td>容器端口暴露</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>spec.containers[].ports[].name</code></td>
+<td>string</td>
+<td>端口名称（可选）</td>
+<td><code>http</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].ports[].containerPort</code></td>
+<td>int</td>
+<td>容器内部监听端口</td>
+<td><code>80</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].ports[].hostPort</code></td>
+<td>int</td>
+<td>宿主机端口映射</td>
+<td><code>8080</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].ports[].protocol</code></td>
+<td>string</td>
+<td>协议类型</td>
+<td><code>TCP</code>、<code>UDP</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].env</code></td>
+<td>array</td>
+<td>环境变量列表</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>spec.containers[].env[].name</code></td>
+<td>string</td>
+<td>变量名</td>
+<td><code>ENV_MODE</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].env[].value</code></td>
+<td>string</td>
+<td>变量值</td>
+<td><code>production</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].resources</code></td>
+<td>object</td>
+<td>资源限制与请求</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>spec.containers[].resources.limits.cpu</code></td>
+<td>string</td>
+<td>最大 CPU 限制</td>
+<td><code>500m</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].resources.limits.memory</code></td>
+<td>string</td>
+<td>最大内存限制</td>
+<td><code>512Mi</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].resources.requests.cpu</code></td>
+<td>string</td>
+<td>预留 CPU 请求</td>
+<td><code>250m</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].resources.requests.memory</code></td>
+<td>string</td>
+<td>预留内存请求</td>
+<td><code>256Mi</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].livenessProbe</code></td>
+<td>object</td>
+<td>存活探针</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>spec.containers[].livenessProbe.exec.command</code></td>
+<td>array</td>
+<td>执行命令探针</td>
+<td><code>[&quot;cat&quot;, &quot;/tmp/healthy&quot;]</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].livenessProbe.httpGet</code></td>
+<td>object</td>
+<td>HTTP 探针</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>spec.containers[].livenessProbe.httpGet.path</code></td>
+<td>string</td>
+<td>探测路径</td>
+<td><code>/healthz</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].livenessProbe.httpGet.port</code></td>
+<td>int&#x2F;string</td>
+<td>端口号或端口名</td>
+<td><code>8080</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].livenessProbe.httpGet.host</code></td>
+<td>string</td>
+<td>请求主机</td>
+<td><code>localhost</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].livenessProbe.httpGet.scheme</code></td>
+<td>string</td>
+<td>请求协议</td>
+<td><code>HTTP</code>or <code>HTTPS</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].livenessProbe.httpGet.httpHeaders</code></td>
+<td>array</td>
+<td>头部设置</td>
+<td><code>[&#123; name: &quot;X-Custom&quot;, value: &quot;123&quot; &#125;]</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].livenessProbe.tcpSocket.port</code></td>
+<td>int</td>
+<td>TCP 端口探测</td>
+<td><code>3306</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].livenessProbe.initialDelaySeconds</code></td>
+<td>int</td>
+<td>初始延迟秒数</td>
+<td><code>10</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].livenessProbe.timeoutSeconds</code></td>
+<td>int</td>
+<td>超时时间</td>
+<td><code>2</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].livenessProbe.periodSeconds</code></td>
+<td>int</td>
+<td>探测周期</td>
+<td><code>5</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].livenessProbe.successThreshold</code></td>
+<td>int</td>
+<td>成功次数阈值</td>
+<td><code>1</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].livenessProbe.failureThreshold</code></td>
+<td>int</td>
+<td>失败次数阈值</td>
+<td><code>3</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].securityContext.privileged</code></td>
+<td>bool</td>
+<td>是否启用特权模式</td>
+<td><code>true/false</code></td>
+</tr>
+<tr>
+<td><code>spec.restartPolicy</code></td>
+<td>string</td>
+<td>Pod 重启策略</td>
+<td><code>Always</code>,<code>OnFailure</code>,<code>Never</code></td>
+</tr>
+<tr>
+<td><code>spec.nodeSelector</code></td>
+<td>map&lt;string,string&gt;</td>
+<td>节点选择器</td>
+<td><code>&#123; &quot;disktype&quot;: &quot;ssd&quot; &#125;</code></td>
+</tr>
+<tr>
+<td><code>spec.imagePullSecrets</code></td>
+<td>array</td>
+<td>镜像拉取凭证</td>
+<td><code>[&#123; name: &quot;my-registry-key&quot; &#125;]</code></td>
+</tr>
+<tr>
+<td><code>spec.hostNetwork</code></td>
+<td>bool</td>
+<td>是否使用主机网络</td>
+<td><code>true/false</code></td>
+</tr>
+<tr>
+<td><code>spec.volumes</code></td>
+<td>array</td>
+<td>卷定义</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>spec.volumes[].name</code></td>
+<td>string</td>
+<td>卷名称</td>
+<td><code>data-volume</code></td>
+</tr>
+<tr>
+<td><code>spec.volumes[].emptyDir</code></td>
+<td>object</td>
+<td>空目录卷（临时数据）</td>
+<td><code>&#123;&#125;</code></td>
+</tr>
+<tr>
+<td><code>spec.volumes[].hostPath.path</code></td>
+<td>string</td>
+<td>主机路径挂载</td>
+<td><code>/data/host</code></td>
+</tr>
+<tr>
+<td><code>spec.volumes[].secret.secretName</code></td>
+<td>string</td>
+<td>绑定的 secret 名称</td>
+<td><code>my-secret</code></td>
+</tr>
+<tr>
+<td><code>spec.volumes[].secret.items[]</code></td>
+<td>object</td>
+<td>指定映射的 key&#x2F;path</td>
+<td><code>&#123; key: &quot;token&quot;, path: &quot;token.txt&quot; &#125;</code></td>
+</tr>
+<tr>
+<td><code>spec.volumes[].configMap.name</code></td>
+<td>string</td>
+<td>引用的 ConfigMap 名称</td>
+<td><code>app-config</code></td>
+</tr>
+<tr>
+<td><code>spec.volumes[].configMap.items[]</code></td>
+<td>object</td>
+<td>指定映射的 key&#x2F;path</td>
+<td><code>&#123; key: &quot;app.properties&quot;, path: &quot;conf/app.properties&quot; &#125;</code></td>
+</tr>
+</tbody></table>
+<p>当存在两个应用紧密耦合，并组合为一个整体进行对外服务时，应将这两个容器应用封装为一个Pod</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">redis-php</span><br>	<span class="hljs-attr">labels:</span><br>		<span class="hljs-attr">name:</span> <span class="hljs-string">redis-php</span><br>	<span class="hljs-attr">spec:</span><br>		<span class="hljs-attr">containers:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">frontend</span><br>			<span class="hljs-attr">image:</span> <span class="hljs-string">kubeguide/guestbook-php-frontend:localredis</span><br>			<span class="hljs-attr">ports:</span><br>			<span class="hljs-bullet">-</span> <span class="hljs-attr">containerPort:</span> <span class="hljs-number">80</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">redis</span><br>			<span class="hljs-attr">image:</span> <span class="hljs-string">kubeguide/redis-master</span><br>			<span class="hljs-attr">ports:</span><br>			<span class="hljs-bullet">-</span> <span class="hljs-attr">containerPort:</span> <span class="hljs-number">6379</span><br></code></pre></td></tr></table></figure>
+
+<p>应用通过localhost:6379 对redis进行访问</p>
+<h1 id="静态Pod"><a href="#静态Pod" class="headerlink" title="静态Pod"></a>静态Pod</h1><p>静态Pod是由kubelet管理的仅存在于kubelete所在Node上的Pod，不需要通过Kubernetes的Master管理。kubelet负责监控由它创建的静态Pod，并在失效时重建pod。静态Pod无法被Master管理，以及无法使用普通Pod可以使用的其他资源</p>
+<p>1.基于本地配置文件</p>
+<p>在kubelet的主配置文件中设置 staticPodPath。kubelet会定期扫描该目录</p>
+<p>配置目录为 &#x2F;etc&#x2F;kubernetes&#x2F;manifests 配置参数为staticPodPath:&#x2F;etc&#x2F;kubernetes&#x2F;manifests</p>
+<p>在&#x2F;etc&#x2F;kubelet.d 目录下设置配置文件</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># 配置信息</span><br><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">static-web</span><br>	<span class="hljs-attr">labels:</span> <br>		<span class="hljs-attr">name:</span> <span class="hljs-string">static-web</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">containers:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">static-web</span><br>	  <span class="hljs-attr">image:</span> <span class="hljs-string">nginx</span><br>	  <span class="hljs-attr">ports:</span><br>	  <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">web</span><br>		  <span class="hljs-attr">containerPort:</span> <span class="hljs-number">80</span><br></code></pre></td></tr></table></figure>
+
+<ol>
+<li>网络配置</li>
+</ol>
+<p>通过 —manifest-url 获取yaml 文件作为配置信息</p>
+<h1 id="Pod容器共享Volume"><a href="#Pod容器共享Volume" class="headerlink" title="Pod容器共享Volume"></a>Pod容器共享Volume</h1><p>在tomcal容器中设置将命名为app-logs的volume 挂在到&#x2F;usr&#x2F;local&#x2F;tomcat&#x2F;logs中</p>
+<p>设置volumes ，而在busybox 将该目录挂在为&#x2F;logs 。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">volume-pod</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">containers:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">tomcat</span><br>		<span class="hljs-attr">image:</span> <span class="hljs-string">tomcat</span><br>		<span class="hljs-attr">ports:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">containerPort:</span> <span class="hljs-number">8080</span><br>		<span class="hljs-attr">volumeMounts:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">app-logs</span><br>			<span class="hljs-attr">mountPath:</span> <span class="hljs-string">/usr/local/tomcat/logs</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">busybox</span><br>		<span class="hljs-attr">image:</span> <span class="hljs-string">busybox</span><br>		<span class="hljs-attr">command:</span> [<span class="hljs-string">&quot;sh&quot;</span>, <span class="hljs-string">&quot;-c&quot;</span> , <span class="hljs-string">&quot;tail -f /logs/catalina*.log&quot;</span>]<br>		<span class="hljs-attr">volumeMounts:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">app-logs</span><br>			<span class="hljs-attr">mountPath:</span> <span class="hljs-string">/logs</span><br>		<span class="hljs-attr">volumes:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">app-logs</span><br>			<span class="hljs-attr">emptyDir:</span> &#123;&#125;<br></code></pre></td></tr></table></figure>
+
+<h1 id="Pod的配置管理"><a href="#Pod的配置管理" class="headerlink" title="Pod的配置管理"></a>Pod的配置管理</h1><p>ConfigMap用于保存应用程序运行时需要的配置数据，通过明文及K:V存储</p>
+<p>ConfigMap 一般用于</p>
+<p>1.生成容器内的环境变量</p>
+<p>2.设置容器启动命令的命令参数</p>
+<p>3.以Volume的形式挂在为容器内的文件或目录</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># cm-appvars.yaml</span><br><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">ConfigMap</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">cm-appvars</span><br><span class="hljs-attr">data:</span><br>	<span class="hljs-attr">apploglevel:</span> <span class="hljs-string">info</span><br>	<span class="hljs-attr">appdatadir:</span> <span class="hljs-string">/var/data</span><br></code></pre></td></tr></table></figure>
+
+<p>在env 下使用configmap ， configmap会以文件进行挂载</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">volumes:</span><br><span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">config-volume</span><br>  <span class="hljs-attr">configMap:</span><br>    <span class="hljs-attr">name:</span> <span class="hljs-string">my-config</span><br><span class="hljs-comment"># 定义存储卷</span><br>  <br><span class="hljs-attr">volumeMounts:</span><br><span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">config-volume</span><br>  <span class="hljs-attr">mountPath:</span> <span class="hljs-string">/etc/config</span><br><span class="hljs-comment"># 使用config-volume,并挂载到/etc/config路径</span><br><br><span class="hljs-attr">volumes:</span><br><span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">config-volume</span><br>  <span class="hljs-attr">configMap:</span><br>    <span class="hljs-attr">name:</span> <span class="hljs-string">my-config</span><br>    <span class="hljs-attr">items:</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-attr">key:</span> <span class="hljs-string">app.properties</span><br>      <span class="hljs-attr">path:</span> <span class="hljs-string">my-app.conf</span><br><span class="hljs-comment"># 在卷中指定configmap中的某个key将对应文件挂载</span><br></code></pre></td></tr></table></figure>
+
+<p>使用envfrom 配置为环境变量</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>  <span class="hljs-attr">name:</span> <span class="hljs-string">demo</span><br><span class="hljs-attr">spec:</span><br>  <span class="hljs-attr">containers:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">app</span><br>    <span class="hljs-attr">image:</span> <span class="hljs-string">alpine</span><br>    <span class="hljs-attr">command:</span> [<span class="hljs-string">&quot;sh&quot;</span>, <span class="hljs-string">&quot;-c&quot;</span>, <span class="hljs-string">&quot;env; sleep 3600&quot;</span>]<br>    <span class="hljs-attr">envFrom:</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-attr">configMapRef:</span><br>        <span class="hljs-attr">name:</span> <span class="hljs-string">my-config</span><br><span class="hljs-comment"># 将my-config 整个加载为环境变量</span><br><br><span class="hljs-attr">env:</span><br><span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">ENV_MODE</span><br>  <span class="hljs-attr">valueFrom:</span><br>    <span class="hljs-attr">configMapKeyRef:</span><br>      <span class="hljs-attr">name:</span> <span class="hljs-string">my-config</span><br>      <span class="hljs-attr">key:</span> <span class="hljs-string">ENV_MODE</span><br>   <br><span class="hljs-comment"># 将my-config 中对应的ENV_MODE 中的values设置为环境变量</span><br></code></pre></td></tr></table></figure>
+
+<h1 id="容器内获取Pod信息"><a href="#容器内获取Pod信息" class="headerlink" title="容器内获取Pod信息"></a>容器内获取Pod信息</h1><h2 id="Downward-API"><a href="#Downward-API" class="headerlink" title="Downward API"></a>Downward API</h2><p>通过Downward API 将Pod的信息注入到容器的环境变量中</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># dapi-envars-pod.yaml</span><br><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">dapi-envars-fieldref</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">containers:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">tst-container</span><br>			<span class="hljs-attr">image:</span> <span class="hljs-string">busybox</span><br>			<span class="hljs-attr">command:</span> [<span class="hljs-string">&quot;sh&quot;</span>, <span class="hljs-string">&quot;-c&quot;</span>]<br>			<span class="hljs-attr">args:</span><br>			<span class="hljs-bullet">-</span> <span class="hljs-string">while</span> <span class="hljs-literal">true</span> <span class="hljs-string">;</span> <span class="hljs-string">do</span><br>					<span class="hljs-string">echo</span> <span class="hljs-string">-en</span> <span class="hljs-string">&#x27;\\n&#x27;</span><span class="hljs-string">;</span><br>					<span class="hljs-string">printenv</span> <span class="hljs-string">MY_NODE_NAME</span> <span class="hljs-string">MY_POD_NAME</span> <span class="hljs-string">MY_POD_NAMESPACE;</span><br>					<span class="hljs-string">sleep</span> <span class="hljs-number">10</span> <span class="hljs-string">;</span><br>				<span class="hljs-string">done;</span><br>			<span class="hljs-attr">env:</span><br>				<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">MY_NODE_NAME</span><br>					<span class="hljs-attr">valueFrom:</span> <br>						<span class="hljs-attr">fieldRef:</span><br>							<span class="hljs-attr">fieldPath:</span> <span class="hljs-string">spec.nodeName</span><br>				<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">MY_POD_NAME</span><br>					<span class="hljs-attr">valueFrom:</span><br>						<span class="hljs-attr">fieldRef:</span><br>							<span class="hljs-attr">fieldPath:</span> <span class="hljs-string">metadata.name</span><br>				<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">MY_POD_NAMESPCAE</span><br>					<span class="hljs-attr">valueFrom:</span><br>						<span class="hljs-attr">fieldRef:</span><br>							<span class="hljs-attr">fieldPath:</span> <span class="hljs-string">metadata.namespace</span><br>	<span class="hljs-attr">restartPolicy:</span> <span class="hljs-string">Never</span><br></code></pre></td></tr></table></figure>
+
+<p>在文件中不是直接写入而是通过valueFrom指定对应的数据字段获取值</p>
+<p>将Container配置信息设置为容器内的环境变量</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># dapi-envars-container.yaml</span><br><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">dapi-envars-resourcefieldref</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">containers:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">test-container</span><br>			<span class="hljs-attr">image:</span> <span class="hljs-string">busybox</span><br>			<span class="hljs-attr">imagePullPolicy:</span> <span class="hljs-string">Never</span><br>			<span class="hljs-attr">command:</span> [<span class="hljs-string">&quot;sh&quot;</span>,<span class="hljs-string">&quot;-c&quot;</span>]<br>			<span class="hljs-attr">args:</span> <br>			<span class="hljs-bullet">-</span> <span class="hljs-string">while</span> <span class="hljs-literal">true</span> <span class="hljs-string">;</span> <span class="hljs-string">do</span><br>				<span class="hljs-string">echo</span> <span class="hljs-string">-en</span> <span class="hljs-string">&#x27;\\n&#x27;</span><span class="hljs-string">;</span><br>				<span class="hljs-string">printenv</span> <span class="hljs-string">MY_CPU_REQUEST</span> <span class="hljs-string">MY_CPU_LIMIT;</span><br>				<span class="hljs-string">sleep</span> <span class="hljs-number">10</span><span class="hljs-string">;</span><br>				<span class="hljs-string">done;</span><br>			<span class="hljs-attr">resources:</span><br>				<span class="hljs-attr">requests:</span><br>					<span class="hljs-attr">memory:</span> <span class="hljs-string">&quot;32Mi&quot;</span><br>					<span class="hljs-attr">cpu:</span> <span class="hljs-string">&quot;125m&quot;</span><br>				<span class="hljs-attr">limits:</span><br>					<span class="hljs-attr">memory:</span> <span class="hljs-string">&quot;64Mi&quot;</span><br>					<span class="hljs-attr">cpu:</span> <span class="hljs-string">&quot;250m&quot;</span><br>				<span class="hljs-attr">env:</span><br>					<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">MY_CPU_REQUEST</span><br>						<span class="hljs-attr">valueFrom:</span> <br>							<span class="hljs-attr">resourceFieldRef:</span><br>								<span class="hljs-attr">containerName:</span> <span class="hljs-string">test-container</span><br>								<span class="hljs-attr">resource:</span> <span class="hljs-string">requests.cpu</span><br>					<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">MY_CPU_LIMIT</span><br>						<span class="hljs-attr">valueFrom:</span><br>							<span class="hljs-attr">resourceFieldRef:</span><br>								<span class="hljs-attr">containerName:</span> <span class="hljs-string">test-container</span><br>								<span class="hljs-attr">resource:</span> <span class="hljs-string">limits.cpu</span><br>		<span class="hljs-attr">restartPolicy:</span> <span class="hljs-string">Never</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="Volume挂载"><a href="#Volume挂载" class="headerlink" title="Volume挂载"></a>Volume挂载</h2><p>将Pod信息挂载为容器内的文件</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># dapi-volume.yaml</span><br><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">kubernetes-downwardapi-volume-example</span><br>	<span class="hljs-attr">labels:</span><br>		<span class="hljs-attr">zone:</span> <span class="hljs-string">us-est-coast</span><br>		<span class="hljs-attr">cluster:</span> <span class="hljs-string">test-cluster1</span><br>		<span class="hljs-attr">rack:</span> <span class="hljs-string">rack-22</span><br>	<span class="hljs-attr">annotations:</span><br>		<span class="hljs-attr">build:</span> <span class="hljs-string">two</span><br>		<span class="hljs-attr">builder:</span> <span class="hljs-string">john-doe</span><br>	<span class="hljs-attr">spec:</span> <br>		<span class="hljs-attr">containers:</span><br>			<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">client-container</span><br>				<span class="hljs-attr">image:</span> <span class="hljs-string">busybox</span><br>				<span class="hljs-attr">command:</span> [<span class="hljs-string">&quot;sh&quot;</span>,<span class="hljs-string">&quot;-c&quot;</span>]<br>				<span class="hljs-attr">args:</span><br>				<span class="hljs-bullet">-</span> <span class="hljs-string">while</span> <span class="hljs-literal">true</span> <span class="hljs-string">;</span> <span class="hljs-string">do</span><br>						<span class="hljs-string">if</span> [[ <span class="hljs-string">-e</span> <span class="hljs-string">/etc/podinfo/labels</span>]]<span class="hljs-string">;</span> <span class="hljs-string">then</span><br>							<span class="hljs-string">echo</span> <span class="hljs-string">-en</span> <span class="hljs-string">&#x27;\\n\\n&#x27;</span><span class="hljs-string">;</span> <span class="hljs-string">cat</span> <span class="hljs-string">/etc/podinfo/labels</span> <span class="hljs-string">;</span> <span class="hljs-string">fi</span> <span class="hljs-string">;</span><br>						<span class="hljs-string">sleep</span> <span class="hljs-number">5</span><span class="hljs-string">;</span><br>					<span class="hljs-string">done;</span><br>				<span class="hljs-attr">volumeMounts:</span><br>					<span class="hljs-string">-name:</span> <span class="hljs-string">podinfo</span><br>					<span class="hljs-attr">mountPath:</span> <span class="hljs-string">/etc/podinfo</span><br>		<span class="hljs-attr">volumes:</span><br>			<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">podinfo</span><br>				<span class="hljs-attr">downwardAPI:</span><br>					<span class="hljs-attr">items:</span><br>						<span class="hljs-bullet">-</span> <span class="hljs-attr">path:</span> <span class="hljs-string">&quot;labels&quot;</span><br>							<span class="hljs-attr">fieldRef:</span><br>								<span class="hljs-attr">fieldPath:</span> <span class="hljs-string">metadata.labels</span><br><br></code></pre></td></tr></table></figure>
+
+<p>将容器的配置信息挂载为容器内的文件</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># dapi-volume-resources.yaml</span><br><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">kubernetes-downwardapi-volume-example-2</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">containers:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">client-container</span><br>			<span class="hljs-attr">image:</span> <span class="hljs-string">busybox</span><br>			<span class="hljs-attr">command:</span> [<span class="hljs-string">&quot;sh&quot;</span>,<span class="hljs-string">&quot;-c&quot;</span>]<br>			<span class="hljs-attr">args:</span><br>			<span class="hljs-bullet">-</span> <span class="hljs-string">while</span> <span class="hljs-literal">true</span><span class="hljs-string">;</span> <span class="hljs-string">do</span><br>					<span class="hljs-string">echo</span> <span class="hljs-string">-en</span> <span class="hljs-string">&#x27;n&#x27;</span><span class="hljs-string">;</span><br>					<span class="hljs-string">if</span> [[ <span class="hljs-string">-e</span> <span class="hljs-string">/etc/podinfo/cpu_limit</span> ]] <span class="hljs-string">;</span> <span class="hljs-string">then</span><br>						<span class="hljs-string">echo</span> <span class="hljs-string">-en</span> <span class="hljs-string">&#x27;\\n&#x27;</span><span class="hljs-string">;</span> <span class="hljs-string">cat</span> <span class="hljs-string">/etc/podinfo/cpu_limit;</span> <span class="hljs-string">fi;</span><br>					<span class="hljs-string">sleep</span> <span class="hljs-string">5s;</span><br>				<span class="hljs-string">done;</span><br>			<span class="hljs-attr">resources:</span><br>				<span class="hljs-attr">requests:</span><br>					<span class="hljs-attr">memory:</span> <span class="hljs-string">&quot;32Mi&quot;</span><br>					<span class="hljs-attr">cpu:</span> <span class="hljs-string">&quot;125m&quot;</span><br>				<span class="hljs-attr">limits:</span><br>					<span class="hljs-attr">memory:</span> <span class="hljs-string">&quot;64Mi&quot;</span><br>					<span class="hljs-attr">cpu:</span> <span class="hljs-string">&quot;250m&quot;</span><br>			<span class="hljs-attr">volumeMounts:</span><br>				<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">podinfo</span><br>					<span class="hljs-attr">mountPath:</span> <span class="hljs-string">/etc/podinfo</span><br>		<span class="hljs-attr">volumes:</span><br>			<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">podinfo</span><br>				<span class="hljs-attr">downwardAPI:</span><br>					<span class="hljs-attr">items:</span><br>						<span class="hljs-bullet">-</span> <span class="hljs-attr">path:</span> <span class="hljs-string">&quot;cpu_limit&quot;</span><br>							<span class="hljs-attr">resource:</span> <span class="hljs-string">limits.cpu</span><br>							<span class="hljs-attr">divisor:</span> <span class="hljs-string">1m</span><br>	<br></code></pre></td></tr></table></figure>
+
+<h2 id="支持设置的信息"><a href="#支持设置的信息" class="headerlink" title="支持设置的信息"></a>支持设置的信息</h2><ol>
+<li>由fieldRef设置的字段<br><a target="_blank" rel="noopener" href="http://metadata.name/">metadata.name</a>: Pod名称<br>metadata.namespace: Pod所在的命名空间名称<br>metadata.uid: Pod的UID<br>metadata.labels[’<code>&lt;KEY&gt;</code>’]: Pod某个Label的值，通过<code>&lt;KEY&gt;</code>引用<br>metadata.annotations[‘<code>&lt;KEY&gt;</code>’]: Pod某个Annotations的值，通过<code>&lt;KEY&gt;</code>引用</li>
+<li>Pod的以下元数据信息可以被设置为容器内的环境变量，<br>spec.serviceAccountName: Pod使用的ServiceAccount名称<br>spec.nodeName: Pod所在Node的名称<br>status.hostIP: Pod所在Node的IP地址<br>status.hostIPs: Pod所在Node的双栈IP地址<br>status.IP: Pod的IP地址<br>status.IPs: Pod的双栈IP地址</li>
+<li>设置downwardAPI为存储卷类型时，可以在器fieldRef字段设置以下信息<br>metadata.labels : Pod的label列表<br>metadata.annotations : Pod的annotation列表</li>
+<li>通过resourceFieldRef 设置的字段<br>limits.cpu                  # 容器可使用的最大 CPU 数量（上限），单位为核心（如 1、500m 等），超出会被限制<br>requests.cpu                # 容器调度时请求的最小 CPU 数量，调度器据此分配节点资源，单位同上<br>limits.memory               # 容器可使用的最大内存（上限），单位如 Mi、Gi，超出将触发 OOMKilled<br>requests.memory             # 容器调度时请求的最小内存，调度器据此分配节点资源<br>limits.hugepages-*          # 容器可使用的最大 HugePages 限额，例如 limits.hugepages-2Mi<br>requests.hugepages-*        # 容器调度时请求的 HugePages 数量，例如 requests.hugepages-1Gi<br>limits.ephemeral-storage    # 容器使用的最大临时存储空间（如 emptyDir、写入容器层），超出会被限制<br>requests.ephemeral-storage  # 容器调度时请求的最小临时存储空间，用于调度决策。</li>
+</ol>
+<h1 id="生命周期"><a href="#生命周期" class="headerlink" title="生命周期"></a>生命周期</h1><p>Pod的生命周期</p>
+<p><strong>Pending</strong>  创建Pod的请求已被Master接受，但有一个或多个容器没有创建也没有运行</p>
+<p><strong>Running</strong> Pod已完成调度到特定Node,其包含的所有容器均已创建，并且至少由一个容器处于正在运行状态</p>
+<p><strong>Succeeded</strong> Pod内的所有容器君子成功执行后终止，不会重启</p>
+<p><strong>Failed</strong>       Pod内的所有容器均已终止，但至少有一个容器未退出失败状态，即退出码不是0</p>
+<p><strong>Unknown</strong> 由于某种原因无法获得Pod的状态</p>
+<p>Pod的状况</p>
+<p><strong>PodScheduled</strong> 已将Pod调度到某个Node</p>
+<p><strong>PodReadyToStartContainers</strong> Pod已创建，并完成网络配置，可以启动容器。</p>
+<p><strong>ContainersReady</strong> Pod中的全部容器都达到Ready状态</p>
+<p><strong>Initialized</strong> Pod中的全部初始化容器都成功运行</p>
+<p><strong>Ready</strong> Pod达到Ready状态，可以被加入相应Service的负载均衡后端列表中</p>
+<h2 id="容器状态"><a href="#容器状态" class="headerlink" title="容器状态"></a>容器状态</h2><p>Waiting ：Kubernetes在能够运行该容器之前通常需要执行某些操作，例如下载容器镜像，为容器设置存储卷，等待依赖资源达到就绪状态，因此系统设置容器的状态为等待运行</p>
+<p>Running ：表示容器处于正常的运行过程中，并没有发生错误</p>
+<p>Terminated ： 运行结束，可能是正常运行结束，也可能是因为失败结束</p>
+<h2 id="Pod的重启策略"><a href="#Pod的重启策略" class="headerlink" title="Pod的重启策略"></a>Pod的重启策略</h2><ul>
+<li>Always ： 当容器启动失败后总是由kubelet尝试自动重启容器</li>
+<li>OnFailure ： 当容器终止运行且退出码不为0时，由kubelet自动重启容器</li>
+<li>Never： 不论容器处于哪种运行状态，kubelet不会重启该容器</li>
+</ul>
+<h2 id="控制权与重启策略"><a href="#控制权与重启策略" class="headerlink" title="控制权与重启策略"></a>控制权与重启策略</h2><p>Deployoment&#x2F;StatuefulSet&#x2F;DaemonSet&#x2F;RC   :  必须设置为Always</p>
+<p>Job :  OnFailure或Never</p>
+<p>kubelet : 在静态Pod失效时自动重启它</p>
+<h2 id="Pod的终止过程"><a href="#Pod的终止过程" class="headerlink" title="Pod的终止过程"></a>Pod的终止过程</h2><ol>
+<li>通过kubectl delete pod <pod_name>命令手动删除一个Pod，优雅终止的宽限期默认为30s</li>
+<li>控制平面会更新Pod的状态，通过kubectl get 或describe命令可以看到Pod状态为”Terminating”。在Pod运行的Node上，kubelet一旦探测到Pod状态为”Terminating”就开始对Pod进行以下终止操作<br>如果容器配置了preStop回调钩子，并且配置了非0的终止宽限期，kubelet就调用preStop回调钩子。如果preStop回调钩子在终止宽限期之后还未完成，会向宽限期增加时间（默认2s）<br>如果容器没配置preStop，或者终止宽限期已过，kubelet就调用容器运行时给容器的主进程发送TERM信息，也可能发送容器镜像中STOPSIGNAL变量配置的信号</li>
+<li>在kubelet启动Pod的优雅终止过程的同时，控制平面会评估是否将正在终止的Pod从对应服务的后端列表中移除。</li>
+<li>超过优雅终止宽限期之后，kubelet首先会启动强制终止容器进程的操作，通过容器运行时向剩余的进程发送KILL信号，kubelet也会删除Pod的基础Pause容器。然后kubelet将Pod的阶段设置为Succeeded或Failed。并设置宽限期为0，表示立刻删除。最后控制平面从etcd中彻底删除该Pod资源对象</li>
+</ol>
+<h3 id="Pod的垃圾清理机制"><a href="#Pod的垃圾清理机制" class="headerlink" title="Pod的垃圾清理机制"></a>Pod的垃圾清理机制</h3><p>Kubernetes的控制平面提供了一个Pod垃圾清理器PodGC(Garbage Collector)，在监控到Pod数量超过阈值时，会进行删除已终止Pod的操作。GC会清理以下条件的Pod</p>
+<ul>
+<li>孤儿Pod : 已完成调度，但Node 不再存在</li>
+<li>在计划外终止的Pod</li>
+<li>终止过程中的Pod</li>
+</ul>
+<h1 id="探针和健康检查机制"><a href="#探针和健康检查机制" class="headerlink" title="探针和健康检查机制"></a>探针和健康检查机制</h1><ol>
+<li>LivenessProbe 探针</li>
+</ol>
+<p>用于判断容器是否存活，如果LivenesProbe探针探测到容器不健康，则杀掉该容器，并根据容器的重启策略做相应的处理，如果容器未设置LivenessProbe探针，那么kubelet认为该容器的LivenessProbe探针返回的值永远是Success</p>
+<ol>
+<li>ReadinessProbe探针</li>
+</ol>
+<p>用于判断容器服务是否处于Ready状态，处于Ready状态的Pod才可以接收请求。ReadinessProbe定期触发，存在于Pod的整个生命周期内</p>
+<ol>
+<li>StartupProbe探针</li>
+</ol>
+<p>某些应用会遇到一些情况，例如应用程序在启动时需要与远程服务器建立网络连接，或者网络访问较慢等，导致容器启动缓慢，可以由StartupProbe持续检查Pods状态，在此期间LivenessProbe探针和ReadinessProbe探针均被禁用，直到StartupProbe 返回成功</p>
+<h3 id="探测策略"><a href="#探测策略" class="headerlink" title="探测策略"></a>探测策略</h3><ul>
+<li>exec : 在容器内运行指定的命令，如果该命令运行的返回码未0，则说明探测成功</li>
+<li>tcpSocket ： 通过容器的IP地址和端口号执行TCP检查，如果能够建立TCP连接，则说明探测成功</li>
+<li>httpGet：通过容器的IP地址，端口号及路径调用HTTP Get方法，如果响应的状态码大于等于200且小于400 说明探测成功。</li>
+<li>grpc：通过gRPC执行一个Health Check的远程调用，要求应用程序实现gRPC健康检查协议，如果响应的status为SERVING</li>
+</ul>
+<h3 id="字段配置"><a href="#字段配置" class="headerlink" title="字段配置"></a>字段配置</h3><ul>
+<li>initalDelaySecondes: 启动容器后进行首次探测的等待时间，单位为s,默认值为0，最小值为0.</li>
+<li>periodSecondes: 周期性执行探测的时间间隔，单位为s，默认为10，最小值为1</li>
+<li>timeoutSeconds: 发出探测请求后等待结果的超时时间，单位为s。当超时发生时，kubelet认为探测失败</li>
+<li>successThreshold: 探测失败后，判定为探测成功的最小连续探测成功的次数，默认值为1</li>
+<li>failureThreshold: 判定为探测失败的连续探测失败的次数，达到整个数量后，kubelet会认为容器不健康或者服务未就绪，并将基于重启策略对容器进行重启操作</li>
+<li>terminationGracePeriodSecondes: 探测失败后，kubelet触发终止容器命令之后等待容器自行结束的宽限期，单位为s，默认值为30，最小值为1</li>
+</ul>
+<p>HTTP类型探针的配置</p>
+<ul>
+<li>host: 主机名，默认为Pod的IP地址</li>
+<li>scheme: 连接协议</li>
+<li>path: 访问路径，默认为“&#x2F;”</li>
+<li>httpHeaders: 自定义HTTP头，允许重复</li>
+<li>port: 容器的端口号或端口名称</li>
+</ul>
+<h3 id="探测结果"><a href="#探测结果" class="headerlink" title="探测结果"></a>探测结果</h3><ul>
+<li>Success 探测成功</li>
+<li>Failure 探测失败</li>
+<li>Unknown 探测失败</li>
+</ul>
+<h2 id="exec机制配置LivenessProbe"><a href="#exec机制配置LivenessProbe" class="headerlink" title="exec机制配置LivenessProbe"></a>exec机制配置LivenessProbe</h2><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">labels:</span><br>		<span class="hljs-attr">test:</span> <span class="hljs-string">liveness</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">liveness-exec</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">containers:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">liveness</span><br>			<span class="hljs-attr">image:</span> <span class="hljs-string">busybox</span><br>			<span class="hljs-attr">args:</span> <br>			<span class="hljs-bullet">-</span> <span class="hljs-string">/bin/sh</span><br>			<span class="hljs-bullet">-</span> <span class="hljs-string">-c</span><br>			<span class="hljs-bullet">-</span> <span class="hljs-string">echo</span> <span class="hljs-string">ok</span> <span class="hljs-string">&gt;</span> <span class="hljs-string">/tmp/health;</span> <span class="hljs-string">sleep</span> <span class="hljs-number">10</span> <span class="hljs-string">;</span> <span class="hljs-string">rm</span> <span class="hljs-string">-rf</span> <span class="hljs-string">/tmp/health;</span> <span class="hljs-string">sleep</span> <span class="hljs-number">600</span><br>			<span class="hljs-attr">livenessProbe:</span><br>				<span class="hljs-attr">exec:</span><br>					<span class="hljs-attr">command:</span><br>					<span class="hljs-bullet">-</span> <span class="hljs-string">cat</span><br>					<span class="hljs-bullet">-</span> <span class="hljs-string">/tmp/health</span><br>				<span class="hljs-attr">initialDelaySeconds:</span> <span class="hljs-number">15</span><br>				<span class="hljs-attr">timeoutSeconds:</span> <span class="hljs-number">1</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="tcpSocket机制配置LivenessProbe"><a href="#tcpSocket机制配置LivenessProbe" class="headerlink" title="tcpSocket机制配置LivenessProbe"></a>tcpSocket机制配置LivenessProbe</h2><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">pod-with-healthcheck</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">containers:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">nginx</span><br>	  <span class="hljs-attr">image:</span> <span class="hljs-string">nginx</span><br>	  <span class="hljs-attr">ports:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">containerPort:</span> <span class="hljs-number">80</span><br>		<span class="hljs-attr">livenessProbe:</span><br>			<span class="hljs-attr">tcpSocket:</span><br>				<span class="hljs-attr">port:</span> <span class="hljs-number">80</span><br>			<span class="hljs-attr">initialDelaySecondes:</span> <span class="hljs-number">30</span><br>			<span class="hljs-attr">timeoutSeconds:</span> <span class="hljs-number">1</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="httpGet机制配置LivenessProbe"><a href="#httpGet机制配置LivenessProbe" class="headerlink" title="httpGet机制配置LivenessProbe"></a>httpGet机制配置LivenessProbe</h2><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">pod-with-healthcheck</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">containers:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">nginx</span><br>		<span class="hljs-attr">image:</span> <span class="hljs-string">nginx</span><br>		<span class="hljs-attr">ports:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">containerPort:</span> <span class="hljs-number">80</span><br>		<span class="hljs-attr">livenessProbe:</span><br>			<span class="hljs-attr">httpGet:</span><br>				<span class="hljs-attr">path:</span> <span class="hljs-string">/_status/healthz</span><br>				<span class="hljs-attr">port:</span> <span class="hljs-number">80</span><br>			<span class="hljs-attr">initialDelaySecondes:</span> <span class="hljs-number">30</span><br>			<span class="hljs-attr">timeoutSecondes:</span> <span class="hljs-number">1</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="gRPC机制配置LivenessProbe"><a href="#gRPC机制配置LivenessProbe" class="headerlink" title="gRPC机制配置LivenessProbe"></a>gRPC机制配置LivenessProbe</h2><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">etcd-with-grpc</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">containers:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">etcd</span><br>		<span class="hljs-attr">image:</span> <span class="hljs-string">etcd:3.5.1</span><br>		<span class="hljs-attr">command:</span> [<span class="hljs-string">&quot;/usr/local/bin/etcd&quot;</span>,<span class="hljs-string">&quot;--data-dir&quot;</span>,<span class="hljs-string">&quot;/var/lib/etcd&quot;</span>,<br>		<span class="hljs-string">&quot;--listen-client-urls&quot;</span>,<span class="hljs-string">&quot;&lt;http://0.0.0.0:2379&gt;&quot;</span>,<span class="hljs-string">&quot;--advertise-client-urls&quot;</span>,<br>		<span class="hljs-string">&quot;&lt;http://127.0.0.1:2379&gt;&quot;</span>]<br>		<span class="hljs-attr">ports:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">containerPort:</span> <span class="hljs-number">2379</span><br>		<span class="hljs-attr">livenessProbe:</span><br>			<span class="hljs-attr">grpc:</span><br>				<span class="hljs-attr">port:</span> <span class="hljs-number">2379</span><br>			<span class="hljs-attr">initialDelaySeconds:</span> <span class="hljs-number">10</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="设置startupProbe保护探针保护需要启动很长时间的容器"><a href="#设置startupProbe保护探针保护需要启动很长时间的容器" class="headerlink" title="设置startupProbe保护探针保护需要启动很长时间的容器"></a>设置startupProbe保护探针保护需要启动很长时间的容器</h2><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">startupProbe:</span><br>	<span class="hljs-attr">httpGet:</span><br>		<span class="hljs-attr">path:</span> <span class="hljs-string">/healthz</span><br>		<span class="hljs-attr">port:</span> <span class="hljs-string">liveness-port</span><br>	<span class="hljs-attr">failureThreshold:</span> <span class="hljs-number">30</span><br>	<span class="hljs-attr">periodSeconds:</span> <span class="hljs-number">10</span><br></code></pre></td></tr></table></figure>
+
+<p>如果300s后仍未成功启动，kubelet会尝试重启策略</p>
+<h2 id="设置ReadinessProbe探针保护暂时无法提供服务的容器"><a href="#设置ReadinessProbe探针保护暂时无法提供服务的容器" class="headerlink" title="设置ReadinessProbe探针保护暂时无法提供服务的容器"></a>设置ReadinessProbe探针保护暂时无法提供服务的容器</h2><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-string">readinessProbe</span><br>	<span class="hljs-attr">httpGet:</span><br>		<span class="hljs-attr">path:</span> <span class="hljs-string">/healthz</span><br>		<span class="hljs-attr">port:</span> <span class="hljs-number">8080</span><br>	<span class="hljs-attr">initialDelaySecondes:</span> <span class="hljs-number">10</span><br>	<span class="hljs-attr">periodSeconds:</span> <span class="hljs-number">3</span><br></code></pre></td></tr></table></figure>
+
+<p>kubelet 在探测到容器服务不在就绪时，会通知控制平面，以调整对应的Service，将不健康的后端Pod暂时隔离，不再将请求转发到这个Pod，从而避免出现大量的失败状况</p>
+<h1 id="初始化容器"><a href="#初始化容器" class="headerlink" title="初始化容器"></a>初始化容器</h1><p>初始化容器是一种特殊的容器</p>
+<p>初始化容器的运作方式与应用容器不同：初始化容器必须先于应用容器运行成功，在设置了多个初始化容器时，将按顺序逐个运行初始化容器，并且只有前一个初始化容器运行成功，才能运行其之后的一个初始化容器。在所有初始化容器运行成功后，才会初始化Pod的各种信息，并开始创建和运用容器</p>
+<p>初始化容器的定义中可以设置资源限制，Volume的使用和安全策略，等待。</p>
+<ul>
+<li>如果多个初始化容器定义了资源请求或者资源限制，则取最大的值为所有初始化容器的资源请求值或资源限制值</li>
+<li>Pod的有效资源请求值或资源限制取值以下二者的较大值<ul>
+<li>所有应用容器的资源请求值或资源限制值之和</li>
+<li>初始化容器的有效资源请求或资源限制值</li>
+</ul>
+</li>
+<li>调度算法将基于Pod的有效资源请求致或资源限制值进行计算，也就是说，初始化容器可以为初始化操作预留系统资源，即使后续的应用容器 无须使用这些资源</li>
+<li>Pod的有效QoS等级适用于初始化容器和应用容器</li>
+<li>资源配额和限制将根据Pod的有效资源请求值或者资源限制值计算且生效</li>
+<li>Pod级别的Cgroup将基于Pod的有效资源请求或限制，与调度机制一致</li>
+</ul>
+<p>初始化容器不支持对生命周期和健康检查机制进行配置</p>
+<h2 id="可能重启的场景"><a href="#可能重启的场景" class="headerlink" title="可能重启的场景"></a>可能重启的场景</h2><ul>
+<li>Pod的infrastructure容器更新，此时Pod会重启</li>
+<li>Pod中的所有应用容器都终止，此时Pod会重启</li>
+</ul>
+<h2 id="初始化容器的实现原理"><a href="#初始化容器的实现原理" class="headerlink" title="初始化容器的实现原理"></a>初始化容器的实现原理</h2><p>通过initContainers字段配置初始化容器，以实现在启动应用容器之前运行初始化容器，并且允许配置一个或多个初始化容器，已完成应用容器所需的预置条件。系统会在Pod的状态信息的initContainerStatuses字段中显示初始化容器的运行信息</p>
+<h3 id="通过初始化容器为应用容器准备数据"><a href="#通过初始化容器为应用容器准备数据" class="headerlink" title="通过初始化容器为应用容器准备数据"></a>通过初始化容器为应用容器准备数据</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># pod-with-init.yaml</span><br><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">pod-with-init</span><br>	<span class="hljs-attr">labels:</span> <br>		<span class="hljs-attr">app:</span> <span class="hljs-string">nginx</span><br><span class="hljs-attr">space:</span> <br>	<span class="hljs-attr">initContainers:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">install</span><br>		<span class="hljs-attr">image:</span> <span class="hljs-string">busybox</span><br>		<span class="hljs-attr">imagePullPolicy:</span> <span class="hljs-string">IfNotPresent</span><br>		<span class="hljs-attr">command:</span> [<span class="hljs-string">&quot;sh&quot;</span>,<span class="hljs-string">&quot;-c&quot;</span>,<span class="hljs-string">&quot;echo Hello World! &gt; /web-root/index.html&quot;</span> ]<br>		<span class="hljs-attr">volumeMounts:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">webroot</span><br>			<span class="hljs-attr">mountPath:</span> <span class="hljs-string">&quot;/web-root&quot;</span><br>		<span class="hljs-attr">containers:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">nginx</span><br>			<span class="hljs-attr">image:</span> <span class="hljs-string">nginx</span><br>			<span class="hljs-attr">imagePullPolicy:</span> <span class="hljs-string">IfNotPresent</span><br>			<span class="hljs-attr">ports:</span> <br>			<span class="hljs-bullet">-</span> <span class="hljs-attr">containerPort:</span> <span class="hljs-number">80</span><br>			<span class="hljs-attr">volumeMounts:</span><br>			<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">webroot</span><br>			<span class="hljs-attr">mountPath:</span> <span class="hljs-string">/usr/share/nginx/html</span><br>		<span class="hljs-attr">volumes:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">webroot</span><br>		  <span class="hljs-attr">emptyDir:</span> &#123;&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="通过初始化容器等待应用容器依赖的一个服务处于Ready状态"><a href="#通过初始化容器等待应用容器依赖的一个服务处于Ready状态" class="headerlink" title="通过初始化容器等待应用容器依赖的一个服务处于Ready状态"></a>通过初始化容器等待应用容器依赖的一个服务处于Ready状态</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># pod-with-init-2.yaml</span><br><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">pod-with-init-2</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">initContainers:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">wait-for-service-a</span><br>	<span class="hljs-attr">image:</span> <span class="hljs-string">busybox</span><br>	<span class="hljs-attr">imagePullPolicy:</span> <span class="hljs-string">IfNotPresent</span><br>	<span class="hljs-attr">command:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-string">sh</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-string">-c</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-string">until</span> <span class="hljs-string">wget</span> <span class="hljs-string">-q</span> <span class="hljs-string">service-a:8080;</span> <span class="hljs-string">do</span> <span class="hljs-string">echo</span> <span class="hljs-string">-e</span> <span class="hljs-string">&quot;waiting for service-a&quot;</span><span class="hljs-string">;</span> <span class="hljs-string">sleep</span> <span class="hljs-number">5</span><span class="hljs-string">;</span><br>	<span class="hljs-string">done;</span> <span class="hljs-string">echo</span> <span class="hljs-string">-e</span> <span class="hljs-string">&quot;service-a ready , starting service-b now&quot;</span><span class="hljs-string">;</span><br>	<span class="hljs-attr">containers:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">service-b</span><br>		<span class="hljs-attr">image:</span> <span class="hljs-string">nginx</span><br>		<span class="hljs-attr">imagePullPolicy:</span> <span class="hljs-string">IfNotPresent</span><br>		<span class="hljs-attr">ports:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">containerPort:</span> <span class="hljs-number">80</span>  <br></code></pre></td></tr></table></figure>
+
+<h3 id="通过初始化容器将Pod作为一个服务实例注册到外部的某个服务中心"><a href="#通过初始化容器将Pod作为一个服务实例注册到外部的某个服务中心" class="headerlink" title="通过初始化容器将Pod作为一个服务实例注册到外部的某个服务中心"></a>通过初始化容器将Pod作为一个服务实例注册到外部的某个服务中心</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># pod-with-init-3.yaml</span><br><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">pod-with-init-3</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">initContainers:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">register-to-svc-center</span><br>		<span class="hljs-attr">image:</span> <span class="hljs-string">busybox</span><br>		<span class="hljs-attr">imagePullPolicy:</span> <span class="hljs-string">IfNotPresent</span><br>		<span class="hljs-attr">command:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">sh</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">-c</span> <br>		<span class="hljs-bullet">-</span> <span class="hljs-string">until</span> <span class="hljs-string">curl</span> <span class="hljs-string">-X</span> <span class="hljs-string">POST</span> <span class="hljs-string">-d</span> <span class="hljs-string">&#x27;svc_name=$POD_NAME&amp;svc_ip=$POD_IP&#x27;</span><br>		<span class="hljs-string">http://$SERVICE_REGISTRY_HOST:$SERVICE_REGISTRY_PORT/register;do</span> <span class="hljs-string">echo</span> <span class="hljs-string">-e</span> <br>		<span class="hljs-string">&quot;register to service center&quot;</span><span class="hljs-string">;</span> <span class="hljs-string">sleep</span> <span class="hljs-number">5</span><span class="hljs-string">;</span> <span class="hljs-string">done</span> <span class="hljs-string">;</span> <span class="hljs-string">echo</span> <span class="hljs-string">-e</span> <span class="hljs-string">&quot;register successfully, starting</span><br><span class="hljs-string">		service now&quot;</span><span class="hljs-string">;</span><br>		<span class="hljs-attr">env:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">SERVICE_REGISTRY_HOST</span><br>			<span class="hljs-attr">value:</span> <span class="hljs-number">192.168</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">SERVICE_REGISTRY_PORT</span><br>			<span class="hljs-attr">value:</span> <span class="hljs-number">8080</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">POD_NAME</span><br>			<span class="hljs-attr">valueFrom:</span><br>				<span class="hljs-attr">fieldRef:</span><br>					<span class="hljs-attr">fieldPath:</span> <span class="hljs-string">metadata.name</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">POD_IP</span><br>			<span class="hljs-attr">valueFrom:</span><br>				<span class="hljs-attr">fieldRef:</span><br>					<span class="hljs-attr">fieldPath:</span> <span class="hljs-string">status.podIP</span><br>		<span class="hljs-attr">containers:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">service</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="设置两个初始化容器"><a href="#设置两个初始化容器" class="headerlink" title="设置两个初始化容器"></a>设置两个初始化容器</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># pod-with-2-init.yaml</span><br><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">pod-with-2-init</span><br>	<span class="hljs-attr">labels:</span><br>		<span class="hljs-attr">app:</span> <span class="hljs-string">nginx</span><br>	<span class="hljs-attr">spec:</span> <br>		<span class="hljs-attr">initContainers:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">init-myservice</span><br>			<span class="hljs-attr">image:</span> <span class="hljs-string">busybox</span><br>			<span class="hljs-attr">imagePullPolicy:</span> <span class="hljs-string">IfNotPresent</span><br>			<span class="hljs-attr">command:</span> [<span class="hljs-string">&#x27;sh&#x27;</span>,<span class="hljs-string">&#x27;-c&#x27;</span>, <span class="hljs-string">&quot;until nslookup myservice.$(cat /var/run/sercets/kubernetes.io</span><br><span class="hljs-string">			/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting </span><br><span class="hljs-string">			for myservice; sleep 2; done&quot;</span>]<br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">init-mydb</span><br>			<span class="hljs-attr">image:</span> <span class="hljs-string">busybox</span><br>			<span class="hljs-attr">imagePullPolicy:</span> <span class="hljs-string">IfNotPresent</span><br>			<span class="hljs-attr">command:</span> [<span class="hljs-string">&#x27;sh&#x27;</span>,<span class="hljs-string">&#x27;-c&#x27;</span>, <span class="hljs-string">&quot;until nslookup mydb.$(cat /var/run/sercets/kubernetes.io</span><br><span class="hljs-string">			/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting </span><br><span class="hljs-string">			for mydb; sleep 2; done&quot;</span>]<br>		<span class="hljs-attr">containers:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">myapp-container</span><br>			<span class="hljs-attr">image:</span> <span class="hljs-string">busybox</span><br>			<span class="hljs-attr">imagePullPolicy:</span> <span class="hljs-string">IfNotPresent</span><br>			<span class="hljs-attr">command:</span> [<span class="hljs-string">&#x27;sh&#x27;</span>,<span class="hljs-string">&#x27;-c&#x27;</span>,<span class="hljs-string">&#x27;echo The app is running! &amp;&amp; sleep 3600&#x27;</span>]<br></code></pre></td></tr></table></figure>
+
+<h3 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h3><ul>
+<li>如果初始化容器运行失败，系统会根据Pod的重启策略进行重启。</li>
+<li>在所有初始化容器都进入运行完毕之前，Pod不会进入Ready状态</li>
+<li>在重启Pod时会重启所有初始化容器</li>
+<li>在创建之后，如果需要修改初始化容器的定义，则只允许修改image字段</li>
+<li>Kubernetes在创建Pod时，会强制检查在初始化容器的定义中是否存在ReadinessProbe，如果存在，则将拒绝创建</li>
+<li>如果Pod设置了activeDeadlineSeconds ， 则可以避免初始化容器持续运行失败并且无限重启</li>
+<li>在Pod中，每个容器的名称都必须唯一</li>
+</ul>
+<p>pod 是Kubernetes集群中的最小管理单元，其中包含一个或多个应用容器，可被看作面向应用的“逻辑主机”，是Kubernetes中核心的资源对象</p>
+<h1 id="标准格式-1"><a href="#标准格式-1" class="headerlink" title="标准格式"></a>标准格式</h1><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">string</span><br>	<span class="hljs-attr">namespace:</span> <span class="hljs-string">string</span><br>	<span class="hljs-attr">labels:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">string</span><br>	<span class="hljs-attr">annotations:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">string</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">containers:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">string</span><br>		<span class="hljs-attr">image:</span> <span class="hljs-string">string</span><br>		<span class="hljs-attr">imagePullpolicy:</span> [<span class="hljs-string">Always|</span> <span class="hljs-string">Never</span> <span class="hljs-string">|</span> <span class="hljs-string">IfNotPresent</span>]<br>		<span class="hljs-attr">command:</span> [<span class="hljs-string">string</span>]<br>		<span class="hljs-attr">args:</span> [<span class="hljs-string">string</span>]<br>		<span class="hljs-attr">workingDir:</span> <span class="hljs-string">string</span><br>		<span class="hljs-attr">volumeMounts:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">string</span><br>			<span class="hljs-attr">mountPath:</span> <span class="hljs-string">string</span><br>			<span class="hljs-attr">readOnly:</span> <span class="hljs-string">boolean</span><br>		<span class="hljs-attr">ports:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">string</span><br>			<span class="hljs-attr">containerPort:</span> <span class="hljs-string">int</span><br>			<span class="hljs-attr">hostPort:</span> <span class="hljs-string">int</span><br>			<span class="hljs-attr">protocol:</span> <span class="hljs-string">string</span><br>		<span class="hljs-attr">env:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">string</span><br>		  <span class="hljs-attr">value:</span> <span class="hljs-string">string</span><br>		 <span class="hljs-attr">resources:</span><br>			 <span class="hljs-attr">limits:</span><br>				 <span class="hljs-attr">cpu:</span> <span class="hljs-string">string</span><br>				 <span class="hljs-attr">memory:</span> <span class="hljs-string">string</span><br>			 <span class="hljs-attr">requests:</span><br>				 <span class="hljs-attr">cpu:</span> <span class="hljs-string">string</span><br>				 <span class="hljs-attr">memory:</span> <span class="hljs-string">string</span><br>		<span class="hljs-attr">livenessProbe:</span><br>			<span class="hljs-attr">exec:</span><br>				<span class="hljs-attr">command:</span> [<span class="hljs-string">string</span>]<br>			<span class="hljs-attr">httpGet:</span><br>				<span class="hljs-attr">path:</span> <span class="hljs-string">string</span><br>				<span class="hljs-attr">port:</span> <span class="hljs-string">number</span><br>				<span class="hljs-attr">host:</span> <span class="hljs-string">string</span><br>				<span class="hljs-attr">scheme:</span> <span class="hljs-string">string</span><br>				<span class="hljs-attr">httpHeaders:</span><br>				<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">string</span><br>				  <span class="hljs-attr">value:</span> <span class="hljs-string">string</span><br>				<span class="hljs-attr">tcpSocket:</span><br>					<span class="hljs-attr">port:</span> <span class="hljs-string">number</span><br>				<span class="hljs-attr">initialDelaySeconds:</span> <span class="hljs-number">0</span><br>				<span class="hljs-attr">timeoutSeconds:</span> <span class="hljs-number">0</span><br>				<span class="hljs-attr">periodSeconds:</span> <span class="hljs-number">0</span><br>				<span class="hljs-attr">successThreshold:</span> <span class="hljs-number">0</span><br>				<span class="hljs-attr">failureThreshold:</span> <span class="hljs-number">0</span><br>			<span class="hljs-attr">securityContext:</span><br>				<span class="hljs-attr">privileged:</span> <span class="hljs-literal">false</span><br>		<span class="hljs-attr">restartPolicy:</span> [<span class="hljs-string">Always</span> <span class="hljs-string">|</span> <span class="hljs-string">Never</span> <span class="hljs-string">|</span> <span class="hljs-string">OnFailure</span>]<br>		<span class="hljs-attr">nodeSelector:</span> <span class="hljs-string">object</span><br>		<span class="hljs-attr">imagePullSecrets:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">string</span><br>		<span class="hljs-attr">hostNetwork:</span> <span class="hljs-literal">false</span><br>		<span class="hljs-attr">volumes:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">string</span><br>			<span class="hljs-attr">emptyDir:</span> &#123;&#125;<br>			<span class="hljs-attr">hostPath:</span><br>				<span class="hljs-attr">path:</span> <span class="hljs-string">string</span><br>			<span class="hljs-attr">secret:</span><br>				<span class="hljs-attr">secretName:</span> <span class="hljs-string">string</span><br>				<span class="hljs-attr">items:</span><br>				<span class="hljs-bullet">-</span> <span class="hljs-attr">key:</span> <span class="hljs-string">string</span><br>				<span class="hljs-attr">path:</span> <span class="hljs-string">string</span><br>			<span class="hljs-attr">configMap:</span><br>				<span class="hljs-attr">name:</span> <span class="hljs-string">string</span><br>				<span class="hljs-attr">items:</span><br>				<span class="hljs-bullet">-</span> <span class="hljs-attr">key:</span> <span class="hljs-string">string</span><br>				<span class="hljs-attr">path:</span> <span class="hljs-string">string</span><br></code></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>字段路径</th>
+<th>类型</th>
+<th>说明</th>
+<th>示例 &#x2F; 可选值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>apiVersion</code></td>
+<td>string</td>
+<td>API版本</td>
+<td><code>v1</code></td>
+</tr>
+<tr>
+<td><code>kind</code></td>
+<td>string</td>
+<td>Kubernetes 资源类型</td>
+<td><code>Pod</code></td>
+</tr>
+<tr>
+<td><code>metadata.name</code></td>
+<td>string</td>
+<td>Pod 名称</td>
+<td><code>my-pod</code></td>
+</tr>
+<tr>
+<td><code>metadata.namespace</code></td>
+<td>string</td>
+<td>所属命名空间</td>
+<td><code>default</code></td>
+</tr>
+<tr>
+<td><code>metadata.labels</code></td>
+<td>map&lt;string,string&gt;</td>
+<td>标签键值对，用于选择器等</td>
+<td><code>app: nginx</code></td>
+</tr>
+<tr>
+<td><code>metadata.annotations</code></td>
+<td>map&lt;string,string&gt;</td>
+<td>注解信息，不参与选择器</td>
+<td><code>prometheus.io/scrape: &quot;true&quot;</code></td>
+</tr>
+<tr>
+<td><code>spec.containers</code></td>
+<td>array</td>
+<td>容器数组，定义一个或多个容器</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>spec.containers[].name</code></td>
+<td>string</td>
+<td>容器名称</td>
+<td><code>web</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].image</code></td>
+<td>string</td>
+<td>容器镜像</td>
+<td><code>nginx:1.25</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].imagePullPolicy</code></td>
+<td>string</td>
+<td>镜像拉取策略</td>
+<td><code>Always</code>,<code>IfNotPresent</code>,<code>Never</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].command</code></td>
+<td>array[string]</td>
+<td>容器启动命令（替代 ENTRYPOINT）</td>
+<td><code>[&quot;/bin/sh&quot;]</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].args</code></td>
+<td>array[string]</td>
+<td>容器启动参数（替代 CMD）</td>
+<td><code>[&quot;-c&quot;, &quot;echo Hello&quot;]</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].workingDir</code></td>
+<td>string</td>
+<td>工作目录</td>
+<td><code>/app</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].volumeMounts</code></td>
+<td>array</td>
+<td>挂载卷信息</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>spec.containers[].volumeMounts[].name</code></td>
+<td>string</td>
+<td>要挂载的卷名称</td>
+<td><code>data-volume</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].volumeMounts[].mountPath</code></td>
+<td>string</td>
+<td>容器内挂载路径</td>
+<td><code>/data</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].volumeMounts[].readOnly</code></td>
+<td>boolean</td>
+<td>是否只读挂载</td>
+<td><code>true/false</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].ports</code></td>
+<td>array</td>
+<td>容器端口暴露</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>spec.containers[].ports[].name</code></td>
+<td>string</td>
+<td>端口名称（可选）</td>
+<td><code>http</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].ports[].containerPort</code></td>
+<td>int</td>
+<td>容器内部监听端口</td>
+<td><code>80</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].ports[].hostPort</code></td>
+<td>int</td>
+<td>宿主机端口映射</td>
+<td><code>8080</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].ports[].protocol</code></td>
+<td>string</td>
+<td>协议类型</td>
+<td><code>TCP</code>、<code>UDP</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].env</code></td>
+<td>array</td>
+<td>环境变量列表</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>spec.containers[].env[].name</code></td>
+<td>string</td>
+<td>变量名</td>
+<td><code>ENV_MODE</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].env[].value</code></td>
+<td>string</td>
+<td>变量值</td>
+<td><code>production</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].resources</code></td>
+<td>object</td>
+<td>资源限制与请求</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>spec.containers[].resources.limits.cpu</code></td>
+<td>string</td>
+<td>最大 CPU 限制</td>
+<td><code>500m</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].resources.limits.memory</code></td>
+<td>string</td>
+<td>最大内存限制</td>
+<td><code>512Mi</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].resources.requests.cpu</code></td>
+<td>string</td>
+<td>预留 CPU 请求</td>
+<td><code>250m</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].resources.requests.memory</code></td>
+<td>string</td>
+<td>预留内存请求</td>
+<td><code>256Mi</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].livenessProbe</code></td>
+<td>object</td>
+<td>存活探针</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>spec.containers[].livenessProbe.exec.command</code></td>
+<td>array</td>
+<td>执行命令探针</td>
+<td><code>[&quot;cat&quot;, &quot;/tmp/healthy&quot;]</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].livenessProbe.httpGet</code></td>
+<td>object</td>
+<td>HTTP 探针</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>spec.containers[].livenessProbe.httpGet.path</code></td>
+<td>string</td>
+<td>探测路径</td>
+<td><code>/healthz</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].livenessProbe.httpGet.port</code></td>
+<td>int&#x2F;string</td>
+<td>端口号或端口名</td>
+<td><code>8080</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].livenessProbe.httpGet.host</code></td>
+<td>string</td>
+<td>请求主机</td>
+<td><code>localhost</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].livenessProbe.httpGet.scheme</code></td>
+<td>string</td>
+<td>请求协议</td>
+<td><code>HTTP</code>or <code>HTTPS</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].livenessProbe.httpGet.httpHeaders</code></td>
+<td>array</td>
+<td>头部设置</td>
+<td><code>[&#123; name: &quot;X-Custom&quot;, value: &quot;123&quot; &#125;]</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].livenessProbe.tcpSocket.port</code></td>
+<td>int</td>
+<td>TCP 端口探测</td>
+<td><code>3306</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].livenessProbe.initialDelaySeconds</code></td>
+<td>int</td>
+<td>初始延迟秒数</td>
+<td><code>10</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].livenessProbe.timeoutSeconds</code></td>
+<td>int</td>
+<td>超时时间</td>
+<td><code>2</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].livenessProbe.periodSeconds</code></td>
+<td>int</td>
+<td>探测周期</td>
+<td><code>5</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].livenessProbe.successThreshold</code></td>
+<td>int</td>
+<td>成功次数阈值</td>
+<td><code>1</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].livenessProbe.failureThreshold</code></td>
+<td>int</td>
+<td>失败次数阈值</td>
+<td><code>3</code></td>
+</tr>
+<tr>
+<td><code>spec.containers[].securityContext.privileged</code></td>
+<td>bool</td>
+<td>是否启用特权模式</td>
+<td><code>true/false</code></td>
+</tr>
+<tr>
+<td><code>spec.restartPolicy</code></td>
+<td>string</td>
+<td>Pod 重启策略</td>
+<td><code>Always</code>,<code>OnFailure</code>,<code>Never</code></td>
+</tr>
+<tr>
+<td><code>spec.nodeSelector</code></td>
+<td>map&lt;string,string&gt;</td>
+<td>节点选择器</td>
+<td><code>&#123; &quot;disktype&quot;: &quot;ssd&quot; &#125;</code></td>
+</tr>
+<tr>
+<td><code>spec.imagePullSecrets</code></td>
+<td>array</td>
+<td>镜像拉取凭证</td>
+<td><code>[&#123; name: &quot;my-registry-key&quot; &#125;]</code></td>
+</tr>
+<tr>
+<td><code>spec.hostNetwork</code></td>
+<td>bool</td>
+<td>是否使用主机网络</td>
+<td><code>true/false</code></td>
+</tr>
+<tr>
+<td><code>spec.volumes</code></td>
+<td>array</td>
+<td>卷定义</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>spec.volumes[].name</code></td>
+<td>string</td>
+<td>卷名称</td>
+<td><code>data-volume</code></td>
+</tr>
+<tr>
+<td><code>spec.volumes[].emptyDir</code></td>
+<td>object</td>
+<td>空目录卷（临时数据）</td>
+<td><code>&#123;&#125;</code></td>
+</tr>
+<tr>
+<td><code>spec.volumes[].hostPath.path</code></td>
+<td>string</td>
+<td>主机路径挂载</td>
+<td><code>/data/host</code></td>
+</tr>
+<tr>
+<td><code>spec.volumes[].secret.secretName</code></td>
+<td>string</td>
+<td>绑定的 secret 名称</td>
+<td><code>my-secret</code></td>
+</tr>
+<tr>
+<td><code>spec.volumes[].secret.items[]</code></td>
+<td>object</td>
+<td>指定映射的 key&#x2F;path</td>
+<td><code>&#123; key: &quot;token&quot;, path: &quot;token.txt&quot; &#125;</code></td>
+</tr>
+<tr>
+<td><code>spec.volumes[].configMap.name</code></td>
+<td>string</td>
+<td>引用的 ConfigMap 名称</td>
+<td><code>app-config</code></td>
+</tr>
+<tr>
+<td><code>spec.volumes[].configMap.items[]</code></td>
+<td>object</td>
+<td>指定映射的 key&#x2F;path</td>
+<td><code>&#123; key: &quot;app.properties&quot;, path: &quot;conf/app.properties&quot; &#125;</code></td>
+</tr>
+</tbody></table>
+<p>当存在两个应用紧密耦合，并组合为一个整体进行对外服务时，应将这两个容器应用封装为一个Pod</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">redis-php</span><br>	<span class="hljs-attr">labels:</span><br>		<span class="hljs-attr">name:</span> <span class="hljs-string">redis-php</span><br>	<span class="hljs-attr">spec:</span><br>		<span class="hljs-attr">containers:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">frontend</span><br>			<span class="hljs-attr">image:</span> <span class="hljs-string">kubeguide/guestbook-php-frontend:localredis</span><br>			<span class="hljs-attr">ports:</span><br>			<span class="hljs-bullet">-</span> <span class="hljs-attr">containerPort:</span> <span class="hljs-number">80</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">redis</span><br>			<span class="hljs-attr">image:</span> <span class="hljs-string">kubeguide/redis-master</span><br>			<span class="hljs-attr">ports:</span><br>			<span class="hljs-bullet">-</span> <span class="hljs-attr">containerPort:</span> <span class="hljs-number">6379</span><br></code></pre></td></tr></table></figure>
+
+<p>应用通过localhost:6379 对redis进行访问</p>
+<h1 id="静态Pod-1"><a href="#静态Pod-1" class="headerlink" title="静态Pod"></a>静态Pod</h1><p>静态Pod是由kubelet管理的仅存在于kubelete所在Node上的Pod，不需要通过Kubernetes的Master管理。kubelet负责监控由它创建的静态Pod，并在失效时重建pod。静态Pod无法被Master管理，以及无法使用普通Pod可以使用的其他资源</p>
+<p>1.基于本地配置文件</p>
+<p>在kubelet的主配置文件中设置 staticPodPath。kubelet会定期扫描该目录</p>
+<p>配置目录为 &#x2F;etc&#x2F;kubernetes&#x2F;manifests 配置参数为staticPodPath:&#x2F;etc&#x2F;kubernetes&#x2F;manifests</p>
+<p>在&#x2F;etc&#x2F;kubelet.d 目录下设置配置文件</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># 配置信息</span><br><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">static-web</span><br>	<span class="hljs-attr">labels:</span> <br>		<span class="hljs-attr">name:</span> <span class="hljs-string">static-web</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">containers:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">static-web</span><br>	  <span class="hljs-attr">image:</span> <span class="hljs-string">nginx</span><br>	  <span class="hljs-attr">ports:</span><br>	  <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">web</span><br>		  <span class="hljs-attr">containerPort:</span> <span class="hljs-number">80</span><br></code></pre></td></tr></table></figure>
+
+<ol>
+<li>网络配置</li>
+</ol>
+<p>通过 —manifest-url 获取yaml 文件作为配置信息</p>
+<h1 id="Pod容器共享Volume-1"><a href="#Pod容器共享Volume-1" class="headerlink" title="Pod容器共享Volume"></a>Pod容器共享Volume</h1><p>在tomcal容器中设置将命名为app-logs的volume 挂在到&#x2F;usr&#x2F;local&#x2F;tomcat&#x2F;logs中</p>
+<p>设置volumes ，而在busybox 将该目录挂在为&#x2F;logs 。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">volume-pod</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">containers:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">tomcat</span><br>		<span class="hljs-attr">image:</span> <span class="hljs-string">tomcat</span><br>		<span class="hljs-attr">ports:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">containerPort:</span> <span class="hljs-number">8080</span><br>		<span class="hljs-attr">volumeMounts:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">app-logs</span><br>			<span class="hljs-attr">mountPath:</span> <span class="hljs-string">/usr/local/tomcat/logs</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">busybox</span><br>		<span class="hljs-attr">image:</span> <span class="hljs-string">busybox</span><br>		<span class="hljs-attr">command:</span> [<span class="hljs-string">&quot;sh&quot;</span>, <span class="hljs-string">&quot;-c&quot;</span> , <span class="hljs-string">&quot;tail -f /logs/catalina*.log&quot;</span>]<br>		<span class="hljs-attr">volumeMounts:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">app-logs</span><br>			<span class="hljs-attr">mountPath:</span> <span class="hljs-string">/logs</span><br>		<span class="hljs-attr">volumes:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">app-logs</span><br>			<span class="hljs-attr">emptyDir:</span> &#123;&#125;<br></code></pre></td></tr></table></figure>
+
+<h1 id="Pod的配置管理-1"><a href="#Pod的配置管理-1" class="headerlink" title="Pod的配置管理"></a>Pod的配置管理</h1><p>ConfigMap用于保存应用程序运行时需要的配置数据，通过明文及K:V存储</p>
+<p>ConfigMap 一般用于</p>
+<p>1.生成容器内的环境变量</p>
+<p>2.设置容器启动命令的命令参数</p>
+<p>3.以Volume的形式挂在为容器内的文件或目录</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># cm-appvars.yaml</span><br><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">ConfigMap</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">cm-appvars</span><br><span class="hljs-attr">data:</span><br>	<span class="hljs-attr">apploglevel:</span> <span class="hljs-string">info</span><br>	<span class="hljs-attr">appdatadir:</span> <span class="hljs-string">/var/data</span><br></code></pre></td></tr></table></figure>
+
+<p>在env 下使用configmap ， configmap会以文件进行挂载</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">volumes:</span><br><span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">config-volume</span><br>  <span class="hljs-attr">configMap:</span><br>    <span class="hljs-attr">name:</span> <span class="hljs-string">my-config</span><br><span class="hljs-comment"># 定义存储卷</span><br>  <br><span class="hljs-attr">volumeMounts:</span><br><span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">config-volume</span><br>  <span class="hljs-attr">mountPath:</span> <span class="hljs-string">/etc/config</span><br><span class="hljs-comment"># 使用config-volume,并挂载到/etc/config路径</span><br><br><span class="hljs-attr">volumes:</span><br><span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">config-volume</span><br>  <span class="hljs-attr">configMap:</span><br>    <span class="hljs-attr">name:</span> <span class="hljs-string">my-config</span><br>    <span class="hljs-attr">items:</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-attr">key:</span> <span class="hljs-string">app.properties</span><br>      <span class="hljs-attr">path:</span> <span class="hljs-string">my-app.conf</span><br><span class="hljs-comment"># 在卷中指定configmap中的某个key将对应文件挂载</span><br></code></pre></td></tr></table></figure>
+
+<p>使用envfrom 配置为环境变量</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>  <span class="hljs-attr">name:</span> <span class="hljs-string">demo</span><br><span class="hljs-attr">spec:</span><br>  <span class="hljs-attr">containers:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">app</span><br>    <span class="hljs-attr">image:</span> <span class="hljs-string">alpine</span><br>    <span class="hljs-attr">command:</span> [<span class="hljs-string">&quot;sh&quot;</span>, <span class="hljs-string">&quot;-c&quot;</span>, <span class="hljs-string">&quot;env; sleep 3600&quot;</span>]<br>    <span class="hljs-attr">envFrom:</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-attr">configMapRef:</span><br>        <span class="hljs-attr">name:</span> <span class="hljs-string">my-config</span><br><span class="hljs-comment"># 将my-config 整个加载为环境变量</span><br><br><span class="hljs-attr">env:</span><br><span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">ENV_MODE</span><br>  <span class="hljs-attr">valueFrom:</span><br>    <span class="hljs-attr">configMapKeyRef:</span><br>      <span class="hljs-attr">name:</span> <span class="hljs-string">my-config</span><br>      <span class="hljs-attr">key:</span> <span class="hljs-string">ENV_MODE</span><br>   <br><span class="hljs-comment"># 将my-config 中对应的ENV_MODE 中的values设置为环境变量</span><br></code></pre></td></tr></table></figure>
+
+<h1 id="容器内获取Pod信息-1"><a href="#容器内获取Pod信息-1" class="headerlink" title="容器内获取Pod信息"></a>容器内获取Pod信息</h1><h2 id="Downward-API-1"><a href="#Downward-API-1" class="headerlink" title="Downward API"></a>Downward API</h2><p>通过Downward API 将Pod的信息注入到容器的环境变量中</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># dapi-envars-pod.yaml</span><br><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">dapi-envars-fieldref</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">containers:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">tst-container</span><br>			<span class="hljs-attr">image:</span> <span class="hljs-string">busybox</span><br>			<span class="hljs-attr">command:</span> [<span class="hljs-string">&quot;sh&quot;</span>, <span class="hljs-string">&quot;-c&quot;</span>]<br>			<span class="hljs-attr">args:</span><br>			<span class="hljs-bullet">-</span> <span class="hljs-string">while</span> <span class="hljs-literal">true</span> <span class="hljs-string">;</span> <span class="hljs-string">do</span><br>					<span class="hljs-string">echo</span> <span class="hljs-string">-en</span> <span class="hljs-string">&#x27;\\n&#x27;</span><span class="hljs-string">;</span><br>					<span class="hljs-string">printenv</span> <span class="hljs-string">MY_NODE_NAME</span> <span class="hljs-string">MY_POD_NAME</span> <span class="hljs-string">MY_POD_NAMESPACE;</span><br>					<span class="hljs-string">sleep</span> <span class="hljs-number">10</span> <span class="hljs-string">;</span><br>				<span class="hljs-string">done;</span><br>			<span class="hljs-attr">env:</span><br>				<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">MY_NODE_NAME</span><br>					<span class="hljs-attr">valueFrom:</span> <br>						<span class="hljs-attr">fieldRef:</span><br>							<span class="hljs-attr">fieldPath:</span> <span class="hljs-string">spec.nodeName</span><br>				<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">MY_POD_NAME</span><br>					<span class="hljs-attr">valueFrom:</span><br>						<span class="hljs-attr">fieldRef:</span><br>							<span class="hljs-attr">fieldPath:</span> <span class="hljs-string">metadata.name</span><br>				<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">MY_POD_NAMESPCAE</span><br>					<span class="hljs-attr">valueFrom:</span><br>						<span class="hljs-attr">fieldRef:</span><br>							<span class="hljs-attr">fieldPath:</span> <span class="hljs-string">metadata.namespace</span><br>	<span class="hljs-attr">restartPolicy:</span> <span class="hljs-string">Never</span><br></code></pre></td></tr></table></figure>
+
+<p>在文件中不是直接写入而是通过valueFrom指定对应的数据字段获取值</p>
+<p>将Container配置信息设置为容器内的环境变量</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># dapi-envars-container.yaml</span><br><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">dapi-envars-resourcefieldref</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">containers:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">test-container</span><br>			<span class="hljs-attr">image:</span> <span class="hljs-string">busybox</span><br>			<span class="hljs-attr">imagePullPolicy:</span> <span class="hljs-string">Never</span><br>			<span class="hljs-attr">command:</span> [<span class="hljs-string">&quot;sh&quot;</span>,<span class="hljs-string">&quot;-c&quot;</span>]<br>			<span class="hljs-attr">args:</span> <br>			<span class="hljs-bullet">-</span> <span class="hljs-string">while</span> <span class="hljs-literal">true</span> <span class="hljs-string">;</span> <span class="hljs-string">do</span><br>				<span class="hljs-string">echo</span> <span class="hljs-string">-en</span> <span class="hljs-string">&#x27;\\n&#x27;</span><span class="hljs-string">;</span><br>				<span class="hljs-string">printenv</span> <span class="hljs-string">MY_CPU_REQUEST</span> <span class="hljs-string">MY_CPU_LIMIT;</span><br>				<span class="hljs-string">sleep</span> <span class="hljs-number">10</span><span class="hljs-string">;</span><br>				<span class="hljs-string">done;</span><br>			<span class="hljs-attr">resources:</span><br>				<span class="hljs-attr">requests:</span><br>					<span class="hljs-attr">memory:</span> <span class="hljs-string">&quot;32Mi&quot;</span><br>					<span class="hljs-attr">cpu:</span> <span class="hljs-string">&quot;125m&quot;</span><br>				<span class="hljs-attr">limits:</span><br>					<span class="hljs-attr">memory:</span> <span class="hljs-string">&quot;64Mi&quot;</span><br>					<span class="hljs-attr">cpu:</span> <span class="hljs-string">&quot;250m&quot;</span><br>				<span class="hljs-attr">env:</span><br>					<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">MY_CPU_REQUEST</span><br>						<span class="hljs-attr">valueFrom:</span> <br>							<span class="hljs-attr">resourceFieldRef:</span><br>								<span class="hljs-attr">containerName:</span> <span class="hljs-string">test-container</span><br>								<span class="hljs-attr">resource:</span> <span class="hljs-string">requests.cpu</span><br>					<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">MY_CPU_LIMIT</span><br>						<span class="hljs-attr">valueFrom:</span><br>							<span class="hljs-attr">resourceFieldRef:</span><br>								<span class="hljs-attr">containerName:</span> <span class="hljs-string">test-container</span><br>								<span class="hljs-attr">resource:</span> <span class="hljs-string">limits.cpu</span><br>		<span class="hljs-attr">restartPolicy:</span> <span class="hljs-string">Never</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="Volume挂载-1"><a href="#Volume挂载-1" class="headerlink" title="Volume挂载"></a>Volume挂载</h2><p>将Pod信息挂载为容器内的文件</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># dapi-volume.yaml</span><br><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">kubernetes-downwardapi-volume-example</span><br>	<span class="hljs-attr">labels:</span><br>		<span class="hljs-attr">zone:</span> <span class="hljs-string">us-est-coast</span><br>		<span class="hljs-attr">cluster:</span> <span class="hljs-string">test-cluster1</span><br>		<span class="hljs-attr">rack:</span> <span class="hljs-string">rack-22</span><br>	<span class="hljs-attr">annotations:</span><br>		<span class="hljs-attr">build:</span> <span class="hljs-string">two</span><br>		<span class="hljs-attr">builder:</span> <span class="hljs-string">john-doe</span><br>	<span class="hljs-attr">spec:</span> <br>		<span class="hljs-attr">containers:</span><br>			<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">client-container</span><br>				<span class="hljs-attr">image:</span> <span class="hljs-string">busybox</span><br>				<span class="hljs-attr">command:</span> [<span class="hljs-string">&quot;sh&quot;</span>,<span class="hljs-string">&quot;-c&quot;</span>]<br>				<span class="hljs-attr">args:</span><br>				<span class="hljs-bullet">-</span> <span class="hljs-string">while</span> <span class="hljs-literal">true</span> <span class="hljs-string">;</span> <span class="hljs-string">do</span><br>						<span class="hljs-string">if</span> [[ <span class="hljs-string">-e</span> <span class="hljs-string">/etc/podinfo/labels</span>]]<span class="hljs-string">;</span> <span class="hljs-string">then</span><br>							<span class="hljs-string">echo</span> <span class="hljs-string">-en</span> <span class="hljs-string">&#x27;\\n\\n&#x27;</span><span class="hljs-string">;</span> <span class="hljs-string">cat</span> <span class="hljs-string">/etc/podinfo/labels</span> <span class="hljs-string">;</span> <span class="hljs-string">fi</span> <span class="hljs-string">;</span><br>						<span class="hljs-string">sleep</span> <span class="hljs-number">5</span><span class="hljs-string">;</span><br>					<span class="hljs-string">done;</span><br>				<span class="hljs-attr">volumeMounts:</span><br>					<span class="hljs-string">-name:</span> <span class="hljs-string">podinfo</span><br>					<span class="hljs-attr">mountPath:</span> <span class="hljs-string">/etc/podinfo</span><br>		<span class="hljs-attr">volumes:</span><br>			<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">podinfo</span><br>				<span class="hljs-attr">downwardAPI:</span><br>					<span class="hljs-attr">items:</span><br>						<span class="hljs-bullet">-</span> <span class="hljs-attr">path:</span> <span class="hljs-string">&quot;labels&quot;</span><br>							<span class="hljs-attr">fieldRef:</span><br>								<span class="hljs-attr">fieldPath:</span> <span class="hljs-string">metadata.labels</span><br><br></code></pre></td></tr></table></figure>
+
+<p>将容器的配置信息挂载为容器内的文件</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># dapi-volume-resources.yaml</span><br><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">kubernetes-downwardapi-volume-example-2</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">containers:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">client-container</span><br>			<span class="hljs-attr">image:</span> <span class="hljs-string">busybox</span><br>			<span class="hljs-attr">command:</span> [<span class="hljs-string">&quot;sh&quot;</span>,<span class="hljs-string">&quot;-c&quot;</span>]<br>			<span class="hljs-attr">args:</span><br>			<span class="hljs-bullet">-</span> <span class="hljs-string">while</span> <span class="hljs-literal">true</span><span class="hljs-string">;</span> <span class="hljs-string">do</span><br>					<span class="hljs-string">echo</span> <span class="hljs-string">-en</span> <span class="hljs-string">&#x27;n&#x27;</span><span class="hljs-string">;</span><br>					<span class="hljs-string">if</span> [[ <span class="hljs-string">-e</span> <span class="hljs-string">/etc/podinfo/cpu_limit</span> ]] <span class="hljs-string">;</span> <span class="hljs-string">then</span><br>						<span class="hljs-string">echo</span> <span class="hljs-string">-en</span> <span class="hljs-string">&#x27;\\n&#x27;</span><span class="hljs-string">;</span> <span class="hljs-string">cat</span> <span class="hljs-string">/etc/podinfo/cpu_limit;</span> <span class="hljs-string">fi;</span><br>					<span class="hljs-string">sleep</span> <span class="hljs-string">5s;</span><br>				<span class="hljs-string">done;</span><br>			<span class="hljs-attr">resources:</span><br>				<span class="hljs-attr">requests:</span><br>					<span class="hljs-attr">memory:</span> <span class="hljs-string">&quot;32Mi&quot;</span><br>					<span class="hljs-attr">cpu:</span> <span class="hljs-string">&quot;125m&quot;</span><br>				<span class="hljs-attr">limits:</span><br>					<span class="hljs-attr">memory:</span> <span class="hljs-string">&quot;64Mi&quot;</span><br>					<span class="hljs-attr">cpu:</span> <span class="hljs-string">&quot;250m&quot;</span><br>			<span class="hljs-attr">volumeMounts:</span><br>				<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">podinfo</span><br>					<span class="hljs-attr">mountPath:</span> <span class="hljs-string">/etc/podinfo</span><br>		<span class="hljs-attr">volumes:</span><br>			<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">podinfo</span><br>				<span class="hljs-attr">downwardAPI:</span><br>					<span class="hljs-attr">items:</span><br>						<span class="hljs-bullet">-</span> <span class="hljs-attr">path:</span> <span class="hljs-string">&quot;cpu_limit&quot;</span><br>							<span class="hljs-attr">resource:</span> <span class="hljs-string">limits.cpu</span><br>							<span class="hljs-attr">divisor:</span> <span class="hljs-string">1m</span><br>	<br></code></pre></td></tr></table></figure>
+
+<h2 id="支持设置的信息-1"><a href="#支持设置的信息-1" class="headerlink" title="支持设置的信息"></a>支持设置的信息</h2><ol>
+<li>由fieldRef设置的字段<br><a target="_blank" rel="noopener" href="http://metadata.name/">metadata.name</a>: Pod名称<br>metadata.namespace: Pod所在的命名空间名称<br>metadata.uid: Pod的UID<br>metadata.labels[’<code>&lt;KEY&gt;</code>’]: Pod某个Label的值，通过<code>&lt;KEY&gt;</code>引用<br>metadata.annotations[‘<code>&lt;KEY&gt;</code>’]: Pod某个Annotations的值，通过<code>&lt;KEY&gt;</code>引用</li>
+<li>Pod的以下元数据信息可以被设置为容器内的环境变量，<br>spec.serviceAccountName: Pod使用的ServiceAccount名称<br>spec.nodeName: Pod所在Node的名称<br>status.hostIP: Pod所在Node的IP地址<br>status.hostIPs: Pod所在Node的双栈IP地址<br>status.IP: Pod的IP地址<br>status.IPs: Pod的双栈IP地址</li>
+<li>设置downwardAPI为存储卷类型时，可以在器fieldRef字段设置以下信息<br>metadata.labels : Pod的label列表<br>metadata.annotations : Pod的annotation列表</li>
+<li>通过resourceFieldRef 设置的字段<br>limits.cpu                  # 容器可使用的最大 CPU 数量（上限），单位为核心（如 1、500m 等），超出会被限制<br>requests.cpu                # 容器调度时请求的最小 CPU 数量，调度器据此分配节点资源，单位同上<br>limits.memory               # 容器可使用的最大内存（上限），单位如 Mi、Gi，超出将触发 OOMKilled<br>requests.memory             # 容器调度时请求的最小内存，调度器据此分配节点资源<br>limits.hugepages-*          # 容器可使用的最大 HugePages 限额，例如 limits.hugepages-2Mi<br>requests.hugepages-*        # 容器调度时请求的 HugePages 数量，例如 requests.hugepages-1Gi<br>limits.ephemeral-storage    # 容器使用的最大临时存储空间（如 emptyDir、写入容器层），超出会被限制<br>requests.ephemeral-storage  # 容器调度时请求的最小临时存储空间，用于调度决策。</li>
+</ol>
+<h1 id="生命周期-1"><a href="#生命周期-1" class="headerlink" title="生命周期"></a>生命周期</h1><p>Pod的生命周期</p>
+<p><strong>Pending</strong>  创建Pod的请求已被Master接受，但有一个或多个容器没有创建也没有运行</p>
+<p><strong>Running</strong> Pod已完成调度到特定Node,其包含的所有容器均已创建，并且至少由一个容器处于正在运行状态</p>
+<p><strong>Succeeded</strong> Pod内的所有容器君子成功执行后终止，不会重启</p>
+<p><strong>Failed</strong>       Pod内的所有容器均已终止，但至少有一个容器未退出失败状态，即退出码不是0</p>
+<p><strong>Unknown</strong> 由于某种原因无法获得Pod的状态</p>
+<p>Pod的状况</p>
+<p><strong>PodScheduled</strong> 已将Pod调度到某个Node</p>
+<p><strong>PodReadyToStartContainers</strong> Pod已创建，并完成网络配置，可以启动容器。</p>
+<p><strong>ContainersReady</strong> Pod中的全部容器都达到Ready状态</p>
+<p><strong>Initialized</strong> Pod中的全部初始化容器都成功运行</p>
+<p><strong>Ready</strong> Pod达到Ready状态，可以被加入相应Service的负载均衡后端列表中</p>
+<h2 id="容器状态-1"><a href="#容器状态-1" class="headerlink" title="容器状态"></a>容器状态</h2><p>Waiting ：Kubernetes在能够运行该容器之前通常需要执行某些操作，例如下载容器镜像，为容器设置存储卷，等待依赖资源达到就绪状态，因此系统设置容器的状态为等待运行</p>
+<p>Running ：表示容器处于正常的运行过程中，并没有发生错误</p>
+<p>Terminated ： 运行结束，可能是正常运行结束，也可能是因为失败结束</p>
+<h2 id="Pod的重启策略-1"><a href="#Pod的重启策略-1" class="headerlink" title="Pod的重启策略"></a>Pod的重启策略</h2><ul>
+<li>Always ： 当容器启动失败后总是由kubelet尝试自动重启容器</li>
+<li>OnFailure ： 当容器终止运行且退出码不为0时，由kubelet自动重启容器</li>
+<li>Never： 不论容器处于哪种运行状态，kubelet不会重启该容器</li>
+</ul>
+<h2 id="控制权与重启策略-1"><a href="#控制权与重启策略-1" class="headerlink" title="控制权与重启策略"></a>控制权与重启策略</h2><p>Deployoment&#x2F;StatuefulSet&#x2F;DaemonSet&#x2F;RC   :  必须设置为Always</p>
+<p>Job :  OnFailure或Never</p>
+<p>kubelet : 在静态Pod失效时自动重启它</p>
+<h2 id="Pod的终止过程-1"><a href="#Pod的终止过程-1" class="headerlink" title="Pod的终止过程"></a>Pod的终止过程</h2><ol>
+<li>通过kubectl delete pod <pod_name>命令手动删除一个Pod，优雅终止的宽限期默认为30s</li>
+<li>控制平面会更新Pod的状态，通过kubectl get 或describe命令可以看到Pod状态为”Terminating”。在Pod运行的Node上，kubelet一旦探测到Pod状态为”Terminating”就开始对Pod进行以下终止操作<br>如果容器配置了preStop回调钩子，并且配置了非0的终止宽限期，kubelet就调用preStop回调钩子。如果preStop回调钩子在终止宽限期之后还未完成，会向宽限期增加时间（默认2s）<br>如果容器没配置preStop，或者终止宽限期已过，kubelet就调用容器运行时给容器的主进程发送TERM信息，也可能发送容器镜像中STOPSIGNAL变量配置的信号</li>
+<li>在kubelet启动Pod的优雅终止过程的同时，控制平面会评估是否将正在终止的Pod从对应服务的后端列表中移除。</li>
+<li>超过优雅终止宽限期之后，kubelet首先会启动强制终止容器进程的操作，通过容器运行时向剩余的进程发送KILL信号，kubelet也会删除Pod的基础Pause容器。然后kubelet将Pod的阶段设置为Succeeded或Failed。并设置宽限期为0，表示立刻删除。最后控制平面从etcd中彻底删除该Pod资源对象</li>
+</ol>
+<h3 id="Pod的垃圾清理机制-1"><a href="#Pod的垃圾清理机制-1" class="headerlink" title="Pod的垃圾清理机制"></a>Pod的垃圾清理机制</h3><p>Kubernetes的控制平面提供了一个Pod垃圾清理器PodGC(Garbage Collector)，在监控到Pod数量超过阈值时，会进行删除已终止Pod的操作。GC会清理以下条件的Pod</p>
+<ul>
+<li>孤儿Pod : 已完成调度，但Node 不再存在</li>
+<li>在计划外终止的Pod</li>
+<li>终止过程中的Pod</li>
+</ul>
+<h1 id="探针和健康检查机制-1"><a href="#探针和健康检查机制-1" class="headerlink" title="探针和健康检查机制"></a>探针和健康检查机制</h1><ol>
+<li>LivenessProbe 探针</li>
+</ol>
+<p>用于判断容器是否存活，如果LivenesProbe探针探测到容器不健康，则杀掉该容器，并根据容器的重启策略做相应的处理，如果容器未设置LivenessProbe探针，那么kubelet认为该容器的LivenessProbe探针返回的值永远是Success</p>
+<ol>
+<li>ReadinessProbe探针</li>
+</ol>
+<p>用于判断容器服务是否处于Ready状态，处于Ready状态的Pod才可以接收请求。ReadinessProbe定期触发，存在于Pod的整个生命周期内</p>
+<ol>
+<li>StartupProbe探针</li>
+</ol>
+<p>某些应用会遇到一些情况，例如应用程序在启动时需要与远程服务器建立网络连接，或者网络访问较慢等，导致容器启动缓慢，可以由StartupProbe持续检查Pods状态，在此期间LivenessProbe探针和ReadinessProbe探针均被禁用，直到StartupProbe 返回成功</p>
+<h3 id="探测策略-1"><a href="#探测策略-1" class="headerlink" title="探测策略"></a>探测策略</h3><ul>
+<li>exec : 在容器内运行指定的命令，如果该命令运行的返回码未0，则说明探测成功</li>
+<li>tcpSocket ： 通过容器的IP地址和端口号执行TCP检查，如果能够建立TCP连接，则说明探测成功</li>
+<li>httpGet：通过容器的IP地址，端口号及路径调用HTTP Get方法，如果响应的状态码大于等于200且小于400 说明探测成功。</li>
+<li>grpc：通过gRPC执行一个Health Check的远程调用，要求应用程序实现gRPC健康检查协议，如果响应的status为SERVING</li>
+</ul>
+<h3 id="字段配置-1"><a href="#字段配置-1" class="headerlink" title="字段配置"></a>字段配置</h3><ul>
+<li>initalDelaySecondes: 启动容器后进行首次探测的等待时间，单位为s,默认值为0，最小值为0.</li>
+<li>periodSecondes: 周期性执行探测的时间间隔，单位为s，默认为10，最小值为1</li>
+<li>timeoutSeconds: 发出探测请求后等待结果的超时时间，单位为s。当超时发生时，kubelet认为探测失败</li>
+<li>successThreshold: 探测失败后，判定为探测成功的最小连续探测成功的次数，默认值为1</li>
+<li>failureThreshold: 判定为探测失败的连续探测失败的次数，达到整个数量后，kubelet会认为容器不健康或者服务未就绪，并将基于重启策略对容器进行重启操作</li>
+<li>terminationGracePeriodSecondes: 探测失败后，kubelet触发终止容器命令之后等待容器自行结束的宽限期，单位为s，默认值为30，最小值为1</li>
+</ul>
+<p>HTTP类型探针的配置</p>
+<ul>
+<li>host: 主机名，默认为Pod的IP地址</li>
+<li>scheme: 连接协议</li>
+<li>path: 访问路径，默认为“&#x2F;”</li>
+<li>httpHeaders: 自定义HTTP头，允许重复</li>
+<li>port: 容器的端口号或端口名称</li>
+</ul>
+<h3 id="探测结果-1"><a href="#探测结果-1" class="headerlink" title="探测结果"></a>探测结果</h3><ul>
+<li>Success 探测成功</li>
+<li>Failure 探测失败</li>
+<li>Unknown 探测失败</li>
+</ul>
+<h2 id="exec机制配置LivenessProbe-1"><a href="#exec机制配置LivenessProbe-1" class="headerlink" title="exec机制配置LivenessProbe"></a>exec机制配置LivenessProbe</h2><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">labels:</span><br>		<span class="hljs-attr">test:</span> <span class="hljs-string">liveness</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">liveness-exec</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">containers:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">liveness</span><br>			<span class="hljs-attr">image:</span> <span class="hljs-string">busybox</span><br>			<span class="hljs-attr">args:</span> <br>			<span class="hljs-bullet">-</span> <span class="hljs-string">/bin/sh</span><br>			<span class="hljs-bullet">-</span> <span class="hljs-string">-c</span><br>			<span class="hljs-bullet">-</span> <span class="hljs-string">echo</span> <span class="hljs-string">ok</span> <span class="hljs-string">&gt;</span> <span class="hljs-string">/tmp/health;</span> <span class="hljs-string">sleep</span> <span class="hljs-number">10</span> <span class="hljs-string">;</span> <span class="hljs-string">rm</span> <span class="hljs-string">-rf</span> <span class="hljs-string">/tmp/health;</span> <span class="hljs-string">sleep</span> <span class="hljs-number">600</span><br>			<span class="hljs-attr">livenessProbe:</span><br>				<span class="hljs-attr">exec:</span><br>					<span class="hljs-attr">command:</span><br>					<span class="hljs-bullet">-</span> <span class="hljs-string">cat</span><br>					<span class="hljs-bullet">-</span> <span class="hljs-string">/tmp/health</span><br>				<span class="hljs-attr">initialDelaySeconds:</span> <span class="hljs-number">15</span><br>				<span class="hljs-attr">timeoutSeconds:</span> <span class="hljs-number">1</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="tcpSocket机制配置LivenessProbe-1"><a href="#tcpSocket机制配置LivenessProbe-1" class="headerlink" title="tcpSocket机制配置LivenessProbe"></a>tcpSocket机制配置LivenessProbe</h2><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">pod-with-healthcheck</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">containers:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">nginx</span><br>	  <span class="hljs-attr">image:</span> <span class="hljs-string">nginx</span><br>	  <span class="hljs-attr">ports:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">containerPort:</span> <span class="hljs-number">80</span><br>		<span class="hljs-attr">livenessProbe:</span><br>			<span class="hljs-attr">tcpSocket:</span><br>				<span class="hljs-attr">port:</span> <span class="hljs-number">80</span><br>			<span class="hljs-attr">initialDelaySecondes:</span> <span class="hljs-number">30</span><br>			<span class="hljs-attr">timeoutSeconds:</span> <span class="hljs-number">1</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="httpGet机制配置LivenessProbe-1"><a href="#httpGet机制配置LivenessProbe-1" class="headerlink" title="httpGet机制配置LivenessProbe"></a>httpGet机制配置LivenessProbe</h2><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">pod-with-healthcheck</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">containers:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">nginx</span><br>		<span class="hljs-attr">image:</span> <span class="hljs-string">nginx</span><br>		<span class="hljs-attr">ports:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">containerPort:</span> <span class="hljs-number">80</span><br>		<span class="hljs-attr">livenessProbe:</span><br>			<span class="hljs-attr">httpGet:</span><br>				<span class="hljs-attr">path:</span> <span class="hljs-string">/_status/healthz</span><br>				<span class="hljs-attr">port:</span> <span class="hljs-number">80</span><br>			<span class="hljs-attr">initialDelaySecondes:</span> <span class="hljs-number">30</span><br>			<span class="hljs-attr">timeoutSecondes:</span> <span class="hljs-number">1</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="gRPC机制配置LivenessProbe-1"><a href="#gRPC机制配置LivenessProbe-1" class="headerlink" title="gRPC机制配置LivenessProbe"></a>gRPC机制配置LivenessProbe</h2><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">etcd-with-grpc</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">containers:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">etcd</span><br>		<span class="hljs-attr">image:</span> <span class="hljs-string">etcd:3.5.1</span><br>		<span class="hljs-attr">command:</span> [<span class="hljs-string">&quot;/usr/local/bin/etcd&quot;</span>,<span class="hljs-string">&quot;--data-dir&quot;</span>,<span class="hljs-string">&quot;/var/lib/etcd&quot;</span>,<br>		<span class="hljs-string">&quot;--listen-client-urls&quot;</span>,<span class="hljs-string">&quot;&lt;http://0.0.0.0:2379&gt;&quot;</span>,<span class="hljs-string">&quot;--advertise-client-urls&quot;</span>,<br>		<span class="hljs-string">&quot;&lt;http://127.0.0.1:2379&gt;&quot;</span>]<br>		<span class="hljs-attr">ports:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">containerPort:</span> <span class="hljs-number">2379</span><br>		<span class="hljs-attr">livenessProbe:</span><br>			<span class="hljs-attr">grpc:</span><br>				<span class="hljs-attr">port:</span> <span class="hljs-number">2379</span><br>			<span class="hljs-attr">initialDelaySeconds:</span> <span class="hljs-number">10</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="设置startupProbe保护探针保护需要启动很长时间的容器-1"><a href="#设置startupProbe保护探针保护需要启动很长时间的容器-1" class="headerlink" title="设置startupProbe保护探针保护需要启动很长时间的容器"></a>设置startupProbe保护探针保护需要启动很长时间的容器</h2><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">startupProbe:</span><br>	<span class="hljs-attr">httpGet:</span><br>		<span class="hljs-attr">path:</span> <span class="hljs-string">/healthz</span><br>		<span class="hljs-attr">port:</span> <span class="hljs-string">liveness-port</span><br>	<span class="hljs-attr">failureThreshold:</span> <span class="hljs-number">30</span><br>	<span class="hljs-attr">periodSeconds:</span> <span class="hljs-number">10</span><br></code></pre></td></tr></table></figure>
+
+<p>如果300s后仍未成功启动，kubelet会尝试重启策略</p>
+<h2 id="设置ReadinessProbe探针保护暂时无法提供服务的容器-1"><a href="#设置ReadinessProbe探针保护暂时无法提供服务的容器-1" class="headerlink" title="设置ReadinessProbe探针保护暂时无法提供服务的容器"></a>设置ReadinessProbe探针保护暂时无法提供服务的容器</h2><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-string">readinessProbe</span><br>	<span class="hljs-attr">httpGet:</span><br>		<span class="hljs-attr">path:</span> <span class="hljs-string">/healthz</span><br>		<span class="hljs-attr">port:</span> <span class="hljs-number">8080</span><br>	<span class="hljs-attr">initialDelaySecondes:</span> <span class="hljs-number">10</span><br>	<span class="hljs-attr">periodSeconds:</span> <span class="hljs-number">3</span><br></code></pre></td></tr></table></figure>
+
+<p>kubelet 在探测到容器服务不在就绪时，会通知控制平面，以调整对应的Service，将不健康的后端Pod暂时隔离，不再将请求转发到这个Pod，从而避免出现大量的失败状况</p>
+<h1 id="初始化容器-1"><a href="#初始化容器-1" class="headerlink" title="初始化容器"></a>初始化容器</h1><p>初始化容器是一种特殊的容器</p>
+<p>初始化容器的运作方式与应用容器不同：初始化容器必须先于应用容器运行成功，在设置了多个初始化容器时，将按顺序逐个运行初始化容器，并且只有前一个初始化容器运行成功，才能运行其之后的一个初始化容器。在所有初始化容器运行成功后，才会初始化Pod的各种信息，并开始创建和运用容器</p>
+<p>初始化容器的定义中可以设置资源限制，Volume的使用和安全策略，等待。</p>
+<ul>
+<li>如果多个初始化容器定义了资源请求或者资源限制，则取最大的值为所有初始化容器的资源请求值或资源限制值</li>
+<li>Pod的有效资源请求值或资源限制取值以下二者的较大值<ul>
+<li>所有应用容器的资源请求值或资源限制值之和</li>
+<li>初始化容器的有效资源请求或资源限制值</li>
+</ul>
+</li>
+<li>调度算法将基于Pod的有效资源请求致或资源限制值进行计算，也就是说，初始化容器可以为初始化操作预留系统资源，即使后续的应用容器 无须使用这些资源</li>
+<li>Pod的有效QoS等级适用于初始化容器和应用容器</li>
+<li>资源配额和限制将根据Pod的有效资源请求值或者资源限制值计算且生效</li>
+<li>Pod级别的Cgroup将基于Pod的有效资源请求或限制，与调度机制一致</li>
+</ul>
+<p>初始化容器不支持对生命周期和健康检查机制进行配置</p>
+<h2 id="可能重启的场景-1"><a href="#可能重启的场景-1" class="headerlink" title="可能重启的场景"></a>可能重启的场景</h2><ul>
+<li>Pod的infrastructure容器更新，此时Pod会重启</li>
+<li>Pod中的所有应用容器都终止，此时Pod会重启</li>
+</ul>
+<h2 id="初始化容器的实现原理-1"><a href="#初始化容器的实现原理-1" class="headerlink" title="初始化容器的实现原理"></a>初始化容器的实现原理</h2><p>通过initContainers字段配置初始化容器，以实现在启动应用容器之前运行初始化容器，并且允许配置一个或多个初始化容器，已完成应用容器所需的预置条件。系统会在Pod的状态信息的initContainerStatuses字段中显示初始化容器的运行信息</p>
+<h3 id="通过初始化容器为应用容器准备数据-1"><a href="#通过初始化容器为应用容器准备数据-1" class="headerlink" title="通过初始化容器为应用容器准备数据"></a>通过初始化容器为应用容器准备数据</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># pod-with-init.yaml</span><br><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">pod-with-init</span><br>	<span class="hljs-attr">labels:</span> <br>		<span class="hljs-attr">app:</span> <span class="hljs-string">nginx</span><br><span class="hljs-attr">space:</span> <br>	<span class="hljs-attr">initContainers:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">install</span><br>		<span class="hljs-attr">image:</span> <span class="hljs-string">busybox</span><br>		<span class="hljs-attr">imagePullPolicy:</span> <span class="hljs-string">IfNotPresent</span><br>		<span class="hljs-attr">command:</span> [<span class="hljs-string">&quot;sh&quot;</span>,<span class="hljs-string">&quot;-c&quot;</span>,<span class="hljs-string">&quot;echo Hello World! &gt; /web-root/index.html&quot;</span> ]<br>		<span class="hljs-attr">volumeMounts:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">webroot</span><br>			<span class="hljs-attr">mountPath:</span> <span class="hljs-string">&quot;/web-root&quot;</span><br>		<span class="hljs-attr">containers:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">nginx</span><br>			<span class="hljs-attr">image:</span> <span class="hljs-string">nginx</span><br>			<span class="hljs-attr">imagePullPolicy:</span> <span class="hljs-string">IfNotPresent</span><br>			<span class="hljs-attr">ports:</span> <br>			<span class="hljs-bullet">-</span> <span class="hljs-attr">containerPort:</span> <span class="hljs-number">80</span><br>			<span class="hljs-attr">volumeMounts:</span><br>			<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">webroot</span><br>			<span class="hljs-attr">mountPath:</span> <span class="hljs-string">/usr/share/nginx/html</span><br>		<span class="hljs-attr">volumes:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">webroot</span><br>		  <span class="hljs-attr">emptyDir:</span> &#123;&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="通过初始化容器等待应用容器依赖的一个服务处于Ready状态-1"><a href="#通过初始化容器等待应用容器依赖的一个服务处于Ready状态-1" class="headerlink" title="通过初始化容器等待应用容器依赖的一个服务处于Ready状态"></a>通过初始化容器等待应用容器依赖的一个服务处于Ready状态</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># pod-with-init-2.yaml</span><br><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">pod-with-init-2</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">initContainers:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">wait-for-service-a</span><br>	<span class="hljs-attr">image:</span> <span class="hljs-string">busybox</span><br>	<span class="hljs-attr">imagePullPolicy:</span> <span class="hljs-string">IfNotPresent</span><br>	<span class="hljs-attr">command:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-string">sh</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-string">-c</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-string">until</span> <span class="hljs-string">wget</span> <span class="hljs-string">-q</span> <span class="hljs-string">service-a:8080;</span> <span class="hljs-string">do</span> <span class="hljs-string">echo</span> <span class="hljs-string">-e</span> <span class="hljs-string">&quot;waiting for service-a&quot;</span><span class="hljs-string">;</span> <span class="hljs-string">sleep</span> <span class="hljs-number">5</span><span class="hljs-string">;</span><br>	<span class="hljs-string">done;</span> <span class="hljs-string">echo</span> <span class="hljs-string">-e</span> <span class="hljs-string">&quot;service-a ready , starting service-b now&quot;</span><span class="hljs-string">;</span><br>	<span class="hljs-attr">containers:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">service-b</span><br>		<span class="hljs-attr">image:</span> <span class="hljs-string">nginx</span><br>		<span class="hljs-attr">imagePullPolicy:</span> <span class="hljs-string">IfNotPresent</span><br>		<span class="hljs-attr">ports:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">containerPort:</span> <span class="hljs-number">80</span>  <br></code></pre></td></tr></table></figure>
+
+<h3 id="通过初始化容器将Pod作为一个服务实例注册到外部的某个服务中心-1"><a href="#通过初始化容器将Pod作为一个服务实例注册到外部的某个服务中心-1" class="headerlink" title="通过初始化容器将Pod作为一个服务实例注册到外部的某个服务中心"></a>通过初始化容器将Pod作为一个服务实例注册到外部的某个服务中心</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># pod-with-init-3.yaml</span><br><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">pod-with-init-3</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">initContainers:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">register-to-svc-center</span><br>		<span class="hljs-attr">image:</span> <span class="hljs-string">busybox</span><br>		<span class="hljs-attr">imagePullPolicy:</span> <span class="hljs-string">IfNotPresent</span><br>		<span class="hljs-attr">command:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">sh</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">-c</span> <br>		<span class="hljs-bullet">-</span> <span class="hljs-string">until</span> <span class="hljs-string">curl</span> <span class="hljs-string">-X</span> <span class="hljs-string">POST</span> <span class="hljs-string">-d</span> <span class="hljs-string">&#x27;svc_name=$POD_NAME&amp;svc_ip=$POD_IP&#x27;</span><br>		<span class="hljs-string">http://$SERVICE_REGISTRY_HOST:$SERVICE_REGISTRY_PORT/register;do</span> <span class="hljs-string">echo</span> <span class="hljs-string">-e</span> <br>		<span class="hljs-string">&quot;register to service center&quot;</span><span class="hljs-string">;</span> <span class="hljs-string">sleep</span> <span class="hljs-number">5</span><span class="hljs-string">;</span> <span class="hljs-string">done</span> <span class="hljs-string">;</span> <span class="hljs-string">echo</span> <span class="hljs-string">-e</span> <span class="hljs-string">&quot;register successfully, starting</span><br><span class="hljs-string">		service now&quot;</span><span class="hljs-string">;</span><br>		<span class="hljs-attr">env:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">SERVICE_REGISTRY_HOST</span><br>			<span class="hljs-attr">value:</span> <span class="hljs-number">192.168</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">SERVICE_REGISTRY_PORT</span><br>			<span class="hljs-attr">value:</span> <span class="hljs-number">8080</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">POD_NAME</span><br>			<span class="hljs-attr">valueFrom:</span><br>				<span class="hljs-attr">fieldRef:</span><br>					<span class="hljs-attr">fieldPath:</span> <span class="hljs-string">metadata.name</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">POD_IP</span><br>			<span class="hljs-attr">valueFrom:</span><br>				<span class="hljs-attr">fieldRef:</span><br>					<span class="hljs-attr">fieldPath:</span> <span class="hljs-string">status.podIP</span><br>		<span class="hljs-attr">containers:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">service</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="设置两个初始化容器-1"><a href="#设置两个初始化容器-1" class="headerlink" title="设置两个初始化容器"></a>设置两个初始化容器</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># pod-with-2-init.yaml</span><br><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">pod-with-2-init</span><br>	<span class="hljs-attr">labels:</span><br>		<span class="hljs-attr">app:</span> <span class="hljs-string">nginx</span><br>	<span class="hljs-attr">spec:</span> <br>		<span class="hljs-attr">initContainers:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">init-myservice</span><br>			<span class="hljs-attr">image:</span> <span class="hljs-string">busybox</span><br>			<span class="hljs-attr">imagePullPolicy:</span> <span class="hljs-string">IfNotPresent</span><br>			<span class="hljs-attr">command:</span> [<span class="hljs-string">&#x27;sh&#x27;</span>,<span class="hljs-string">&#x27;-c&#x27;</span>, <span class="hljs-string">&quot;until nslookup myservice.$(cat /var/run/sercets/kubernetes.io</span><br><span class="hljs-string">			/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting </span><br><span class="hljs-string">			for myservice; sleep 2; done&quot;</span>]<br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">init-mydb</span><br>			<span class="hljs-attr">image:</span> <span class="hljs-string">busybox</span><br>			<span class="hljs-attr">imagePullPolicy:</span> <span class="hljs-string">IfNotPresent</span><br>			<span class="hljs-attr">command:</span> [<span class="hljs-string">&#x27;sh&#x27;</span>,<span class="hljs-string">&#x27;-c&#x27;</span>, <span class="hljs-string">&quot;until nslookup mydb.$(cat /var/run/sercets/kubernetes.io</span><br><span class="hljs-string">			/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting </span><br><span class="hljs-string">			for mydb; sleep 2; done&quot;</span>]<br>		<span class="hljs-attr">containers:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">myapp-container</span><br>			<span class="hljs-attr">image:</span> <span class="hljs-string">busybox</span><br>			<span class="hljs-attr">imagePullPolicy:</span> <span class="hljs-string">IfNotPresent</span><br>			<span class="hljs-attr">command:</span> [<span class="hljs-string">&#x27;sh&#x27;</span>,<span class="hljs-string">&#x27;-c&#x27;</span>,<span class="hljs-string">&#x27;echo The app is running! &amp;&amp; sleep 3600&#x27;</span>]<br></code></pre></td></tr></table></figure>
+
+<h3 id="注意事项-1"><a href="#注意事项-1" class="headerlink" title="注意事项"></a>注意事项</h3><ul>
+<li>如果初始化容器运行失败，系统会根据Pod的重启策略进行重启。</li>
+<li>在所有初始化容器都进入运行完毕之前，Pod不会进入Ready状态</li>
+<li>在重启Pod时会重启所有初始化容器</li>
+<li>在创建之后，如果需要修改初始化容器的定义，则只允许修改image字段</li>
+<li>Kubernetes在创建Pod时，会强制检查在初始化容器的定义中是否存在ReadinessProbe，如果存在，则将拒绝创建</li>
+<li>如果Pod设置了activeDeadlineSeconds ， 则可以避免初始化容器持续运行失败并且无限重启</li>
+<li>在Pod中，每个容器的名称都必须唯一</li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Kubernetes/" class="category-chain-item">Kubernetes</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E5%BE%AE%E6%9C%8D%E5%8A%A1/" class="print-no-link">#微服务</a>
+      
+        <a href="/tags/%E8%99%9A%E6%8B%9F%E5%8C%96/" class="print-no-link">#虚拟化</a>
+      
+        <a href="/tags/Kubernetes/" class="print-no-link">#Kubernetes</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Kubernetes Pod</div>
+      <div>http://gadoid.io/2025/08/08/Kubernetes-Pod/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Codfish</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年8月8日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/08/07/Kubernetes-%E7%BB%93%E6%9E%84%E4%B8%8E%E6%A6%82%E5%BF%B5/" title="Kubernetes 结构与概念">
+                        <span class="hidden-mobile">Kubernetes 结构与概念</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"lQzCvqmOtewLtpMfvfxKLomU-MdYXbMMI","appKey":"daMNlw5XcjN8TelT6GCHh8RF","path":"window.location.pathname","placeholder":"让灵感在这里发生","avatar":"monsterid","meta":["nick","mail"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":true,"recordIP":true,"serverURLs":"https://lQzCvqmO.api.lncldglobal.com","emojiCDN":null,"emojiMaps":null,"enableQQ":false,"enable":true,"visitor":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      &copy; 2025 - 2025 <a target="_blank" rel="noopener" href="https://github.com/username">CODFISH</a>
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+<!-- hexo injector body_end start --><script src="/js/chatbot-loader.js" defer></script><!-- hexo injector body_end end --></body>
+</html>

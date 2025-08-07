@@ -26,13 +26,15 @@
 <meta property="og:site_name" content="西北有高楼">
 <meta property="og:description" content="MasterMaster 是集群的控制节点，在每个Kubernetes集群中都需要有一个或一组Master负责管理和控制整个集群。Master通常占用一台独立的服务器，是整个集群的管理者，Master主要运行下面的一些关键进程  Kubernetes API Server(kube-apiserver) : 提供HTTPRESTful API 接口的主要服务，是Kubernetes中对所有资源继续">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://i.111666.best/image/juTIoMTTQYxGvwxaIS1mJ8.png">
 <meta property="article:published_time" content="2025-08-07T05:23:30.000Z">
-<meta property="article:modified_time" content="2025-08-07T05:25:10.725Z">
+<meta property="article:modified_time" content="2025-08-07T06:29:04.218Z">
 <meta property="article:author" content="Codfish">
 <meta property="article:tag" content="微服务">
 <meta property="article:tag" content="虚拟化">
 <meta property="article:tag" content="Kubernetes">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://i.111666.best/image/juTIoMTTQYxGvwxaIS1mJ8.png">
   
   
     <meta name="referrer" content="no-referrer-when-downgrade">
@@ -517,6 +519,7 @@
 <figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># kubectl get svc</span><br><span class="hljs-string">NAME</span>          <span class="hljs-string">TYPE</span>          <span class="hljs-string">CLUSTER-IP</span>      <span class="hljs-string">EXTERNAL-IP</span>   <span class="hljs-string">PORT(S)</span>     <span class="hljs-string">AGE</span><br><span class="hljs-string">kuberntes</span>     <span class="hljs-string">ClusterIP</span>     <span class="hljs-number">10.245</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span>      <span class="hljs-string">&lt;none&gt;</span>        <span class="hljs-number">443</span><span class="hljs-string">/TCP</span>     <span class="hljs-string">174m</span><br><span class="hljs-string">mysql</span>         <span class="hljs-string">ClusterIP</span>     <span class="hljs-number">10.245</span><span class="hljs-number">.161</span><span class="hljs-number">.22</span>   <span class="hljs-string">&lt;none&gt;</span>        <span class="hljs-number">3306</span><span class="hljs-string">/TCP</span>    <span class="hljs-string">18m</span><br><span class="hljs-string">myweb</span>         <span class="hljs-string">NodePort</span>      <span class="hljs-number">10.245</span><span class="hljs-number">.46</span><span class="hljs-number">.172</span>   <span class="hljs-string">&lt;none&gt;</span>        <span class="hljs-number">8080</span><span class="hljs-string">:30001/TCP</span>  <span class="hljs-string">2m35s</span>           <br></code></pre></td></tr></table></figure>
 
 <p>完成了一个简易的微服务搭建。</p>
+<p><img src="https://i.111666.best/image/juTIoMTTQYxGvwxaIS1mJ8.png" srcset="/img/loading.gif" lazyload alt="架构图"></p>
 
                 
               </div>
@@ -610,6 +613,12 @@
                 <div class="post-prevnext my-3">
                   <article class="post-prev col-6">
                     
+                    
+                      <a href="/2025/08/08/Kubernetes-Pod/" title="Kubernetes Pod">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Kubernetes Pod</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
                     
                   </article>
                   <article class="post-next col-6">
