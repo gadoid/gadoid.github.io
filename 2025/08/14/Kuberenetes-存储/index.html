@@ -1,0 +1,901 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/bg/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Codfish">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="Kubernetes通过将容器应用所需的存储资源抽象为Volume 来解决这些问题。 Volume在Kubernetes中也是一种资源，Kubernetes提供了多种类型的Volume供容器应用使用。Pod通过挂载（Mount）的方式来使用一个或多个Volume。与Pod 具有相同生命周期的Volume被称为临时卷。其他类型的Volume是“持久”的，通常比Pod的生命周期更长。 临时卷临时卷与P">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kuberenetes 存储">
+<meta property="og:url" content="http://gadoid.io/2025/08/14/Kuberenetes-%E5%AD%98%E5%82%A8/index.html">
+<meta property="og:site_name" content="西北有高楼">
+<meta property="og:description" content="Kubernetes通过将容器应用所需的存储资源抽象为Volume 来解决这些问题。 Volume在Kubernetes中也是一种资源，Kubernetes提供了多种类型的Volume供容器应用使用。Pod通过挂载（Mount）的方式来使用一个或多个Volume。与Pod 具有相同生命周期的Volume被称为临时卷。其他类型的Volume是“持久”的，通常比Pod的生命周期更长。 临时卷临时卷与P">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-08-14T02:36:23.000Z">
+<meta property="article:modified_time" content="2025-08-14T02:36:58.099Z">
+<meta property="article:author" content="Codfish">
+<meta property="article:tag" content="微服务">
+<meta property="article:tag" content="虚拟化">
+<meta property="article:tag" content="Kubernetes">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Kuberenetes 存储 - 西北有高楼</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"gadoid.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>西北有高楼</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/downloads/" target="_self">
+                <i class="iconfont icon-books-fill"></i>
+                <span>资源下载</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/bg/img/ice.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Kuberenetes 存储"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-08-14 10:36" pubdate>
+          2025年8月14日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          19 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Kuberenetes 存储</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>Kubernetes通过将容器应用所需的存储资源抽象为Volume 来解决这些问题。</p>
+<p>Volume在Kubernetes中也是一种资源，Kubernetes提供了多种类型的Volume供容器应用使用。Pod通过挂载（Mount）的方式来使用一个或多个Volume。与Pod 具有相同生命周期的Volume被称为临时卷。其他类型的Volume是“持久”的，通常比Pod的生命周期更长。</p>
+<h1 id="临时卷"><a href="#临时卷" class="headerlink" title="临时卷"></a>临时卷</h1><p>临时卷与Pod具有相同的生命周期，包括为Pod创建的临时卷（emptyDir, Generic Ephemeral , CSI Ephemeral），以及通过Kubernetes资源对象为Pod提供数据的临时卷等</p>
+<h2 id="emptyDir"><a href="#emptyDir" class="headerlink" title="emptyDir"></a>emptyDir</h2><p>这种类型的Volume将在Pod被调度道Node时，由kubelet进行创建。初始状态下目录为空，被命名为空目录。它与Pod就有相同的声明周期，当Pod被销毁时，emptyDir对应的目录也会被删除。</p>
+<p>在默认情况下，Kubelet会在Node的工作目录下位Pod创建emptyDir 目录。另外，emptyDir可以通过medium 字段设置存储介质位”Memory”，表示使用基于内存的文件系统。</p>
+<p>示例</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">test-pod</span><br><span class="hljs-attr">spec:</span> <br>	<span class="hljs-attr">containers:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">image:</span> <span class="hljs-string">busybox</span><br>		<span class="hljs-attr">name:</span> <span class="hljs-string">test-container</span><br>		<span class="hljs-attr">volumeMounts:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">mountPath:</span> <span class="hljs-string">/cache</span><br>			<span class="hljs-attr">name:</span> <span class="hljs-string">cache-volume</span><br>	<span class="hljs-attr">volumes:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">cache-volume</span><br>		<span class="hljs-attr">emptyDir:</span> &#123;&#125;<br></code></pre></td></tr></table></figure>
+
+<p>设置emptyDir 为内存</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">volumes:</span><br><span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">cache-volume</span><br>	<span class="hljs-attr">emptyDir:</span> &#123;&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="Generic-Ephemeral"><a href="#Generic-Ephemeral" class="headerlink" title="Generic Ephemeral"></a>Generic Ephemeral</h2><p>Generic Ephemeral相比emptyDir 提供更加灵活的存储，并且可以设置容量上线，也可以向其中包含一些初始数据</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">my-app</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">containers:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">my-frontend</span><br>			<span class="hljs-attr">image:</span> <span class="hljs-string">busybox</span><br>			<span class="hljs-attr">volumeMounts:</span><br>			<span class="hljs-bullet">-</span> <span class="hljs-attr">mountPath:</span> <span class="hljs-string">&quot;/scratch&quot;</span><br>				<span class="hljs-attr">name:</span> <span class="hljs-string">scratch-volume</span><br>			<span class="hljs-attr">command:</span> [<span class="hljs-string">&quot;sleep&quot;</span>,<span class="hljs-string">&quot;100000&quot;</span>]<br>	<span class="hljs-attr">volumes:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">scratch-volume</span><br>			<span class="hljs-attr">ephemeral:</span><br>				<span class="hljs-attr">volumeClaimTemplate:</span><br>					<span class="hljs-attr">metadata:</span><br>						<span class="hljs-attr">labels:</span><br>							<span class="hljs-attr">type:</span> <span class="hljs-string">my-frontend-volume</span><br>					<span class="hljs-attr">spec:</span><br>						<span class="hljs-attr">accessModes:</span> [<span class="hljs-string">&quot;ReadWriteOnce&quot;</span>]<br>						<span class="hljs-attr">storageClassName:</span> <span class="hljs-string">&quot;scratch-storage-class&quot;</span><br>						<span class="hljs-attr">resources:</span><br>							<span class="hljs-attr">requests:</span><br>								<span class="hljs-attr">storage:</span> <span class="hljs-string">1Gi</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="CSI-Ephemeral"><a href="#CSI-Ephemeral" class="headerlink" title="CSI Ephemeral"></a>CSI Ephemeral</h2><p>CSI Ephemeral 必须由第三方CSI 存储驱动程序提供</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">pod-csi-ephemeral</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">containers:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">my-frontend</span><br>		<span class="hljs-attr">image:</span> <span class="hljs-string">busybox</span><br>		<span class="hljs-attr">command:</span> [<span class="hljs-string">&quot;sleep&quot;</span>,<span class="hljs-string">&quot;100000&quot;</span>]<br>		<span class="hljs-attr">volumeMounts:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">mountPath:</span> <span class="hljs-string">&quot;/data&quot;</span><br>			<span class="hljs-attr">name:</span> <span class="hljs-string">my-csi-inline-vol</span><br>		<span class="hljs-attr">volumes:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">my-csi-inline-vol</span><br>			<span class="hljs-attr">csi:</span><br>				<span class="hljs-attr">driver:</span> <span class="hljs-string">inline.storage.kubernetes.io</span><br>				<span class="hljs-attr">volumeAttributes:</span><br>					<span class="hljs-attr">foo:</span> <span class="hljs-string">bar</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="ConfigMap"><a href="#ConfigMap" class="headerlink" title="ConfigMap"></a>ConfigMap</h2><p>ConfigMap主要保存应用所需的配置文件，并通过Volume形式被挂载道容器内部的文件系统中。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">cm-test-app</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">contaienr:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">cm-test-app</span><br>		<span class="hljs-attr">image:</span> <span class="hljs-string">kubeguide/tomcat-app:v1</span><br>		<span class="hljs-attr">ports:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">containerPort:</span> <span class="hljs-number">8080</span><br>		<span class="hljs-attr">volumeMounts:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">serverxml</span> <br>			<span class="hljs-attr">mountPath:</span> <span class="hljs-string">/configfiles</span><br>		<span class="hljs-attr">volumes:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">serverxml</span><br>			<span class="hljs-attr">items:</span><br>			<span class="hljs-bullet">-</span> <span class="hljs-attr">key:</span> <span class="hljs-string">key-serverxml</span><br>				<span class="hljs-attr">path:</span> <span class="hljs-string">server.xml</span><br>			<span class="hljs-bullet">-</span> <span class="hljs-attr">key:</span> <span class="hljs-string">key-loggingproperties</span><br>				<span class="hljs-attr">path:</span> <span class="hljs-string">logging.properties</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="Secret"><a href="#Secret" class="headerlink" title="Secret"></a>Secret</h2><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Secret</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">mysecret</span><br><span class="hljs-attr">type:</span> <span class="hljs-string">Opaque</span><br><span class="hljs-attr">data:</span><br>	<span class="hljs-attr">password:</span> <span class="hljs-string">dmFsdWUtMgOk</span><br>	<span class="hljs-attr">username:</span> <span class="hljs-string">dmFsdWUtMQOK</span><br><span class="hljs-string">----</span><br><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">mypod</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">container:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">mycontainer</span><br>		<span class="hljs-attr">image:</span> <span class="hljs-string">redis</span><br>		<span class="hljs-attr">volumeMounts:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">foo</span><br>			<span class="hljs-attr">mountPath:</span> <span class="hljs-string">&quot;etc/foo&quot;</span><br>		<span class="hljs-attr">volumes:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">foo</span><br>			<span class="hljs-attr">secret:</span> <br>				<span class="hljs-attr">secretName:</span> <span class="hljs-string">mysecret</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="Downward-API"><a href="#Downward-API" class="headerlink" title="Downward API"></a>Downward API</h2><p>Downward API 可以将Pod或Container的某些元数据信息以文件形式挂载到容器内，供容器内的应用使用</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>  <span class="hljs-attr">name:</span> <span class="hljs-string">downward-api-demo</span><br>  <span class="hljs-attr">labels:</span><br>    <span class="hljs-attr">app:</span> <span class="hljs-string">nginx</span><br>    <span class="hljs-attr">env:</span> <span class="hljs-string">production</span><br><span class="hljs-attr">spec:</span><br>  <span class="hljs-attr">containers:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">nginx</span><br>    <span class="hljs-attr">image:</span> <span class="hljs-string">nginx:1.20</span><br>    <span class="hljs-attr">volumeMounts:</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">pod-info</span><br>      <span class="hljs-attr">mountPath:</span> <span class="hljs-string">/etc/podinfo</span><br>      <span class="hljs-attr">readOnly:</span> <span class="hljs-literal">true</span><br>    <span class="hljs-attr">command:</span> [<span class="hljs-string">&quot;/bin/sh&quot;</span>]<br>    <span class="hljs-attr">args:</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">-c</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">|</span><br><span class="hljs-string">      echo &quot;Pod信息已挂载到 /etc/podinfo 目录：&quot;</span><br><span class="hljs-string">      ls -la /etc/podinfo/</span><br><span class="hljs-string">      echo &quot;Pod名称: $(cat /etc/podinfo/name)&quot;</span><br><span class="hljs-string">      echo &quot;命名空间: $(cat /etc/podinfo/namespace)&quot;</span><br><span class="hljs-string">      echo &quot;节点名称: $(cat /etc/podinfo/node)&quot;</span><br><span class="hljs-string">      nginx -g &#x27;daemon off;&#x27;</span><br><span class="hljs-string"></span>  <span class="hljs-attr">volumes:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">pod-info</span><br>    <span class="hljs-attr">downwardAPI:</span><br>      <span class="hljs-attr">items:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-attr">path:</span> <span class="hljs-string">&quot;name&quot;</span><br>        <span class="hljs-attr">fieldRef:</span><br>          <span class="hljs-attr">fieldPath:</span> <span class="hljs-string">metadata.name</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-attr">path:</span> <span class="hljs-string">&quot;namespace&quot;</span><br>        <span class="hljs-attr">fieldRef:</span><br>          <span class="hljs-attr">fieldPath:</span> <span class="hljs-string">metadata.namespace</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-attr">path:</span> <span class="hljs-string">&quot;node&quot;</span><br>        <span class="hljs-attr">fieldRef:</span><br>          <span class="hljs-attr">fieldPath:</span> <span class="hljs-string">spec.nodeName</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="Service-Accout-Token"><a href="#Service-Accout-Token" class="headerlink" title="Service Accout Token"></a>Service Accout Token</h2><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">sa-token-test</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">containers:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">container-net</span><br>		<span class="hljs-attr">image:</span> <span class="hljs-string">busybox</span><br>		<span class="hljs-attr">volumeMounts:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">token-vol</span><br>			<span class="hljs-attr">mountPath:</span> <span class="hljs-string">&quot;/service-account&quot;</span><br>			<span class="hljs-attr">readOnly:</span> <span class="hljs-string">ture</span><br>		<span class="hljs-attr">volume:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">token-vol</span><br>		<span class="hljs-attr">projected:</span><br>			<span class="hljs-attr">sources:</span><br>			<span class="hljs-bullet">-</span> <span class="hljs-attr">serviceAccountToken:</span><br>					<span class="hljs-attr">audience:</span> <span class="hljs-string">api</span><br>					<span class="hljs-attr">expirationSeconds:</span> <span class="hljs-number">3600</span><br>					<span class="hljs-attr">path:</span> <span class="hljs-string">token</span><br></code></pre></td></tr></table></figure>
+
+<h1 id="持久卷"><a href="#持久卷" class="headerlink" title="持久卷"></a>持久卷</h1><p>持久卷不直接隶属于Pod资源，而是由Pod定义PVC 资源，再由PVC资源向Kubernetes进行PV的申请与绑定。</p>
+<h2 id="PV和PVC"><a href="#PV和PVC" class="headerlink" title="PV和PVC"></a>PV和PVC</h2><p>PV和PVC 的生命周期主要经过 资源供应，资源绑定，资源使用和资源回收四个阶段</p>
+<h3 id="资源供应"><a href="#资源供应" class="headerlink" title="资源供应"></a>资源供应</h3><p>Kubernete支持两种供应模式</p>
+<ul>
+<li>静态模式： 预先创建若干PV，在PV的定义中能够体现存储资源的特性</li>
+<li>动态模式： 无须先创建PV，通过StorageClass的设置对后端存储资源进行描述，标记存储的类型和特性，用户通过创建PVC对存储类型继续宁申请。StorageClass中的驱动提供者将自动完成PV的创建和PVC的绑定。</li>
+</ul>
+<h3 id="资源绑定"><a href="#资源绑定" class="headerlink" title="资源绑定"></a>资源绑定</h3><p>在用户定义好PVC之后，系统将根据PVC对存储资源的请求，在已存在的PV中选择一个满足要求的PV，一旦找到，就将该PV与用户定义的PVC绑定。如果在系统中没有满足的PV，则PVC会一致处于Pending状态。</p>
+<h3 id="资源使用"><a href="#资源使用" class="headerlink" title="资源使用"></a>资源使用</h3><p>当Pod需要使用存储资源时，需要在Volume的定义中引用PVC类型的Volume，将PVC挂载到容器内的某个路径下进行使用。</p>
+<h3 id="资源回收"><a href="#资源回收" class="headerlink" title="资源回收"></a>资源回收</h3><p>用户使用完资源后，可以删除PVC。与该PVC绑定的PV将被标记为已释放，但它还不能立刻与其他的PVC绑定，Pod在该PVC中生成的数据可能还被留着PV对应的存储设备上，只有在清除这些数据后，才能再次使用该PV。</p>
+<p><strong>回收策略</strong></p>
+<ol>
+<li>Retain</li>
+</ol>
+<p>Retain表示在删除PVC之后，与之绑定的PV不会被删除，仅被标记为已释放。PV中的数据仍然存在，在清空数据前不能被新的PVC使用</p>
+<ol>
+<li>Delete</li>
+</ol>
+<p>Delete表示自动删除PV资源对象和相关后端存储资产，同时会删除与该PV相关的后端存储资产</p>
+<ol>
+<li>Recycle</li>
+</ol>
+<p>回收，删除卷中的所有文件，可以直接被新的PVC使用</p>
+<h2 id="PVC与指定PV绑定"><a href="#PVC与指定PV绑定" class="headerlink" title="PVC与指定PV绑定"></a>PVC与指定PV绑定</h2><ul>
+<li>在PV中，通过claimRef来完成与PVC的绑定</li>
+<li>在PVC中，通过volumeName 指定需要绑定的PV名称</li>
+</ul>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># pv</span><br><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">PersistentVolume</span><br><span class="hljs-attr">metatada:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">foo-pv</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">storageClassName:</span> <span class="hljs-string">&quot;&quot;</span><br>	<span class="hljs-attr">claimRef:</span><br>		<span class="hljs-attr">name:</span> <span class="hljs-string">foo-pvc</span><br>		<span class="hljs-attr">namespace:</span> <span class="hljs-string">foo</span><br><br><span class="hljs-comment"># pvc</span><br><span class="hljs-string">apiVersion</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">PersistentVolumeClaim</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">foo-vol</span><br>	<span class="hljs-attr">namespace:</span> <span class="hljs-string">foo</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">storageClassName:</span> <span class="hljs-string">&quot;&quot;</span><br>	<span class="hljs-attr">volumeName:</span> <span class="hljs-string">foo-pv</span> <br></code></pre></td></tr></table></figure>
+
+<h2 id="PVC资源扩容"><a href="#PVC资源扩容" class="headerlink" title="PVC资源扩容"></a>PVC资源扩容</h2><p>通过设置 关键字段 allowVolumeExpansion: ture</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">storage.k8s.io/v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">StorageClass</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">gluster-vol-default</span><br><span class="hljs-attr">provisioner:</span> <span class="hljs-string">kubernetes.io/glusterfs</span><br><span class="hljs-attr">paramters:</span><br>	<span class="hljs-attr">resturl:</span> <span class="hljs-string">&quot;&lt;http://192.168.10.100:8080&gt;&quot;</span><br>	<span class="hljs-attr">restuser:</span> <span class="hljs-string">&quot;&quot;</span><br>	<span class="hljs-attr">secretNamespace:</span> <span class="hljs-string">&quot;&quot;</span><br>	<span class="hljs-attr">secretName:</span> <span class="hljs-string">&quot;&quot;</span><br><span class="hljs-attr">allowVolumeExpansion:</span> <span class="hljs-literal">true</span><br></code></pre></td></tr></table></figure>
+
+<p>修改时，直接修改绑定的PVC中的 资源限制</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">resources:</span><br>	<span class="hljs-attr">requests:</span><br>		<span class="hljs-attr">storage:</span> <span class="hljs-string">16Gi</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="PV配置项"><a href="#PV配置项" class="headerlink" title="PV配置项"></a>PV配置项</h2><p>不同的PV 是以不同的插件进行设计和实现的。其中内置的插件类型包括</p>
+<p>CSI： 容器存储接口</p>
+<p>FC：光纤存储设备</p>
+<p>hostPath：宿主机目录</p>
+<p>iSCSI：iSCSI存储设备</p>
+<p>NFS：基于NFS协议的网络文件系统</p>
+<p>PV资源对象的关键配置如下：</p>
+<ol>
+<li>存储容量</li>
+</ol>
+<p>用于描述存储的容量，目前仅支持对存储空间的设置</p>
+<ol>
+<li>存储卷模式</li>
+</ol>
+<p>支持配置为块设备或者文件系统，如果块设备为空则自动创建一个文件系统，支持块设备的Volume会以裸块设备的形式被挂载到容器内，并且不会创建任何文件系统</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">PersistentVolume</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">block-pv</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">capacity:</span><br>		<span class="hljs-attr">storage:</span> <span class="hljs-string">10Gi</span><br>	<span class="hljs-attr">accessModes:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">ReadWriteOnce</span><br>	<span class="hljs-attr">persistentVolumeReclaimPolicy:</span> <span class="hljs-string">Retain</span><br>	<span class="hljs-attr">volumeMode:</span> <span class="hljs-string">Block</span><br>	<span class="hljs-attr">fc:</span><br>		<span class="hljs-attr">targetWWNs:</span> [<span class="hljs-string">&quot;50060e801049cfd1&quot;</span>]<br>		<span class="hljs-attr">lun:</span> <span class="hljs-number">0</span><br>		<span class="hljs-attr">readOnly:</span> <span class="hljs-literal">false</span>	<br></code></pre></td></tr></table></figure>
+
+<ol>
+<li>访问模式</li>
+</ol>
+<p>ReadWriteOnce (RWO): 读写权限，只能被单个Node挂载</p>
+<p>ReadOnlyMany  (ROX): 只读权限，允许被多个Node挂载</p>
+<p>ReadWriteMany (RWX): 读写权限，允许被多个Node挂载</p>
+<p>ReadWriteOncePod (RWOP): 可以被耽搁Pod以读写方式挂载</p>
+<ol>
+<li>存储类别</li>
+</ol>
+<p>通过storageClassName参数指定一个StorageClass资源对象的名称</p>
+<ol>
+<li>回收策略</li>
+</ol>
+<p>Retain ： 保留数据</p>
+<p>Delte ： 与PV相连的后端存储完成Volume的删除操作</p>
+<p>Recycle ： 简单清楚文件操作</p>
+<ol>
+<li>节点亲和性</li>
+</ol>
+<p>通过设置nodeAffinity 来使得只有某些Node可以访问Volume</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">nodeAffinity:</span><br>	<span class="hljs-attr">required:</span><br>		<span class="hljs-attr">nodeSelectorTerms:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">matchExpressions:</span><br>			<span class="hljs-bullet">-</span> <span class="hljs-attr">key:</span> <span class="hljs-string">kubernetes.io/hostname</span><br>				<span class="hljs-attr">operator:</span> <span class="hljs-string">In</span><br>				<span class="hljs-attr">values:</span><br>				<span class="hljs-bullet">-</span> <span class="hljs-string">my-node</span><br></code></pre></td></tr></table></figure>
+
+<ol>
+<li>生命周期</li>
+</ol>
+<p>Available ： 可用状态，未与PVC进行绑定</p>
+<p>Bound ： 已与某个PVC绑定</p>
+<p>Released ： 与之绑定的PVC已被删除，但未完成资源回收，不能被其他PVC使用</p>
+<p>Failed ： 自动资源回收失败</p>
+<h2 id="PVC"><a href="#PVC" class="headerlink" title="PVC"></a>PVC</h2><p>pvc作为用户对存储资源的需求申请，主要涉及存储请求，访问模式，PV选择条件和存储类别等信息的设置。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">PersistentVolumeClaim</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">myclaim</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">accessModes:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">ReadWriteOnce</span><br>	<span class="hljs-attr">volumeMode:</span> <span class="hljs-string">Filesystem</span><br>	<span class="hljs-attr">resources:</span><br>		<span class="hljs-attr">requests:</span><br>			<span class="hljs-attr">storage:</span> <span class="hljs-string">8Gi</span><br>	<span class="hljs-attr">storageClassName:</span> <span class="hljs-string">slow</span><br>	<span class="hljs-attr">selector:</span><br>		<span class="hljs-attr">matchLabels:</span><br>			<span class="hljs-attr">release:</span> <span class="hljs-string">&quot;stable&quot;</span><br>		<span class="hljs-attr">matchExpressions:</span><br>			<span class="hljs-bullet">-</span>  &#123;<span class="hljs-attr">key:</span> <span class="hljs-string">environment</span>, <span class="hljs-attr">operator:</span> <span class="hljs-string">In</span>, <span class="hljs-attr">values:</span> [<span class="hljs-string">dev</span>]&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>resource  资源请求，描述对存储资源的请求</li>
+<li>accessModes  可用在PVC上设置请求PV的访问模式</li>
+<li>volumeMode  存储卷模式</li>
+<li>selector  筛选合适的PV进行绑定</li>
+<li>Class 设定需要的后端存储的类别，以减少对后端存储特性的详细信息的依赖。</li>
+</ul>
+<h2 id="Pod中挂载PVC"><a href="#Pod中挂载PVC" class="headerlink" title="Pod中挂载PVC"></a>Pod中挂载PVC</h2><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">myPod</span><br><span class="hljs-attr">spec:</span> <br>	<span class="hljs-attr">containers:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">myfrontend</span><br>		<span class="hljs-attr">image:</span> <span class="hljs-string">nginx</span><br>		<span class="hljs-attr">volumeMounts:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">mountPath:</span> <span class="hljs-string">&quot;/var/www/html&quot;</span><br>			<span class="hljs-attr">name:</span> <span class="hljs-string">mypd</span><br>	<span class="hljs-attr">volumes:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">mypd</span><br>			<span class="hljs-attr">persistentVolumeClaim:</span><br>				<span class="hljs-attr">clientName:</span> <span class="hljs-string">myclaim</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="StorageClass"><a href="#StorageClass" class="headerlink" title="StorageClass"></a>StorageClass</h2><p>StorageClass 作为对存储资源的抽象定义，可对用户设置的PVC申请屏蔽后端存储的细节。</p>
+<p>示例</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">StorageClass</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">standard</span><br><span class="hljs-attr">provisioner:</span> <span class="hljs-string">kubernetes.io/aws-ebs</span><br><span class="hljs-attr">parameters:</span><br>	<span class="hljs-attr">type:</span> <span class="hljs-string">gp2</span><br>	<span class="hljs-attr">reclaimPolicy:</span> <span class="hljs-string">Retain</span><br>	<span class="hljs-attr">allowVolumeExpansion:</span> <span class="hljs-literal">true</span><br>	<span class="hljs-attr">mountOptions:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">debug</span><br>	<span class="hljs-attr">volumeBindingMode:</span> <span class="hljs-string">Immediate</span><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>Provisioner</li>
+</ul>
+<p>描述资源的提供者，用于提供具体的PV资源，可用将其看作后端存储驱动</p>
+<ul>
+<li>Reclaim Policy</li>
+</ul>
+<p>通过动态资源供应模式创建的PV将继承在StorageClass 上设置的回收策略，配置字段名称为“reclaimPolicy”</p>
+<ul>
+<li>allVolumeExpansion</li>
+</ul>
+<p>是否允许卷扩容</p>
+<ul>
+<li>MountOptions</li>
+</ul>
+<p>挂载选项</p>
+<ul>
+<li>Volume Binding mode</li>
+</ul>
+<p>存储绑定模式用于控制何时将PVC与动态创建的PV绑定。</p>
+<ul>
+<li>Parameters</li>
+</ul>
+<p>存储参数</p>
+<ul>
+<li>AWS EBS Volume</li>
+</ul>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">kind:</span> <span class="hljs-string">StorageClass</span><br><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">storage.k8s.io/v1</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">slow</span><br><span class="hljs-attr">provisioner:</span> <span class="hljs-string">kubernetes.io/aws-ebs</span><br><span class="hljs-attr">parameters:</span><br>	<span class="hljs-attr">type:</span> <span class="hljs-string">iol</span><br>	<span class="hljs-attr">iopsPerGB:</span> <span class="hljs-string">&quot;10&quot;</span><br>	<span class="hljs-attr">fsType:</span> <span class="hljs-string">ext4</span><br><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>NFS Volume</li>
+</ul>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">storage.k8s.io/v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">StroageClass</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">example-fs</span><br><span class="hljs-attr">provisioner:</span> <span class="hljs-string">example.com/external-nfs</span><br><span class="hljs-attr">paramters:</span><br>	<span class="hljs-attr">server:</span> <span class="hljs-string">nfs-server.example.com</span><br>	<span class="hljs-attr">path:</span> <span class="hljs-string">/share</span><br>	<span class="hljs-attr">readOnly:</span> <span class="hljs-string">&quot;false&quot;</span><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>AzureFile Volume</li>
+</ul>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">storage.k8s.io/v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">StorageClass</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">azurefile</span><br><span class="hljs-attr">provisioner:</span> <span class="hljs-string">kubernetes.io/azure-file</span><br><span class="hljs-attr">paramters:</span><br>	<span class="hljs-attr">skuName:</span> <span class="hljs-string">Standard_LRS</span><br>	<span class="hljs-attr">location:</span> <span class="hljs-string">eastus</span><br>	<span class="hljs-attr">storageAccount:</span> <span class="hljs-string">azure_storage_account_name</span><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>Local Volume</li>
+</ul>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">storage.k8s.io/v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">StorageClass</span><br><span class="hljs-attr">metadata:</span> <br>	<span class="hljs-attr">name:</span> <span class="hljs-string">local-storage</span><br><span class="hljs-attr">provisioner:</span> <span class="hljs-string">kubernetes.io/no-provisioner</span><br><span class="hljs-attr">volumeBindingMode:</span> <span class="hljs-string">WaitForFirstConsumer</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="设置默认StorageClass"><a href="#设置默认StorageClass" class="headerlink" title="设置默认StorageClass"></a>设置默认StorageClass</h3><ol>
+<li>开启默认Storage功能</li>
+</ol>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-string">--enable-admission-plugins=...,DefaultStorageClass</span><br></code></pre></td></tr></table></figure>
+
+<ol>
+<li>在StorageClass中定义 一个注解</li>
+</ol>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">kind:</span> <span class="hljs-string">StorageClass</span><br><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">storage.k8s.io/v1</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">gold</span><br>	<span class="hljs-attr">annotations:</span><br>		<span class="hljs-string">storageclass.beta.kubernetes.io/is-default-class=&quot;true&quot;</span><br><span class="hljs-attr">provisioner:</span> <span class="hljs-string">kubernetes.io/gce-pd</span><br><span class="hljs-attr">parameters:</span><br>	<span class="hljs-attr">type:</span> <span class="hljs-string">pd-ssd</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="内置Volume类型"><a href="#内置Volume类型" class="headerlink" title="内置Volume类型"></a>内置Volume类型</h2><h3 id="NFS"><a href="#NFS" class="headerlink" title="NFS"></a>NFS</h3><p>将网络文件系统中的目录或文件挂载到容器内部使用</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">pod-use-nfs</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">contaienrs:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">image:</span> <span class="hljs-string">busybox</span><br>		<span class="hljs-attr">name:</span> <span class="hljs-string">busybox</span><br>		<span class="hljs-attr">volumeMounts:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">mountPath:</span> <span class="hljs-string">/data</span><br>			<span class="hljs-attr">name:</span> <span class="hljs-string">nfs-volume</span><br>	<span class="hljs-attr">volumes:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">nfs-volume</span><br>		<span class="hljs-attr">nfs:</span><br>			<span class="hljs-attr">server:</span> <span class="hljs-number">10.1</span><span class="hljs-number">.1</span><span class="hljs-number">.1</span><br>			<span class="hljs-attr">path:</span> <span class="hljs-string">/nfs_data</span><br>			<span class="hljs-attr">readOnly:</span> <span class="hljs-literal">true</span> <br></code></pre></td></tr></table></figure>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Kubernetes/" class="category-chain-item">Kubernetes</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E5%BE%AE%E6%9C%8D%E5%8A%A1/" class="print-no-link">#微服务</a>
+      
+        <a href="/tags/%E8%99%9A%E6%8B%9F%E5%8C%96/" class="print-no-link">#虚拟化</a>
+      
+        <a href="/tags/Kubernetes/" class="print-no-link">#Kubernetes</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Kuberenetes 存储</div>
+      <div>http://gadoid.io/2025/08/14/Kuberenetes-存储/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Codfish</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年8月14日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/08/14/Kuberenetes-%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/" title="Kuberenetes 网络与通信">
+                        <span class="hidden-mobile">Kuberenetes 网络与通信</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"lQzCvqmOtewLtpMfvfxKLomU-MdYXbMMI","appKey":"daMNlw5XcjN8TelT6GCHh8RF","path":"window.location.pathname","placeholder":"让灵感在这里发生","avatar":"monsterid","meta":["nick","mail"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":true,"recordIP":true,"serverURLs":"https://lQzCvqmO.api.lncldglobal.com","emojiCDN":null,"emojiMaps":null,"enableQQ":false,"enable":true,"visitor":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      &copy; 2025 - 2025 <a target="_blank" rel="noopener" href="https://github.com/username">CODFISH</a>
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+<!-- hexo injector body_end start --><script src="/js/chatbot-loader.js" defer></script><!-- hexo injector body_end end --></body>
+</html>

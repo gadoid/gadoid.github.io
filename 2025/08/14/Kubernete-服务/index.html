@@ -1,0 +1,1099 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/bg/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Codfish">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="Service服务是微服务架构中的核心概念，通过创建Service，可以为一组具有相同功能的容器应用提供一个统一的入口地址，通过内置的负载均衡器将请求分发到后端的多个容器应用上。 定义Service用于为一组提供服务的Pod对象抽象一个稳定的网络地址，是Kubernetes实现微服务架构的核心概念。通过Service的定义设置的访问地址是DNS域名格式的服务名称。但对于客户端应用来说，网络访问方式">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kubernete Service">
+<meta property="og:url" content="http://gadoid.io/2025/08/14/Kubernete-%E6%9C%8D%E5%8A%A1/index.html">
+<meta property="og:site_name" content="西北有高楼">
+<meta property="og:description" content="Service服务是微服务架构中的核心概念，通过创建Service，可以为一组具有相同功能的容器应用提供一个统一的入口地址，通过内置的负载均衡器将请求分发到后端的多个容器应用上。 定义Service用于为一组提供服务的Pod对象抽象一个稳定的网络地址，是Kubernetes实现微服务架构的核心概念。通过Service的定义设置的访问地址是DNS域名格式的服务名称。但对于客户端应用来说，网络访问方式">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://i.111666.best/image/RyMWclxLt3YP7KZZP01zOq.png">
+<meta property="article:published_time" content="2025-08-14T02:19:52.000Z">
+<meta property="article:modified_time" content="2025-08-14T02:30:55.518Z">
+<meta property="article:author" content="Codfish">
+<meta property="article:tag" content="微服务">
+<meta property="article:tag" content="虚拟化">
+<meta property="article:tag" content="Kubernetes">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://i.111666.best/image/RyMWclxLt3YP7KZZP01zOq.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Kubernete Service - 西北有高楼</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"gadoid.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>西北有高楼</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/downloads/" target="_self">
+                <i class="iconfont icon-books-fill"></i>
+                <span>资源下载</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/bg/img/ice.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Kubernete Service"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-08-14 10:19" pubdate>
+          2025年8月14日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          4.7k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          39 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Kubernete Service</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>Service服务是微服务架构中的核心概念，通过创建Service，可以为一组具有相同功能的容器应用提供一个统一的入口地址，通过内置的负载均衡器将请求分发到后端的多个容器应用上。</p>
+<h1 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h1><p>Service用于为一组提供服务的Pod对象抽象一个稳定的网络地址，是Kubernetes实现微服务架构的核心概念。通过Service的定义设置的访问地址是DNS域名格式的服务名称。但对于客户端应用来说，网络访问方式并没有改变。Service还提供了负载均衡器功能，可以将请求负载分发到各个Pod容器上。</p>
+<h1 id="配置信息"><a href="#配置信息" class="headerlink" title="配置信息"></a>配置信息</h1><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Service</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">string</span><br>	<span class="hljs-attr">namespace:</span> <span class="hljs-string">string</span><br>	<span class="hljs-attr">labels:</span> <br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">string</span><br>	<span class="hljs-attr">annotations:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">string</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">selector:</span> []<br>	<span class="hljs-attr">type:</span> <span class="hljs-string">string</span><br>	<span class="hljs-attr">clusterIP:</span> <span class="hljs-string">string</span><br>	<span class="hljs-attr">sessionAffinity:</span> <span class="hljs-string">string</span><br>	<span class="hljs-attr">ports:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">string</span><br>		<span class="hljs-attr">protocol:</span> <span class="hljs-string">string</span><br>		<span class="hljs-attr">port:</span> <span class="hljs-string">int</span><br>		<span class="hljs-attr">targetPort:</span> <span class="hljs-string">int</span><br>		<span class="hljs-attr">nodePort:</span> <span class="hljs-string">int</span><br>	<span class="hljs-attr">status:</span><br>		<span class="hljs-attr">loadBanlancer:</span><br>			<span class="hljs-attr">ingress:</span><br>				<span class="hljs-attr">ip:</span> <span class="hljs-string">string</span><br>				<span class="hljs-attr">hostname:</span> <span class="hljs-string">string</span><br></code></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>字段路径</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>apiVersion</code></td>
+<td><code>string</code></td>
+<td>API 版本，例如 <code>v1</code>，决定了 Kubernetes 使用的资源定义版本。</td>
+</tr>
+<tr>
+<td><code>kind</code></td>
+<td><code>string</code></td>
+<td>资源类型，这里是 <code>Service</code>，表示定义一个服务。</td>
+</tr>
+<tr>
+<td><code>metadata.name</code></td>
+<td><code>string</code></td>
+<td>Service 名称，必须在同一命名空间中唯一。</td>
+</tr>
+<tr>
+<td><code>metadata.namespace</code></td>
+<td><code>string</code></td>
+<td>所属命名空间，不指定时默认为 <code>default</code>。</td>
+</tr>
+<tr>
+<td><code>metadata.labels</code></td>
+<td><code>map&lt;string,string&gt;</code></td>
+<td>标签（键值对），用于资源的标识和选择器匹配。</td>
+</tr>
+<tr>
+<td><code>metadata.annotations</code></td>
+<td><code>map&lt;string,string&gt;</code></td>
+<td>注解（键值对），用于存储非标识性元数据，如说明、外部系统信息等。</td>
+</tr>
+<tr>
+<td><code>spec.selector</code></td>
+<td><code>map&lt;string,string&gt;</code></td>
+<td>Pod 标签选择器，指定 Service 要关联的 Pod（通过标签匹配）。</td>
+</tr>
+<tr>
+<td><code>spec.type</code></td>
+<td><code>string</code></td>
+<td>Service 类型： -<code>ClusterIP</code>（默认）：只在集群内部可访问。 -<code>NodePort</code>：在每个节点暴露一个端口对外访问。 -<code>LoadBalancer</code>：使用云服务商的负载均衡器。 -<code>ExternalName</code>：通过 DNS 名称代理到外部服务。</td>
+</tr>
+<tr>
+<td><code>spec.clusterIP</code></td>
+<td><code>string</code></td>
+<td>Service 的虚拟 IP（Cluster IP）。由 Kubernetes 分配或手动指定。</td>
+</tr>
+<tr>
+<td><code>spec.sessionAffinity</code></td>
+<td><code>string</code></td>
+<td>会话亲和性： -<code>None</code>（默认）：无会话保持。 -<code>ClientIP</code>：同一客户端 IP 始终访问同一 Pod。</td>
+</tr>
+<tr>
+<td><code>spec.ports[].name</code></td>
+<td><code>string</code></td>
+<td>端口名称，可选，用于区分不同用途的端口。</td>
+</tr>
+<tr>
+<td><code>spec.ports[].protocol</code></td>
+<td><code>string</code></td>
+<td>协议类型，如 <code>TCP</code>（默认）或 <code>UDP</code>。</td>
+</tr>
+<tr>
+<td><code>spec.ports[].port</code></td>
+<td><code>int</code></td>
+<td>Service 暴露的端口号。</td>
+</tr>
+<tr>
+<td><code>spec.ports[].targetPort</code></td>
+<td><code>int/string</code></td>
+<td>对应 Pod 容器上的端口号（或端口名）。</td>
+</tr>
+<tr>
+<td><code>spec.ports[].nodePort</code></td>
+<td><code>int</code></td>
+<td>当 <code>type=NodePort</code>时，节点对外暴露的端口号（范围：30000-32767）。</td>
+</tr>
+<tr>
+<td><code>status.loadBalancer.ingress[].ip</code></td>
+<td><code>string</code></td>
+<td>负载均衡器分配的外部 IP 地址（仅 <code>LoadBalancer</code>类型）。</td>
+</tr>
+<tr>
+<td><code>status.loadBalancer.ingress[].hostname</code></td>
+<td><code>string</code></td>
+<td>负载均衡器分配的外部主机名（仅 <code>LoadBalancer</code>类型）。</td>
+</tr>
+</tbody></table>
+<h1 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h1><p>Service主要用于提供网络服务，通过Service的定义，能够为客户端应用提供稳定的访问地址和负载均衡功能，以及屏蔽后端变化。</p>
+<h1 id="应用"><a href="#应用" class="headerlink" title="应用"></a>应用</h1><p>创建一个网络服务模板</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># webapp-deployment.yaml</span><br><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">apps/v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Deployment</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">webapp</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">replicas:</span> <span class="hljs-number">2</span><br>	<span class="hljs-attr">selecotr:</span> <br>		<span class="hljs-attr">matchLabels:</span><br>			<span class="hljs-attr">app:</span> <span class="hljs-string">webapp</span><br>	<span class="hljs-attr">template:</span><br>		<span class="hljs-attr">metadata:</span><br>			<span class="hljs-attr">labels:</span><br>				<span class="hljs-attr">app:</span> <span class="hljs-string">webapp</span><br>		<span class="hljs-attr">spec:</span><br>			<span class="hljs-attr">containers:</span><br>			<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">webapp</span><br>				<span class="hljs-attr">image:</span> <span class="hljs-string">kubeguide/tomcat-app:v1</span><br>				<span class="hljs-attr">ports:</span><br>				<span class="hljs-bullet">-</span> <span class="hljs-string">containerPort:8080</span><br></code></pre></td></tr></table></figure>
+
+<p>部署deployment后，会创建两个Pod ，它们具备不同的IP地址信息。</p>
+<p>在外部进行访问的时候 ，服务端既不应该将实际的服务端口暴露到系统之外，同时也必然对外提供一个统一的服务接口，这里就需要通过Service这个资源对象完成对外部请求的支持和分发</p>
+<p>kubebernetes提供了expose命令 ，来直接完成控制器对应Service的创建。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-string">kubectl</span> <span class="hljs-string">expose</span> <span class="hljs-string">deployment</span> <span class="hljs-string">webapp</span><br><span class="hljs-string">service/webapp</span> <span class="hljs-string">exposed</span><br></code></pre></td></tr></table></figure>
+
+<p>会创建对应的服务</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-string">kubectl</span> <span class="hljs-string">get</span> <span class="hljs-string">services</span><br><span class="hljs-string">NAME</span>       <span class="hljs-string">TYPE</span>      <span class="hljs-string">CLUSTER-IP</span>           <span class="hljs-string">EXTERNAL-IP</span>       <span class="hljs-string">PORT(S)</span>    <span class="hljs-string">AGE</span><br><span class="hljs-string">webapp</span>     <span class="hljs-string">ClusterIP</span> <span class="hljs-number">169.169</span><span class="hljs-number">.140</span><span class="hljs-number">.242</span>      <span class="hljs-string">&lt;NONE&gt;</span>            <span class="hljs-number">8080</span><span class="hljs-string">/TCP</span>   <span class="hljs-string">14s</span><br></code></pre></td></tr></table></figure>
+
+<p>查看服务可以查询到它所管理的endpoint 地址信息</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># kubectl describe service webapp</span><br><span class="hljs-attr">Name:</span>                    <span class="hljs-string">webapp</span><br><span class="hljs-attr">Namespace:</span>               <span class="hljs-string">default</span><br><span class="hljs-attr">Labels:</span>                  <span class="hljs-string">&lt;none&gt;</span><br><span class="hljs-attr">Annotations:</span>             <span class="hljs-string">&lt;app=webapp&gt;</span><br><span class="hljs-attr">Selector:</span>                <span class="hljs-string">app=webapp</span><br><span class="hljs-attr">Type:</span>                    <span class="hljs-string">ClusterIP</span><br><span class="hljs-attr">IP:</span>                      <span class="hljs-number">169.169</span><span class="hljs-number">.140</span><span class="hljs-number">.229</span><br><span class="hljs-attr">IPs:</span>                     <span class="hljs-number">169.169</span><span class="hljs-number">.140</span><span class="hljs-number">.229</span><br><span class="hljs-attr">Port:</span>                    <span class="hljs-string">&lt;unset&gt;</span>  <span class="hljs-number">8080</span><span class="hljs-string">/TCP</span><br><span class="hljs-attr">TargetPort:</span>              <span class="hljs-number">8080</span><span class="hljs-string">/TCP</span><br><span class="hljs-attr">Endpoints:</span>               <span class="hljs-number">10.0</span><span class="hljs-number">.95</span><span class="hljs-number">.22</span><span class="hljs-string">:8080</span> <span class="hljs-string">,</span> <span class="hljs-number">10.0</span><span class="hljs-number">.95</span><span class="hljs-number">.23</span><span class="hljs-string">:8080</span><br><span class="hljs-attr">Session Affinity:</span>        <span class="hljs-string">None</span><br><span class="hljs-attr">Events:</span>                  <span class="hljs-string">&lt;none&gt;</span><br></code></pre></td></tr></table></figure>
+
+<p>也可以通过命令查询service关联的 endpoint 资源对象</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># kubectl get endpoints</span><br><span class="hljs-string">或</span><br><span class="hljs-comment"># kubectl get endpointslices</span><br></code></pre></td></tr></table></figure>
+
+<p>Service 自动完成了负载分发工作</p>
+<h2 id="负载均衡机制"><a href="#负载均衡机制" class="headerlink" title="负载均衡机制"></a>负载均衡机制</h2><p>负载均衡机制主要由kubeproxy负责实现</p>
+<h3 id="kube-proxy的代理模式"><a href="#kube-proxy的代理模式" class="headerlink" title="kube-proxy的代理模式"></a>kube-proxy的代理模式</h3><ul>
+<li><p>iptables模式</p>
+<ul>
+<li>优点 转发效率高，稳定</li>
+<li>iptables规则没有对后端的健康检查机制。可能会出现无法获知Pod状态导致的服务不可靠。需要使用readinessProbe探针确定服务可用性。每次新建Service或Endpoint发生变化是，kube-proxy都会刷新本Node的全部iptables规则，可以通过调整策略来控制同步时间</li>
+</ul>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">iptables:</span><br>	<span class="hljs-attr">minSyncPeriod:</span> <span class="hljs-string">1s</span><br>	<span class="hljs-attr">syncPeriod:</span> <span class="hljs-string">30s</span><br></code></pre></td></tr></table></figure>
+
+<p>minSyncPeriod: 同步iptables规则的最短时间间隔</p>
+<ul>
+<li>属性为0时，表示Service或Endpoint发生变化就会立刻同步规则</li>
+<li>设置较大值时可能会导致间隔时间过长</li>
+</ul>
+<p>syncPeriod: 设置iptables规则的同步时间间隔，用于与Service或EndpointSlice变化无关的iptables规则的同步，以及用于定时清理iptables规则</p>
+</li>
+<li><p>ipvs 模式</p>
+<ul>
+<li>ipvs模式基于Linux操作系统内核的netfilter钩子函数，类似于iptables模式，使用散列表作为底层数据结构，并且工作在内核空间，这使得ipvs模式比iptables模式的转发性能更高，延迟更低，同步效率也更高</li>
+<li>ipvs支持的负载均衡策略<ul>
+<li>rr （Round Robin）： 轮询</li>
+<li>wrr （Weighted Round Robin）：加权轮询</li>
+<li>lc （Least Connection）：最小连接数</li>
+<li>wlc （Weighted Least Connection）：加权最小连接数</li>
+<li>lblc （Locality Based Least Connection）：基于地域的最小连接数</li>
+<li>lblcr （Locality Based Least Connection with Replication）：带副本的基于地域的最小连接数</li>
+<li>sh （Source Hashing）： 源地址散列</li>
+<li>dh （Destination Hashing）：目的地址散列</li>
+<li>sed （Shortest Expected Delay）：最短期望延时</li>
+<li>nq (Neve Queue)：永不排队</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>kernelspace模式</p>
+<ul>
+<li>基于windows内核数据包转发规则的代理模式</li>
+</ul>
+</li>
+</ul>
+<h3 id="会话保持机制"><a href="#会话保持机制" class="headerlink" title="会话保持机制"></a>会话保持机制</h3><p>Service支持通过设置sessionAffinity来实现基于客户端IP地址的会话保持机制，可以将某个客户端来源IP地址发起的请求转发到后端的某个Pod上，之后从相同的客户端IP发起的请求都将被转发到相同的后端Pod上。同时可以配置客户端保持会话的最长时间</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Service</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">webapp</span><br><span class="hljs-attr">spec:</span> <br>	<span class="hljs-attr">sessionAffinity:</span> <span class="hljs-string">ClientIP</span><br>	<span class="hljs-attr">sessionAffinityConfig:</span><br>		<span class="hljs-attr">clientIP:</span><br>			<span class="hljs-attr">timeoutSeconds:</span> <span class="hljs-number">10800</span><br>	<span class="hljs-attr">ports:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">protocol:</span> <span class="hljs-string">TCP</span><br>	  <span class="hljs-attr">port:</span> <span class="hljs-number">8080</span><br>	  <span class="hljs-attr">targetPort:</span> <span class="hljs-number">8080</span><br>	<span class="hljs-attr">selector:</span><br>		<span class="hljs-attr">app:</span> <span class="hljs-string">webapp</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="流量策略"><a href="#流量策略" class="headerlink" title="流量策略"></a>流量策略</h3><p>通过设置 spec.internalTrafficPolicy 和 spec.externalTrafficPolicy  设置流量路由策略</p>
+<p><strong>internalTrafficPolicy</strong></p>
+<p>Cluster : 将从内部源发起的流量路由到所有处于Ready状态的Endpoint</p>
+<p>Local： 将从内部源发起的流量仅路由到本地Node上处于Ready状态的Endpoint，如果没有Ready的Endpoint，则丢弃该流量</p>
+<p><strong>externalTrafficPolicy</strong></p>
+<p>Cluster : 将从外部源发起的流量路由到所有处于Ready状态的Endpoint</p>
+<p>Local： 将从外部源发起的流量仅路由到本地Node上处于Ready状态的Endpoint，如果没有Ready的Endpoint，则丢弃该流量</p>
+<p><strong>ProxyTerminatingEndpoints</strong></p>
+<p>发往正在停止的Endpoint的流量策略。开启ProxyTerminatingEndpoints特性门控进行启用，当流量策略为Local时，kube-proxy将检测本地Node上存在的Endpoint并且所有Endpoint都处于停止中状态，但是服务仍然就绪且可以接受请求。</p>
+<p><img src="https://i.111666.best/image/RyMWclxLt3YP7KZZP01zOq.png" srcset="/img/loading.gif" lazyload alt="负载均衡"></p>
+<h2 id="多端口设置"><a href="#多端口设置" class="headerlink" title="多端口设置"></a>多端口设置</h2><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Service</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">webapp</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">ports:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">port:</span> <span class="hljs-number">8080</span><br>	<span class="hljs-attr">targetPort:</span> <span class="hljs-number">8080</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">port:</span> <span class="hljs-number">8085</span><br>	<span class="hljs-attr">targetPort:</span> <span class="hljs-number">8085</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">management</span><br>	<span class="hljs-attr">selector:</span><br>		<span class="hljs-attr">app:</span> <span class="hljs-string">webapp</span><br></code></pre></td></tr></table></figure>
+
+<p>或者多协议配置</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Service</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">kube-dns</span><br>	<span class="hljs-attr">namespace:</span> <span class="hljs-string">kube-system</span><br>	<span class="hljs-attr">labels:</span><br>		<span class="hljs-attr">k8s-app:</span> <span class="hljs-string">kube-dns</span><br>		<span class="hljs-attr">kubernetes.io/cluster-service:</span> <span class="hljs-string">&quot;true&quot;</span><br>		<span class="hljs-attr">kubernetes.io/name:</span> <span class="hljs-string">&quot;KubeDNS&quot;</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">selector:</span><br>		<span class="hljs-attr">k8s-app:</span> <span class="hljs-string">kube-dns</span><br>	<span class="hljs-attr">clusterIP:</span> <span class="hljs-number">169.169</span><span class="hljs-number">.0</span><span class="hljs-number">.100</span><br>	<span class="hljs-attr">ports:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">dns</span><br>		<span class="hljs-attr">port:</span> <span class="hljs-number">53</span><br>		<span class="hljs-attr">protocol:</span> <span class="hljs-string">UDP</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">dns-tcp</span><br>		<span class="hljs-attr">port:</span> <span class="hljs-number">53</span><br>		<span class="hljs-attr">protocol:</span> <span class="hljs-string">TCP</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="外部服务定义为Service"><a href="#外部服务定义为Service" class="headerlink" title="外部服务定义为Service"></a>外部服务定义为Service</h2><p>不再使用标签绑定</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-meta">---</span><br><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Service</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">my-service</span><br><span class="hljs-attr">spec:</span> <br>	<span class="hljs-attr">ports:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">protocol:</span> <span class="hljs-string">TCP</span><br>	<span class="hljs-attr">port:</span> <span class="hljs-number">80</span><br>	<span class="hljs-attr">targetPort:</span> <span class="hljs-number">80</span><br><span class="hljs-meta">--- </span><br><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Endpoints</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">my-service</span><br><span class="hljs-attr">subnets:</span><br><span class="hljs-bullet">-</span> <span class="hljs-attr">addresses:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">ip:</span> <span class="hljs-number">1.2</span><span class="hljs-number">.3</span><span class="hljs-number">.4</span><br>	<span class="hljs-attr">ports:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">port:</span> <span class="hljs-number">80</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="Serviced-的类型"><a href="#Serviced-的类型" class="headerlink" title="Serviced 的类型"></a>Serviced 的类型</h2><h3 id="ClusterIP"><a href="#ClusterIP" class="headerlink" title="ClusterIP"></a>ClusterIP</h3><p>Kubernetes默认会自动设置Service的虚拟IP地址，仅可被集群中的客户端应用访问</p>
+<p>kube-apiserver服务的启动参数—service-cluster-ip-range设置了Service的IP地址范围，系统将自动从这个IP地址池中为Service分配一个可用的IP地址</p>
+<p>地址也可用手动指定，但是必须未被其他应用所使用，且在地址池范围内。</p>
+<h3 id="NodePort"><a href="#NodePort" class="headerlink" title="NodePort"></a>NodePort</h3><p>将Service的端口号映射到每个Node的一个端口号上，这样集群中的任意Node都可以作为Service的访问入口地址，即NodeIP:NodePort</p>
+<p>NodePort类型用于将Service暴露到Node上，这样集群外的客户端可用通过Node的IP地址访问集群中的Service</p>
+<h3 id="LoadBalancer"><a href="#LoadBalancer" class="headerlink" title="LoadBalancer"></a>LoadBalancer</h3><p>将Service映射到一个已存在的负载均衡器的IP地址上，通常在公有云环境下使用</p>
+<p>通常在使用外部负载均衡器的云平台时，可用设置Service的类型为LoadBalancer，用于将内部Service映射到云平台的负载均衡器上。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-string">apiVersion:v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Service</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">my-service</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">type:</span> <span class="hljs-string">LoadBalancer</span><br>	<span class="hljs-attr">selector:</span><br>		<span class="hljs-attr">app:</span> <span class="hljs-string">MyApp</span><br>	<span class="hljs-attr">ports:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">protocol:</span> <span class="hljs-string">TCP</span><br>		<span class="hljs-attr">port:</span> <span class="hljs-number">80</span><br>		<span class="hljs-attr">targetPort:</span> <span class="hljs-number">9376</span><br>	<span class="hljs-attr">clusterIP:</span> <span class="hljs-number">10.0</span><span class="hljs-number">.171</span><span class="hljs-number">.239</span><br></code></pre></td></tr></table></figure>
+
+<p>服务创建成功后，会向Service的配置信息中补充LoadBalancer的IP地址</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">status:</span><br>	<span class="hljs-attr">loadBalancer:</span><br>		<span class="hljs-attr">ingress:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">ip:</span> <span class="hljs-number">192.0</span><span class="hljs-number">.2</span><span class="hljs-number">.127</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="ExternalName"><a href="#ExternalName" class="headerlink" title="ExternalName"></a>ExternalName</h3><p>将Service映射为一个外部域名地址，通过externalName字段进行设置</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Service</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">my-service</span><br>	<span class="hljs-attr">namespace:</span> <span class="hljs-string">prod</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">type:</span> <span class="hljs-string">ExternalName</span><br>	<span class="hljs-attr">externalName:</span> <span class="hljs-string">my.database.example.com</span><br></code></pre></td></tr></table></figure>
+
+<p>当外部请求尝试访问my-service.prod.svc.cluster.local时 会自动替换为 <a target="_blank" rel="noopener" href="http://my.database.example.com/">my.database.example.com</a></p>
+<h2 id="无头服务"><a href="#无头服务" class="headerlink" title="无头服务"></a>无头服务</h2><p>当服务没有入口访问地址（clusterIP），那么kube-proxy不会为器创建负载转发规则，而服务名的解析机制根据无头服务是否设置了标签选择器而采取不同策略</p>
+<ol>
+<li>设置了标签选择器</li>
+</ol>
+<p>如果设置了标签选择器，则Kubernetes将根据标签选择器查询后端Pod列表，自动创建Endpoints列表，将服务名的解析机制设置为：当客户段访问该服务名时，得到的是全部Endpoints列表</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># nginx-headless-service.yaml</span><br><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Service</span><br><span class="hljs-attr">metadata:</span> <br>	<span class="hljs-attr">name:</span> <span class="hljs-string">nginx</span><br>	<span class="hljs-attr">labels:</span><br>		<span class="hljs-attr">app:</span> <span class="hljs-string">nginx</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">ports:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">port:</span> <span class="hljs-number">80</span><br>	<span class="hljs-attr">clusterIP:</span> <span class="hljs-string">None</span><br>	<span class="hljs-attr">selector:</span><br>		<span class="hljs-attr">app:</span> <span class="hljs-string">nginx</span><br></code></pre></td></tr></table></figure>
+
+<ol>
+<li>未设置标签选择器</li>
+</ol>
+<p>如果Headless Service 没有设置标签选择器，则Kubernetes不会自动创建对应的Endpoints列表。DNS</p>
+<p>会根据下列条件尝试对该服务名设置DNS记录</p>
+<ul>
+<li>如果Service的类型未ExternalName，则尝试将服务名的DNS记录设置为外部名称对应的CNAME记录</li>
+<li>对于其他类型的Service，系统将对Service后端处于Ready状态的Endpoint创建DNS记录，针对IPV4地址创建A记录，针对IPV6地址类型创建AAAA记录</li>
+</ul>
+<h2 id="为服务设置外部IP"><a href="#为服务设置外部IP" class="headerlink" title="为服务设置外部IP"></a>为服务设置外部IP</h2><p>在某些环境下，如果可以通过某个集群外部IP地址访问集群，可以将Service暴露给外部IP地址。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Service</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">webapp</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">selector:</span><br>		<span class="hljs-attr">app:</span> <span class="hljs-string">webapp</span><br>	<span class="hljs-attr">ports:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">protocol:</span> <span class="hljs-string">TCP</span><br>	  <span class="hljs-attr">port:</span> <span class="hljs-number">8080</span><br>	  <span class="hljs-attr">targetPort:</span> <span class="hljs-number">8080</span><br>	 <span class="hljs-attr">externaleIPs:</span><br>	 <span class="hljs-bullet">-</span> <span class="hljs-number">192.168</span><span class="hljs-number">.18</span><span class="hljs-number">.100</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="服务发现"><a href="#服务发现" class="headerlink" title="服务发现"></a>服务发现</h2><p>服务发现机制指在一个Kubernetes集群中客户端应用如何获取后端服务的访问地址。Kubernetes提供了两种机制供客户端应用以固定的方法获取后端服务的访问地址</p>
+<h3 id="环境变量"><a href="#环境变量" class="headerlink" title="环境变量"></a>环境变量</h3><p>在一个Pod运行起来时，系统会自动为其容器运行环境注入所有集群中有效Service的信息。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Service</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">webapp</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">ports:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">protocol:</span> <span class="hljs-string">TCP</span><br>		<span class="hljs-attr">port:</span> <span class="hljs-number">8080</span><br>		<span class="hljs-attr">targetPort:</span> <span class="hljs-number">8080</span><br>	<span class="hljs-attr">selector:</span><br>		<span class="hljs-attr">app:</span> <span class="hljs-string">webapp</span><br></code></pre></td></tr></table></figure>
+
+<p>在Pod中查看环境变量</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-string">WEBAPP_SERVICE_HOST=169.169.81.175</span><br><span class="hljs-string">WEBAPP_SERVICE_PORT=8080</span><br><span class="hljs-string">WEBAPP_PORT=tcp://169.169.81.175:8080</span><br><span class="hljs-string">WEBAPP_PORT_8080_TCP=tcp://169.169.81.175:8080</span><br><span class="hljs-string">WEBAPP_PORT_8080_TCP_PROTO=tcp</span><br><span class="hljs-string">WEBAPP_PORT_8080_TCP_PORT=8080</span><br><span class="hljs-string">WEBAPP_PORT_8080_TCP_ADDR=169.169.81.175</span><br></code></pre></td></tr></table></figure>
+
+<p>使用变量名尝试访问</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-string">curl</span> <span class="hljs-string">&lt;http://$&gt;&#123;WEBAPP_SERVICE_HOST&#125;:$&#123;WEBAPP_SERVICE_PORT&#125;</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="DNS"><a href="#DNS" class="headerlink" title="DNS"></a>DNS</h3><p>Service 在Kubernetes系统中遵循DNS命名规范，DNS域名的表示方法为</p>
+<p><code>&lt;servicename&gt;</code>.<code>&lt;namespace&gt;</code>.svc.<code>&lt;clusterdomain&gt;</code></p>
+<p>servicename: 服务名</p>
+<p>namespace: 命名空间名</p>
+<p>clusterdomain: k8s集群设置的域名后缀</p>
+<p>当在服务中为端口号设置了name，在DNS中也会添加该端口号的DNS记录</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Service</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">webapp</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">ports:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">protocol:</span> <span class="hljs-string">TCP</span><br>	<span class="hljs-attr">port:</span> <span class="hljs-number">8080</span><br>	<span class="hljs-attr">targetPort:</span> <span class="hljs-number">8080</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">http</span><br><span class="hljs-attr">selector:</span><br>	<span class="hljs-attr">app:</span> <span class="hljs-string">webapp</span><br></code></pre></td></tr></table></figure>
+
+<p>对应解析记录</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># nslookup -q=srv _http._tcp.webapp.default.svc.cluster.local</span><br><span class="hljs-string">Server</span>        <span class="hljs-number">169.169</span><span class="hljs-number">.0</span><span class="hljs-number">.100</span><br><span class="hljs-string">Address</span>       <span class="hljs-number">169.169</span><span class="hljs-number">.0</span><span class="hljs-number">.100</span><span class="hljs-comment">#53</span><br><br><span class="hljs-string">_http._tcp.webapp.default.svc.cluster.local</span>   <span class="hljs-string">service=</span> <span class="hljs-number">0</span> <span class="hljs-number">100</span> <span class="hljs-number">8080</span><br><span class="hljs-string">webapp.default.svc.cluster.local</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="DNS-服务"><a href="#DNS-服务" class="headerlink" title="DNS 服务"></a>DNS 服务</h2><p>需要在每个Node上设置kubelet的启动参数 ，在其中加上以下两个参数</p>
+<p>— cluster-dns &#x3D; 169.169.0.100 : 是DNS服务的ClusterIP地址</p>
+<p>— cluster-domain &#x3D; cluster.local : 是DNS服务中设置的域名</p>
+<h3 id="部署CoreDNS"><a href="#部署CoreDNS" class="headerlink" title="部署CoreDNS"></a>部署CoreDNS</h3><p><strong>ConfigMap 配置</strong></p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">ConfigMap</span><br><span class="hljs-attr">metadata:</span> <br>	<span class="hljs-attr">name:</span> <span class="hljs-string">coredns</span><br>	<span class="hljs-attr">namespace:</span> <span class="hljs-string">kube-system</span><br>	<span class="hljs-attr">labels:</span><br>		<span class="hljs-string">addonmananger.kubernetes.io/mode:EnsureExists</span><br><span class="hljs-attr">data:</span><br>	<span class="hljs-string">Corefile</span> <span class="hljs-string">|</span> <br>		<span class="hljs-string">cluster.local&#123;</span><br>			<span class="hljs-string">errors</span><br>			<span class="hljs-string">health</span> &#123;<br>				<span class="hljs-string">lameduck</span>  <span class="hljs-string">5s</span>		<br>			&#125;<br>			<span class="hljs-string">ready</span><br>			<span class="hljs-string">kubernetes</span> <span class="hljs-string">cluster.local</span> <span class="hljs-number">169.169</span><span class="hljs-number">.0</span><span class="hljs-number">.0</span><span class="hljs-string">/16&#123;</span><br>				<span class="hljs-string">fallthrough</span> <span class="hljs-string">in-addr.arpa</span> <span class="hljs-string">ip6.arpa</span><br>			<span class="hljs-string">&#125;</span><br>			<span class="hljs-string">prometheus</span> <span class="hljs-string">:9153</span><br>			<span class="hljs-string">forward</span> <span class="hljs-string">.</span> <span class="hljs-string">/etc/resolv.conf</span><br>			<span class="hljs-string">cache</span> <span class="hljs-number">30</span><br>			<span class="hljs-string">loop</span><br>			<span class="hljs-string">reload</span><br>			<span class="hljs-string">loadbalance</span><br>		<span class="hljs-string">&#125;</span><br>		<span class="hljs-string">.</span> &#123;<br>			<span class="hljs-string">cache</span> <span class="hljs-number">30</span><br>			<span class="hljs-string">loadbalance</span><br>			<span class="hljs-string">forward</span> <span class="hljs-string">.</span> <span class="hljs-string">/etc/resolv.conf</span><br>		&#125;<br></code></pre></td></tr></table></figure>
+
+<p>Deployment</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">apps/v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Deployment</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">coredns</span><br>	<span class="hljs-attr">namespace:</span> <span class="hljs-string">kube-system</span><br>	<span class="hljs-attr">labels:</span><br>		<span class="hljs-attr">k8s-app:</span> <span class="hljs-string">kube-dns</span><br>		<span class="hljs-attr">kubernetes.io/name:</span> <span class="hljs-string">&quot;CoreDNS&quot;</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">replicas:</span> <span class="hljs-number">1</span><br>	<span class="hljs-attr">strategy:</span> <br>		<span class="hljs-attr">type:</span> <span class="hljs-string">RollingUpdate</span><br>		<span class="hljs-attr">rollingUpdate:</span><br>			<span class="hljs-attr">maxUnavailable:</span> <span class="hljs-number">1</span><br>	<span class="hljs-attr">selector :</span><br>		<span class="hljs-attr">matchLabels:</span><br>			<span class="hljs-attr">k8s-app:</span> <span class="hljs-string">kube-dns</span><br>	<span class="hljs-attr">template:</span><br>		<span class="hljs-attr">metadata:</span><br>			<span class="hljs-attr">labels:</span><br>				<span class="hljs-attr">k8s-app:</span> <span class="hljs-string">kube-dns</span><br>			<span class="hljs-attr">spec:</span><br>				<span class="hljs-attr">priorityClassName:</span> <span class="hljs-string">system-cluster-critical</span><br>				<span class="hljs-attr">tolerations:</span><br>					<span class="hljs-bullet">-</span> <span class="hljs-attr">key:</span> <span class="hljs-string">&quot;CriticalAddonsOnly&quot;</span><br>						<span class="hljs-attr">operator:</span> <span class="hljs-string">&quot;Exists&quot;</span><br>				<span class="hljs-attr">nodeSelector:</span><br>					<span class="hljs-attr">kubernetes.io/os:</span> <span class="hljs-string">linux</span><br>				<span class="hljs-attr">affinity:</span><br>					<span class="hljs-attr">podAntiAffinity:</span><br>						<span class="hljs-attr">preferredDuringSchedulingIngoredDuringExecution:</span><br>						<span class="hljs-bullet">-</span> <span class="hljs-attr">weight:</span> <span class="hljs-number">100</span><br>							<span class="hljs-attr">podAffinityTerm:</span> <br>								<span class="hljs-attr">labelSelector:</span><br>									<span class="hljs-attr">matchExpression:</span><br>										<span class="hljs-bullet">-</span> <span class="hljs-attr">key:</span> <span class="hljs-string">k8s-app</span><br>											<span class="hljs-attr">operator:</span> <span class="hljs-string">In</span><br>											<span class="hljs-attr">values:</span> [<span class="hljs-string">&quot;kube-dns&quot;</span>]<br>										<span class="hljs-attr">topologyKey:</span> <span class="hljs-string">kubernetes.io/hostname</span><br>				<span class="hljs-attr">containers:</span><br>					<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">coredns</span><br>						<span class="hljs-attr">image: coredns/coredns:</span> <span class="hljs-number">1.9</span><span class="hljs-number">.0</span><br>						<span class="hljs-attr">imagePullPolicy:</span> <span class="hljs-string">IfNotPersent</span><br>						<span class="hljs-attr">resources:</span><br>							<span class="hljs-attr">limits:</span><br>								<span class="hljs-attr">memroy:</span> <span class="hljs-string">170Mi</span><br>							<span class="hljs-attr">requests:</span><br>								<span class="hljs-attr">cpu:</span> <span class="hljs-string">100m</span><br>								<span class="hljs-attr">memory:</span> <span class="hljs-string">70Mi</span><br>						<span class="hljs-attr">args:</span> [<span class="hljs-string">&quot;-conf&quot;</span>,<span class="hljs-string">&quot;/etc/coredns/Corefile&quot;</span>]<br>						<span class="hljs-attr">volumeMounts:</span><br>						<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">config-volume</span><br>							<span class="hljs-attr">mountPath:</span> <span class="hljs-string">/etc/coredns</span><br>							<span class="hljs-attr">readOnly:</span> <span class="hljs-literal">true</span><br>						<span class="hljs-attr">ports:</span><br>						<span class="hljs-bullet">-</span> <span class="hljs-attr">containerPort:</span> <span class="hljs-number">53</span><br>							<span class="hljs-attr">name:</span> <span class="hljs-string">dns</span><br>							<span class="hljs-attr">protocol:</span> <span class="hljs-string">UDP</span><br>						<span class="hljs-bullet">-</span> <span class="hljs-attr">containerPort:</span> <span class="hljs-number">53</span><br>							<span class="hljs-attr">name:</span> <span class="hljs-string">dns-tcp</span><br>							<span class="hljs-attr">protocol:</span> <span class="hljs-string">TCP</span><br>						<span class="hljs-bullet">-</span> <span class="hljs-attr">containerPort:</span> <span class="hljs-number">9153</span><br>							<span class="hljs-attr">name:</span> <span class="hljs-string">metrics</span><br>							<span class="hljs-attr">protocol:</span> <span class="hljs-string">TCP</span><br>						<span class="hljs-attr">securityContext:</span><br>							<span class="hljs-attr">allowPrivilegeEscalation:</span> <span class="hljs-literal">false</span><br>							<span class="hljs-attr">capabilities:</span><br>								<span class="hljs-attr">add:</span> <br>								<span class="hljs-bullet">-</span> <span class="hljs-string">NET_BIND_SERVICE</span><br>								<span class="hljs-attr">drop:</span><br>								<span class="hljs-bullet">-</span> <span class="hljs-string">all</span><br>							<span class="hljs-attr">readOnlyRootFilesystem:</span> <span class="hljs-literal">true</span><br>						<span class="hljs-attr">livenessProbe:</span><br>							<span class="hljs-attr">httpGet:</span><br>								<span class="hljs-attr">path:</span> <span class="hljs-string">/health</span><br>								<span class="hljs-attr">port:</span> <span class="hljs-number">8080</span><br>								<span class="hljs-attr">scheme:</span> <span class="hljs-string">HTTP</span><br>							<span class="hljs-attr">initialDelaySeconds:</span> <span class="hljs-number">60</span><br>							<span class="hljs-attr">timeoutSeconds:</span> <span class="hljs-number">5</span><br>							<span class="hljs-attr">successThreshold:</span> <span class="hljs-number">1</span><br>							<span class="hljs-attr">failureThreshold:</span> <span class="hljs-number">5</span><br>						<span class="hljs-attr">readinessProbe:</span><br>							<span class="hljs-attr">httpGet:</span><br>								<span class="hljs-attr">path:</span> <span class="hljs-string">/ready</span><br>								<span class="hljs-attr">port:</span> <span class="hljs-number">8080</span><br>								<span class="hljs-attr">scheme:</span> <span class="hljs-string">HTTP</span><br>						<span class="hljs-attr">dnsPolicy:</span> <span class="hljs-string">Default</span><br>						<span class="hljs-attr">volumes:</span><br>							<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">config-volume</span><br>								<span class="hljs-attr">configMap:</span><br>									<span class="hljs-attr">name:</span> <span class="hljs-string">coredns</span><br>									<span class="hljs-attr">items:</span><br>									<span class="hljs-bullet">-</span> <span class="hljs-attr">key:</span> <span class="hljs-string">Corefile</span><br>										<span class="hljs-attr">path:</span> <span class="hljs-string">Corefile</span><br></code></pre></td></tr></table></figure>
+
+<p>Service “kube-dns”</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Service</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">kube-dns</span><br>	<span class="hljs-attr">namespace:</span> <span class="hljs-string">kube-system</span><br>	<span class="hljs-attr">annotations:</span><br>		<span class="hljs-attr">prometheus.io/port:</span> <span class="hljs-string">&quot;9153&quot;</span><br>		<span class="hljs-attr">prometheus.io/scrape:</span> <span class="hljs-string">&quot;true&quot;</span><br>	<span class="hljs-attr">labels:</span> <br>		<span class="hljs-attr">k8s-app:</span> <span class="hljs-string">kube-dns</span><br>		<span class="hljs-attr">kubernetes.io/cluster-service:</span> <span class="hljs-string">&quot;true&quot;</span><br>		<span class="hljs-attr">kubernetes.io/name:</span> <span class="hljs-string">&quot;CoreDNS&quot;</span><br>	<span class="hljs-attr">spec:</span><br>		<span class="hljs-attr">selector:</span><br>			<span class="hljs-attr">k8s-app:</span> <span class="hljs-string">kube-dns</span><br>		<span class="hljs-attr">clusterIP:</span> <span class="hljs-number">169.169</span><span class="hljs-number">.0</span><span class="hljs-number">.100</span><br>		<span class="hljs-attr">ports:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">dns</span><br>			<span class="hljs-attr">port:</span> <span class="hljs-number">53</span><br>			<span class="hljs-attr">protocol:</span> <span class="hljs-string">UDP</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">dns-tcp</span><br>			<span class="hljs-attr">port:</span> <span class="hljs-number">53</span><br>			<span class="hljs-attr">portocol:</span> <span class="hljs-string">TCP</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">metrics</span><br>			<span class="hljs-attr">port:</span> <span class="hljs-number">9153</span><br>			<span class="hljs-attr">portocol:</span> <span class="hljs-string">TCP</span><br></code></pre></td></tr></table></figure>
+
+<p>创建服务</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-string">kubectl</span> <span class="hljs-string">create</span> <span class="hljs-string">-f</span> <span class="hljs-string">coredns.yaml</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="CoreDNS的配置"><a href="#CoreDNS的配置" class="headerlink" title="CoreDNS的配置"></a>CoreDNS的配置</h3><ul>
+<li>loadbalance :  提供基于DNS的负载均衡功能</li>
+<li>loop : 检测在DNS解析过程中出现的简单循环问题</li>
+<li>cache : 提供前端缓存功能</li>
+<li>health : 对Endpoint进行健康检查</li>
+<li>kubernetes : 从Kubernetes中读取Zone数据</li>
+<li>etcd : 从etcd中读取Zone数据，可用于自定义域名记录</li>
+<li>file : 从RFC1035格式文件中读取Zone数据</li>
+<li>hosts : 使用&#x2F;etc&#x2F;hosts 文件或者其他文件读取Zone数据，可用于自定义域名记录</li>
+<li>auto : 从磁盘中自动加载区域文件</li>
+<li>reload : 定时自动重新加载Corefile配置文件的内容</li>
+<li>forward : 转发域名查询到上游DNS服务器中</li>
+<li>prometheus : 为Prometheus系统提供采集性能指标数据的URL</li>
+<li>pprof : 在URL路径&#x2F;debug&#x2F;pprof下提供运行时的性能数据</li>
+<li>log : 对DNS查询进行记录</li>
+<li>errors : 对错误信息进行日志记录</li>
+</ul>
+<h2 id="Service-和-Pod的-DNS-相关特性"><a href="#Service-和-Pod的-DNS-相关特性" class="headerlink" title="Service 和 Pod的 DNS 相关特性"></a>Service 和 Pod的 DNS 相关特性</h2><h3 id="Service-的DNS域名"><a href="#Service-的DNS域名" class="headerlink" title="Service 的DNS域名"></a>Service 的DNS域名</h3><p>对于Service来说，Kubernetes会设置一个如下格式的DNS域名</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-string">&lt;service-name&gt;.&lt;namespace-name&gt;.svc.&lt;cluster-domain&gt;</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="Pod的DNS域名"><a href="#Pod的DNS域名" class="headerlink" title="Pod的DNS域名"></a>Pod的DNS域名</h3><p>对于Pod来说，Kubernetes会设置一个如下格式的DNS域名</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-string">&lt;pod-ip&gt;.&lt;namespace&gt;.pod.&lt;cluster-domain&gt;</span><br></code></pre></td></tr></table></figure>
+
+<p>对于关联了服务的Pod，则被设置为</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-string">&lt;pod-ip&gt;.&lt;service-name&gt;.&lt;namespace&gt;.svc.&lt;cluster-domain&gt;</span><br></code></pre></td></tr></table></figure>
+
+<p>自定hostname和subdomain</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">webapp1</span><br>	<span class="hljs-attr">labels:</span> <br>		<span class="hljs-attr">app:</span> <span class="hljs-string">webapp1</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">hostname:</span> <span class="hljs-string">webapp-1</span><br>	<span class="hljs-attr">subdomain:</span> <span class="hljs-string">mysubdomain</span><br>	<span class="hljs-attr">containers:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">webapp-1</span><br>		<span class="hljs-attr">image:</span> <span class="hljs-string">kubeguide/tomcat-app:v1</span><br>		<span class="hljs-attr">ports:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">containerPort:</span> <span class="hljs-number">8080</span><br></code></pre></td></tr></table></figure>
+
+<p>对应的域名配置</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-string">&lt;pod-hostname&gt;.&lt;pod-subdomain&gt;.&lt;namespace-name&gt;.svc.&lt;cluster-domain&gt;</span><br></code></pre></td></tr></table></figure>
+
+<p>如果创建了一个无头服务关联的Pod 则域名会被设置为</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-string">&lt;pod-hostname&gt;.&lt;headless-service-name&gt;.&lt;namespace-name&gt;.svc.&lt;cluster-domain&gt;</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="FQDN-格式的Pod主机名设置"><a href="#FQDN-格式的Pod主机名设置" class="headerlink" title="FQDN 格式的Pod主机名设置"></a>FQDN 格式的Pod主机名设置</h2><p>在默认情况下，Pod的各容器内的主机名为Pod名称。</p>
+<p>可以通过—fqdh 可以查询主机的全名</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># kubectl exec -it webapp1 --hash</span><br><span class="hljs-string">root@webapp-1:/usr/local/tocam#</span> <span class="hljs-string">hostname</span><br><span class="hljs-string">webapp-1</span><br><br><span class="hljs-comment"># hostname --fqdn</span><br><span class="hljs-string">webapp-1.mysubdomain.default.svc.cluster.local</span><br></code></pre></td></tr></table></figure>
+
+<p>可以在setHostnameAsFQDN&#x3D;ture 来直接查询服务的全域主机名</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">webapp1</span><br>	<span class="hljs-attr">labels:</span> <br>		<span class="hljs-attr">app:</span> <span class="hljs-string">webapp1</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">setHostnameAsFQDN:</span> <span class="hljs-literal">true</span><br>	<span class="hljs-attr">hostname:</span> <span class="hljs-string">webapp-1</span><br>	<span class="hljs-attr">subdomain:</span> <span class="hljs-string">mysubdomain</span><br>	<span class="hljs-attr">containers:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">webapp1</span><br>		<span class="hljs-attr">image:</span> <span class="hljs-string">kubeguide/tomcat-app:v1</span><br>		<span class="hljs-attr">imagePullPolicy:</span> <span class="hljs-string">IfNotPersent</span><br>		<span class="hljs-attr">ports:</span> <br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">containerPort:</span> <span class="hljs-number">8080</span> <br></code></pre></td></tr></table></figure>
+
+<h2 id="Pod的DNS策略"><a href="#Pod的DNS策略" class="headerlink" title="Pod的DNS策略"></a>Pod的DNS策略</h2><p>Kubernetes可以在Pod的dnsPolicy 字段中设置几种不同的DNS策略，目前支持的DNS策略如下</p>
+<ul>
+<li>Default : 继承Pod 所在Node的域名解析设置</li>
+<li>ClusterFirst : 优先使用Kubernetes环境的DNS服务，并且将非集群域名后缀的域名都转发给系统配置的上游DNS服务器，这也是系统的默认值</li>
+<li>ClusterFirstWithHostNet : 专用于以hostNetwork模式运行的Pod</li>
+<li>None : 忽略Kubernetes集群的DNS配置，允许用户手动通过dnsConfig字段自定义DNS配置</li>
+</ul>
+<h3 id="Pod的自定义配置"><a href="#Pod的自定义配置" class="headerlink" title="Pod的自定义配置"></a>Pod的自定义配置</h3><ul>
+<li>nameservers : 用于域名解析的DNS服务器列表。</li>
+<li>searches : 用于域名搜索的DNS域名后缀。</li>
+<li>options : 配置其他可选DNS参数。</li>
+</ul>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">custom-dns</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">containers:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">custom-dns</span><br>		<span class="hljs-attr">image:</span> <span class="hljs-string">tomcat</span><br>		<span class="hljs-attr">imagePullPolicy:</span> <span class="hljs-string">IfNotPersent</span><br>		<span class="hljs-attr">ports:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">containerPort:</span> <span class="hljs-number">8080</span><br>	<span class="hljs-attr">dnsPolicy:</span> <span class="hljs-string">&quot;None&quot;</span><br>	<span class="hljs-attr">dnsConfig:</span> <br>		<span class="hljs-attr">nameservers:</span><br>			<span class="hljs-bullet">-</span> <span class="hljs-number">8.8</span><span class="hljs-number">.8</span><span class="hljs-number">.8</span><br>		<span class="hljs-attr">searches:</span><br>			<span class="hljs-bullet">-</span> <span class="hljs-string">nsl.svc.cluster-domain.example</span><br>			<span class="hljs-bullet">-</span> <span class="hljs-string">my.dns.search.suffix</span><br>		<span class="hljs-attr">options:</span> <br>			<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">ndots</span><br>				<span class="hljs-attr">value:</span> <span class="hljs-string">&quot;2&quot;</span><br>			<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">edns0</span><br></code></pre></td></tr></table></figure>
+
+<h1 id="Ingress"><a href="#Ingress" class="headerlink" title="Ingress"></a>Ingress</h1><p>Kuberntes使用了一个Ingress资源，用于定义策略和一个提供路由转发服务的Ingress Controller。</p>
+<p>使用Ingress提供路由服务时，ingress Controller 基于Ingress规则将客户端请求直接转发到Service对应的后端Endpoint上，这样会跳过kube-proxy设置的路由转发规则，以提高转发效率。</p>
+<h2 id="Ingress-配置部署"><a href="#Ingress-配置部署" class="headerlink" title="Ingress 配置部署"></a>Ingress 配置部署</h2><p>Namespace :</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Namespace</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">nginx-ingress</span><br></code></pre></td></tr></table></figure>
+
+<p>ServiceAccount :</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">ServiceAccount</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">nginx-ingress</span><br>	<span class="hljs-attr">namespace:</span> <span class="hljs-string">nginx-ingress</span><br></code></pre></td></tr></table></figure>
+
+<p>RBAC 资源：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">kind:</span> <span class="hljs-string">ClusterRole</span><br><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">rabc.authorization.k8s.io/v1</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">nginx-ingress</span><br><span class="hljs-attr">rule:</span><br><span class="hljs-bullet">-</span> <span class="hljs-attr">apiGroups:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-string">&quot;&quot;</span><br>	<span class="hljs-attr">resources:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-string">services</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-string">endpoints</span><br>	<span class="hljs-attr">verbs:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-string">get</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-string">list</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-string">watch</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">apiGroups:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">&quot;&quot;</span><br>		<span class="hljs-attr">resources:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">secrets</span><br>		<span class="hljs-attr">verbs:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">get</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">list</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">watch</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">apiGroups:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">&quot;&quot;</span><br>		<span class="hljs-attr">resources:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">configmaps</span><br>		<span class="hljs-attr">verbs:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">get</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">list</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">watch</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">update</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">create</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">apiGroups:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">&quot;&quot;</span><br>		<span class="hljs-attr">resources:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">pods</span><br>		<span class="hljs-attr">verbs:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">list</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">watch</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">apiGroups:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">&quot;&quot;</span><br>		<span class="hljs-attr">resources:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">events</span><br>		<span class="hljs-attr">verbs:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">create</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">patch</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">list</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">apiGroups:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">&quot;&quot;</span><br>		<span class="hljs-attr">resources:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">extensions</span><br>		<span class="hljs-attr">resources:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">ingress</span><br>		<span class="hljs-attr">verbs:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">list</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">watch</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">get</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">apiGroups:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">&quot;extensions&quot;</span><br>		<span class="hljs-attr">resources:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">ingresses/status</span><br>		<span class="hljs-attr">verbs:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">update</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">apiGroups:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">k8s.nginx.org</span><br>		<span class="hljs-attr">resources:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">virtualservers</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">virtualserverroutes</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">globalconfigurations</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">transportservers</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">policies</span><br>		<span class="hljs-attr">verbs:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">list</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">watch</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">get</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">apiGroups:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">k8s.nginx.org</span><br>		<span class="hljs-attr">resources:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">virtualserver/status</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">virtualsererroutes/status</span><br>		<span class="hljs-attr">verbs:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">update</span><br><span class="hljs-meta">---</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">ClusterRoleBinding</span><br><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">rbac.authorization.k8s.io/v1</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">nginx-ingress</span><br><span class="hljs-attr">subjects:</span><br><span class="hljs-bullet">-</span> <span class="hljs-attr">kind:</span> <span class="hljs-string">ServiceAccount</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">nginx-ingress</span><br>	<span class="hljs-attr">namespace:</span> <span class="hljs-string">nginx-ingress</span><br><span class="hljs-attr">roleRef:</span><br>	<span class="hljs-attr">kind:</span> <span class="hljs-string">ClusterRole</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">nginx-ingress</span><br>	<span class="hljs-attr">apiGroup:</span> <span class="hljs-string">rbac.authorization.k8s.io</span><br></code></pre></td></tr></table></figure>
+
+<p>Secrets :</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Secret</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">default-server-secret</span><br>	<span class="hljs-attr">namespace:</span> <span class="hljs-string">nginx-ingress</span><br><span class="hljs-attr">type:</span> <span class="hljs-string">Opaque</span><br><span class="hljs-attr">data:</span> <br>	<span class="hljs-attr">tls.crt:</span> <span class="hljs-string">base64_code</span><br>	<span class="hljs-attr">tls.key:</span> <span class="hljs-string">base64_code</span><br></code></pre></td></tr></table></figure>
+
+<p>ConfigMap:</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">kind:</span> <span class="hljs-string">ConfigMap</span><br><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">nginx-config</span><br>	<span class="hljs-attr">namespace:</span> <span class="hljs-string">nginx-ingress</span><br><span class="hljs-attr">data:</span> <br>	<span class="hljs-string">...</span><br></code></pre></td></tr></table></figure>
+
+<p>Deployment:</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">apps/v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Deployment</span><br><span class="hljs-attr">metadata:</span><br>  <span class="hljs-attr">name:</span> <span class="hljs-string">nginx-ingress</span><br>  <span class="hljs-attr">namespace:</span> <span class="hljs-string">nginx-ingress</span><br><span class="hljs-attr">spec:</span><br>  <span class="hljs-attr">replicas:</span> <span class="hljs-number">1</span><br>  <span class="hljs-attr">selector:</span>       <br>    <span class="hljs-attr">matchLabels:</span>  <br>      <span class="hljs-attr">app:</span> <span class="hljs-string">nginx-ingress</span><br>  <span class="hljs-attr">template:</span>      <br>    <span class="hljs-attr">metadata:</span><br>      <span class="hljs-attr">labels:</span><br>        <span class="hljs-attr">app:</span> <span class="hljs-string">nginx-ingress</span><br>    <span class="hljs-attr">spec:</span>          <br>      <span class="hljs-attr">serviceAccountName:</span> <span class="hljs-string">nginx-ingress</span> <br>      <span class="hljs-attr">containers:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-attr">image:</span> <span class="hljs-string">nginx/nginx-ingress:1.7.2</span>  <br>        <span class="hljs-attr">imagePullPolicy:</span> <span class="hljs-string">IfNotPresent</span>   <br>        <span class="hljs-attr">name:</span> <span class="hljs-string">nginx-ingress</span><br>        <span class="hljs-attr">ports:</span><br>        <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">http</span><br>          <span class="hljs-attr">containerPort:</span> <span class="hljs-number">80</span><br>          <span class="hljs-attr">hostPort:</span> <span class="hljs-number">80</span><br>        <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">https</span>                   <br>          <span class="hljs-attr">containerPort:</span> <span class="hljs-number">443</span><br>          <span class="hljs-attr">hostPort:</span> <span class="hljs-number">443</span><br>        <span class="hljs-attr">securityContext:</span><br>          <span class="hljs-attr">allowPrivilegeEscalation:</span> <span class="hljs-literal">true</span><br>          <span class="hljs-attr">runAsUser:</span> <span class="hljs-number">101</span><br>          <span class="hljs-attr">capabilities:</span><br>            <span class="hljs-attr">drop:</span><br>            <span class="hljs-bullet">-</span> <span class="hljs-string">ALL</span><br>            <span class="hljs-attr">add:</span> <br>            <span class="hljs-bullet">-</span> <span class="hljs-string">NET_BIND_SERVICE</span><br>        <span class="hljs-attr">env:</span><br>        <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">POD_NAMESPACE</span><br>          <span class="hljs-attr">valueFrom:</span> <br>            <span class="hljs-attr">fieldRef:</span><br>              <span class="hljs-attr">fieldPath:</span> <span class="hljs-string">metadata.namespace</span><br>        <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">POD_NAME</span><br>          <span class="hljs-attr">valueFrom:</span><br>            <span class="hljs-attr">fieldRef:</span><br>              <span class="hljs-attr">fieldPath:</span> <span class="hljs-string">metadata.name</span><br>        <span class="hljs-attr">args:</span><br>        <span class="hljs-bullet">-</span> <span class="hljs-string">-nginx-configmaps=$(POD_NAMESPACE)/nginx-config</span><br>        <span class="hljs-bullet">-</span> <span class="hljs-string">-default-server-tls-secret=$(POD_NAMESPACE)/default-server-secret</span><br>        <span class="hljs-bullet">-</span> <span class="hljs-string">-ingress-class=nginx</span> <br></code></pre></td></tr></table></figure>
+
+<h2 id="创建Ingress策略"><a href="#创建Ingress策略" class="headerlink" title="创建Ingress策略"></a>创建Ingress策略</h2><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">networking.k8s.io/v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Ingress</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">mywebsite-ingress</span><br>	<span class="hljs-attr">annotations:</span><br>	    <span class="hljs-attr">kubernetes.io/ingress.class:</span> <span class="hljs-string">&quot;nginx&quot;</span> <br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">rules:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">host:</span> <span class="hljs-string">mywebsite.com</span><br>		<span class="hljs-attr">http:</span><br>			<span class="hljs-attr">paths:</span><br>			<span class="hljs-bullet">-</span> <span class="hljs-attr">path:</span> <span class="hljs-string">/demo</span><br>				<span class="hljs-attr">pathType:</span> <span class="hljs-string">ImplementationSpecific</span><br>				<span class="hljs-attr">backend:</span><br>					<span class="hljs-attr">service:</span><br>						<span class="hljs-attr">name:</span> <span class="hljs-string">webapp</span><br>						<span class="hljs-attr">port:</span><br>							<span class="hljs-attr">number:</span> <span class="hljs-number">8080</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="Ingress规则"><a href="#Ingress规则" class="headerlink" title="Ingress规则"></a>Ingress规则</h3><ul>
+<li>rule :<ul>
+<li>host : 基于域名的访问，客户端请求将作用于指定域名的客户端请求</li>
+<li>http.paths : 一组根据路径进行转发的规则设置，每个路径都应配置相应的后端服务信息。只有host和path都匹配上才会进行转发</li>
+<li>backend : 目标后端服务，包括服务的名称和端口号</li>
+</ul>
+</li>
+</ul>
+<p>对外部服务的引用</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">networking.k8s.io/v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Ingress</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">ingress-resource-backend</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">defaultBackend:</span><br>		<span class="hljs-attr">resource:</span><br>			<span class="hljs-attr">apiGroup:</span> <span class="hljs-string">k8s.example.com</span><br>			<span class="hljs-attr">kind:</span> <span class="hljs-string">StorageBucket</span><br>			<span class="hljs-attr">name:</span> <span class="hljs-string">static-assets</span><br>	<span class="hljs-attr">rules:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-string">http</span><br>			<span class="hljs-attr">paths:</span><br>				<span class="hljs-bullet">-</span> <span class="hljs-attr">path:</span> <span class="hljs-string">/icons</span><br>					<span class="hljs-attr">pathType:</span> <span class="hljs-string">ImplementationSpecific</span><br>					<span class="hljs-attr">backend:</span><br>						<span class="hljs-attr">resource:</span><br>							<span class="hljs-attr">apiGroup:</span> <span class="hljs-string">k8s.example.com</span><br>							<span class="hljs-attr">kind:</span> <span class="hljs-string">StorageBucket</span><br>							<span class="hljs-attr">name:</span> <span class="hljs-string">icon-asserts</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="IngressClassName-和IgressClass-资源对象"><a href="#IngressClassName-和IgressClass-资源对象" class="headerlink" title="IngressClassName 和IgressClass 资源对象"></a>IngressClassName 和IgressClass 资源对象</h3><p>通过IgressClass 对象来配置 指定Ingress 使用哪个Controller</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">networking.k8s.io/v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">IngressClass</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">external-lb</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">controller:</span> <span class="hljs-string">example.com/ingress-controller</span><br>	<span class="hljs-attr">parametes:</span><br>		<span class="hljs-attr">apiGroup:</span> <span class="hljs-string">k8s.example.com</span><br>		<span class="hljs-attr">kind:</span> <span class="hljs-string">IngressParametes</span><br>		<span class="hljs-attr">name:</span> <span class="hljs-string">external-lb</span><br></code></pre></td></tr></table></figure>
+
+<p>创建Ingress 对象指定 使用IngressClass 中的配置</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">networking.k8s.io/v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Ingress</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">example-ingress</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">ingressClassName:</span> <span class="hljs-string">external-lb</span><br>	<span class="hljs-attr">rules:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-string">host:&quot;*.example.com&quot;</span><br>		<span class="hljs-attr">http:</span><br>			<span class="hljs-attr">paths:</span><br>			<span class="hljs-bullet">-</span> <span class="hljs-attr">path:</span> <span class="hljs-string">/example</span><br>				<span class="hljs-attr">pathType:</span> <span class="hljs-string">Prefix</span><br>				<span class="hljs-attr">backend:</span><br>					<span class="hljs-attr">service:</span><br>						<span class="hljs-attr">name:</span> <span class="hljs-string">example-service</span><br>						<span class="hljs-attr">port:</span><br>							<span class="hljs-attr">number:</span> <span class="hljs-number">80</span><br></code></pre></td></tr></table></figure>
+
+<p>设置Ingress的 作用范围</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">networking.k8s.io/v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">IngressClass</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">external-lb-1</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">controller:</span> <span class="hljs-string">example.com/ingress-controller</span><br>	<span class="hljs-attr">parameters:</span><br>		<span class="hljs-attr">scope:</span> <span class="hljs-string">Cluster</span><br>		<span class="hljs-attr">apiGroup:</span> <span class="hljs-string">k8s.example.net</span><br>		<span class="hljs-attr">kind:</span> <span class="hljs-string">ClusterIngressParameter</span><br>		<span class="hljs-attr">name:</span> <span class="hljs-string">external-config-1</span><br></code></pre></td></tr></table></figure>
+
+<p>设置以命名空间为作用范围的ingress策略</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">networking.k8s.io/v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">IngressClass</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">external-lb-2</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">controller:</span> <span class="hljs-string">example.com/ingress-controller</span><br>	<span class="hljs-attr">parameters:</span><br>		<span class="hljs-attr">scope:</span> <span class="hljs-string">Namespace</span><br>		<span class="hljs-attr">apiGroup:</span> <span class="hljs-string">k8s.example.com</span><br>		<span class="hljs-attr">kind:</span> <span class="hljs-string">IngressParameter</span><br>		<span class="hljs-attr">namespace:</span> <span class="hljs-string">external-configuration</span><br>		<span class="hljs-attr">name:</span> <span class="hljs-string">external-config</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="设置默认ingress配置策略"><a href="#设置默认ingress配置策略" class="headerlink" title="设置默认ingress配置策略"></a>设置默认ingress配置策略</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">networking.k8s.io/v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">IngressClass</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">labels:</span><br>		<span class="hljs-attr">app.kubernetes.io/component:</span> <span class="hljs-string">controller</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">nginx-example</span><br>	<span class="hljs-attr">annotations:</span><br>		<span class="hljs-attr">ingressclass.kubernetes.io/is-default-class:</span> <span class="hljs-string">&quot;true&quot;</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">controller:</span> <span class="hljs-string">k8s.io/ingress-nginx</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="Ingress-策略配置"><a href="#Ingress-策略配置" class="headerlink" title="Ingress 策略配置"></a>Ingress 策略配置</h2><h3 id="转发给单个后端服务"><a href="#转发给单个后端服务" class="headerlink" title="转发给单个后端服务"></a>转发给单个后端服务</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">networking.k8s.io/v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Ingress</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">test-ingress</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">defaultBackend:</span><br>		<span class="hljs-attr">service:</span><br>			<span class="hljs-attr">name:</span> <span class="hljs-string">webapp</span><br>			<span class="hljs-attr">port:</span> <br>				<span class="hljs-attr">number:</span> <span class="hljs-number">8080</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="将同一域名的不同URL路径转发给不同的后端服务"><a href="#将同一域名的不同URL路径转发给不同的后端服务" class="headerlink" title="将同一域名的不同URL路径转发给不同的后端服务"></a>将同一域名的不同URL路径转发给不同的后端服务</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">networking.k8s.io/v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Ingress</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">simple-fanout-example</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">rules:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">host:</span> <span class="hljs-string">mywebsite.com</span><br>		<span class="hljs-attr">http:</span><br>			<span class="hljs-attr">paths:</span><br>			<span class="hljs-bullet">-</span> <span class="hljs-attr">path:</span> <span class="hljs-string">/web</span><br>				<span class="hljs-attr">pathType:</span> <span class="hljs-string">ImplementationSpecific</span><br>				<span class="hljs-attr">backend:</span><br>					<span class="hljs-attr">service:</span><br>						<span class="hljs-attr">name:</span> <span class="hljs-string">web-service</span><br>						<span class="hljs-attr">port:</span><br>							<span class="hljs-attr">number:</span> <span class="hljs-number">8080</span><br>			<span class="hljs-bullet">-</span> <span class="hljs-attr">path:</span> <span class="hljs-string">/api</span><br>				<span class="hljs-attr">pathType:</span> <span class="hljs-string">ImplementationSpecific</span><br>				<span class="hljs-attr">backend:</span><br>					<span class="hljs-attr">service:</span><br>						<span class="hljs-attr">name:</span> <span class="hljs-string">api-service</span><br>						<span class="hljs-attr">port:</span><br>							<span class="hljs-attr">number:</span> <span class="hljs-number">8081</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="将HTTP请求根据不同的域名转发给不同的后端服务"><a href="#将HTTP请求根据不同的域名转发给不同的后端服务" class="headerlink" title="将HTTP请求根据不同的域名转发给不同的后端服务"></a>将HTTP请求根据不同的域名转发给不同的后端服务</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">networking.k8s.io/v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Ingress</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">name-virtual-host-ingress</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">rules:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">host:</span> <span class="hljs-string">foo.bar.com</span><br>		<span class="hljs-attr">http:</span><br>			<span class="hljs-attr">paths:</span><br>			<span class="hljs-bullet">-</span> <span class="hljs-attr">pathType:</span> <span class="hljs-string">Prefix</span><br>				<span class="hljs-attr">path:</span> <span class="hljs-string">&quot;/&quot;</span><br>				<span class="hljs-attr">backend:</span><br>					<span class="hljs-attr">service:</span><br>						<span class="hljs-attr">name:</span> <span class="hljs-string">servicel</span><br>						<span class="hljs-attr">port:</span><br>							<span class="hljs-attr">number:</span> <span class="hljs-number">80</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">host:</span> <span class="hljs-string">bar.foo.com</span><br>		<span class="hljs-attr">http:</span><br>			<span class="hljs-attr">paths:</span><br>			<span class="hljs-bullet">-</span> <span class="hljs-attr">pathType:</span> <span class="hljs-string">Prefix</span><br>				<span class="hljs-attr">path:</span> <span class="hljs-string">&quot;/&quot;</span><br>				<span class="hljs-attr">backend:</span><br>					<span class="hljs-attr">service:</span><br>						<span class="hljs-attr">name:</span> <span class="hljs-string">service2</span><br>						<span class="hljs-attr">port:</span><br>							<span class="hljs-attr">number:</span> <span class="hljs-number">80</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="不适用域名的转发规则"><a href="#不适用域名的转发规则" class="headerlink" title="不适用域名的转发规则"></a>不适用域名的转发规则</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">networking.k8s.io/v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Ingress</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">test-ingress</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">rules:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">http:</span><br>	<span class="hljs-attr">paths:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">path:</span> <span class="hljs-string">/demo</span><br>		<span class="hljs-attr">pathType:</span> <span class="hljs-string">Prefix</span><br>		<span class="hljs-attr">backend:</span> <br>			<span class="hljs-attr">service:</span><br>				<span class="hljs-attr">name:</span> <span class="hljs-string">webapp</span><br>				<span class="hljs-attr">port:</span> <br>					<span class="hljs-attr">number:</span> <span class="hljs-number">8080</span><br></code></pre></td></tr></table></figure>
+
+<h1 id="Ingress-Gateway"><a href="#Ingress-Gateway" class="headerlink" title="Ingress Gateway"></a>Ingress Gateway</h1><p>Kubernetes 为了提供更丰富的协议转发支持，定义了Gateway API，它可以声明以下基类资源</p>
+<ul>
+<li>GatewayClass : 用于表示Gateway的类型</li>
+<li>Gateway : 网管实例</li>
+<li>Route : 路由规则</li>
+</ul>
+<h2 id="定义示例"><a href="#定义示例" class="headerlink" title="定义示例"></a>定义示例</h2><p>定义GatewayClass</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">gateway.networking.k8s.io/v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">GatewayClass</span><br><span class="hljs-attr">metadata:</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">example-class</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">controllerName:</span> <span class="hljs-string">example.com/gateway-controller</span><br></code></pre></td></tr></table></figure>
+
+<p>定义Gateway</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">gateway.networking.k8s.io/v1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">HTTPRoute</span><br><span class="hljs-attr">metadata:</span> <br>	<span class="hljs-attr">name:</span> <span class="hljs-string">example-httproute</span><br><span class="hljs-attr">spec:</span><br>	<span class="hljs-attr">parentRefs:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">example-gateway</span><br>	<span class="hljs-attr">hostname:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-string">&quot;www.example.com&quot;</span><br>	<span class="hljs-attr">rules:</span><br>	<span class="hljs-bullet">-</span> <span class="hljs-attr">matches:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">path:</span><br>				<span class="hljs-attr">type:</span> <span class="hljs-string">PathPrefix</span><br>				<span class="hljs-attr">value:</span> <span class="hljs-string">/login</span><br>		<span class="hljs-attr">backendRefs:</span><br>		<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">example-svc</span><br>			<span class="hljs-attr">port:</span> <span class="hljs-number">8080</span><br></code></pre></td></tr></table></figure>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Kubernetes/" class="category-chain-item">Kubernetes</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E5%BE%AE%E6%9C%8D%E5%8A%A1/" class="print-no-link">#微服务</a>
+      
+        <a href="/tags/%E8%99%9A%E6%8B%9F%E5%8C%96/" class="print-no-link">#虚拟化</a>
+      
+        <a href="/tags/Kubernetes/" class="print-no-link">#Kubernetes</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Kubernete Service</div>
+      <div>http://gadoid.io/2025/08/14/Kubernete-服务/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Codfish</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年8月14日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/08/14/Kuberenetes-%E6%9E%B6%E6%9E%84%E4%B8%8E%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6/" title="Kuberenetes 架构与核心组件">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Kuberenetes 架构与核心组件</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/08/11/%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E5%9F%BA%E7%A1%80/" title="网络通信基础">
+                        <span class="hidden-mobile">网络通信基础</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"lQzCvqmOtewLtpMfvfxKLomU-MdYXbMMI","appKey":"daMNlw5XcjN8TelT6GCHh8RF","path":"window.location.pathname","placeholder":"让灵感在这里发生","avatar":"monsterid","meta":["nick","mail"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":true,"recordIP":true,"serverURLs":"https://lQzCvqmO.api.lncldglobal.com","emojiCDN":null,"emojiMaps":null,"enableQQ":false,"enable":true,"visitor":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      &copy; 2025 - 2025 <a target="_blank" rel="noopener" href="https://github.com/username">CODFISH</a>
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+<!-- hexo injector body_end start --><script src="/js/chatbot-loader.js" defer></script><!-- hexo injector body_end end --></body>
+</html>

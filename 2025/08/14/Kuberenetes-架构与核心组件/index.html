@@ -1,0 +1,896 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/bg/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Codfish">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="API ServerAPI访问API Server 通过kube-apiserver进程提供服务。  启动一个带curl命令行的临时Pod， 在这个Pod里访问API Server。  12345kubectl run curl-test-pod --image&#x3D;curlimages&#x2F;curl -n default -i --tty - sh~ $ cd &#x2F;var&#x2F;run&#x2F;secrets&#x2F;kub">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kuberenetes 架构与核心组件">
+<meta property="og:url" content="http://gadoid.io/2025/08/14/Kuberenetes-%E6%9E%B6%E6%9E%84%E4%B8%8E%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6/index.html">
+<meta property="og:site_name" content="西北有高楼">
+<meta property="og:description" content="API ServerAPI访问API Server 通过kube-apiserver进程提供服务。  启动一个带curl命令行的临时Pod， 在这个Pod里访问API Server。  12345kubectl run curl-test-pod --image&#x3D;curlimages&#x2F;curl -n default -i --tty - sh~ $ cd &#x2F;var&#x2F;run&#x2F;secrets&#x2F;kub">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://i.111666.best/image/seUFOhEhwY9tTPk6WomagO.png">
+<meta property="og:image" content="https://i.111666.best/image/WW8IA2se7MFPzM02QmOUL4.png">
+<meta property="og:image" content="https://i.111666.best/image/rfKhWnjiEIkK8ZuA81VWtU.png">
+<meta property="article:published_time" content="2025-08-14T02:22:52.000Z">
+<meta property="article:modified_time" content="2025-08-14T02:30:32.955Z">
+<meta property="article:author" content="Codfish">
+<meta property="article:tag" content="微服务">
+<meta property="article:tag" content="虚拟化">
+<meta property="article:tag" content="Kubernetes">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://i.111666.best/image/seUFOhEhwY9tTPk6WomagO.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Kuberenetes 架构与核心组件 - 西北有高楼</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"gadoid.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>西北有高楼</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/downloads/" target="_self">
+                <i class="iconfont icon-books-fill"></i>
+                <span>资源下载</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/bg/img/ice.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Kuberenetes 架构与核心组件"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-08-14 10:22" pubdate>
+          2025年8月14日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          4.8k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          41 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Kuberenetes 架构与核心组件</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p><img src="https://i.111666.best/image/seUFOhEhwY9tTPk6WomagO.png" srcset="/img/loading.gif" lazyload alt="架构"></p>
+<h1 id="API-Server"><a href="#API-Server" class="headerlink" title="API Server"></a>API Server</h1><h2 id="API访问"><a href="#API访问" class="headerlink" title="API访问"></a>API访问</h2><p>API Server 通过kube-apiserver进程提供服务。</p>
+<ol>
+<li>启动一个带curl命令行的临时Pod， 在这个Pod里访问API Server。</li>
+</ol>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-string">kubectl</span> <span class="hljs-string">run</span> <span class="hljs-string">curl-test-pod</span> <span class="hljs-string">--image=curlimages/curl</span> <span class="hljs-string">-n</span> <span class="hljs-string">default</span> <span class="hljs-string">-i</span> <span class="hljs-string">--tty</span> <span class="hljs-bullet">-</span> <span class="hljs-string">sh</span><br><span class="hljs-string">~</span> <span class="hljs-string">$</span> <span class="hljs-string">cd</span> <span class="hljs-string">/var/run/secrets/kubernetes.io/serviceaccount/</span><br><span class="hljs-string">~</span> <span class="hljs-string">$</span> <span class="hljs-string">token=$(cat</span> <span class="hljs-string">token)</span><br><span class="hljs-string">~</span> <span class="hljs-string">$</span> <span class="hljs-string">curl</span> <span class="hljs-string">--cacert</span> <span class="hljs-string">ca.ca.crt</span> <span class="hljs-string">-H</span> <span class="hljs-string">&quot;Authorization: Bearer $token&quot;</span><br><span class="hljs-string">&lt;https://kubernetes:443/api&gt;</span><br></code></pre></td></tr></table></figure>
+
+<ol>
+<li>通过kubectl get —raw命令行访问，仅支持get请求</li>
+</ol>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># kubectl get --raw /api/v1 </span><br></code></pre></td></tr></table></figure>
+
+<ol>
+<li><p>使用curl命令行可以对API Server进行访问</p>
+<ol>
+<li>获取kubectl  获取Config 配置中的整数信息</li>
+</ol>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># kubectl config view -raw</span><br><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span><br><span class="hljs-attr">cluster:</span><br><span class="hljs-bullet">-</span> <span class="hljs-attr">cluster:</span><br>		<span class="hljs-attr">certificate-authority-data:</span> <span class="hljs-string">xxxxxxxxxxxxxxxxxx</span><br>		<span class="hljs-attr">server:</span> <span class="hljs-string">&lt;http://192.168.18.3:6443&gt;</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">kubernetes</span><br><span class="hljs-attr">contexts:</span><br><span class="hljs-bullet">-</span> <span class="hljs-string">context</span><br>		<span class="hljs-attr">cluster:</span> <span class="hljs-string">kubernetes</span><br>		<span class="hljs-attr">user:</span> <span class="hljs-string">kubernetes-admin</span><br>	<span class="hljs-attr">name:</span> <span class="hljs-string">kubernetes-admin&amp;kubernetes</span><br><span class="hljs-attr">current-context:</span> <span class="hljs-string">kubernetes-admin@kubernetes</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">Config</span><br><span class="hljs-attr">preferences:</span> &#123;&#125;<br><span class="hljs-attr">users:</span><br><span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">kubernetes-admin</span><br>	<span class="hljs-attr">user:</span><br>		<span class="hljs-attr">client-certificate-data:</span> <span class="hljs-string">yyyyyyyyyyyyyyyyyy</span><br>		<span class="hljs-attr">client-key-data:</span> <span class="hljs-string">zzzzzzzzzzzz</span><br><br></code></pre></td></tr></table></figure>
+
+<p>certificate-authority-data:  CA证书</p>
+<p>client-certificate-dat: 证书</p>
+<p>client-key-data: kubectl证书的私钥</p>
+<p>b. 使用base64存储 证书信息，使用curl 对服务器进行访问</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># echo &quot;xxxxxxxxxxxxxxxxxxxxxxxxx&quot; | base64 -d </span><br></code></pre></td></tr></table></figure>
+
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># curl --cacert ./ca.crt --cert ./client.crt --key ./client.key &lt;https://192.168.18.3:6443&gt;</span><br></code></pre></td></tr></table></figure>
+
+<p>c. 请求的返回信息</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs yaml">&#123;<br>	<span class="hljs-attr">&quot;kind&quot;:</span> <span class="hljs-string">&quot;APIVersions&quot;</span>,<br>	<span class="hljs-attr">&quot;versions&quot;:</span> [<br>		<span class="hljs-string">&quot;v1&quot;</span><br>	],<br>	<span class="hljs-attr">&quot;serverAddressByClientCIDRs&quot;:</span> [<br>		&#123;<br>			<span class="hljs-attr">&quot;clientCIDR&quot;:</span> <span class="hljs-string">&quot;0.0.0.0/0&quot;</span>,<br>			<span class="hljs-attr">&quot;serverAddress&quot;:</span> <span class="hljs-string">&quot;192.168.18.3:6443&quot;</span><br>		&#125;<br>	]<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>d. 通过&#x2F;api&#x2F;v1用于查询API Server支持的资源对象的种类</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs yaml">&#123;<br>	<span class="hljs-attr">&quot;name&quot;:</span> <span class="hljs-string">&quot;configmaps&quot;</span>,<br>	<span class="hljs-attr">&quot;singularName&quot;:</span> <span class="hljs-string">&quot;configmap&quot;</span>,<br>	<span class="hljs-attr">&quot;namespaced&quot;:</span> <span class="hljs-literal">true</span>,<br>	<span class="hljs-attr">&quot;kind&quot;:</span> <span class="hljs-string">&quot;Configmap&quot;</span>,<br>	<span class="hljs-attr">&quot;verbs&quot;:</span> [<br>		<span class="hljs-string">&quot;create&quot;</span>,<br>		<span class="hljs-string">&quot;delete&quot;</span>,<br>		<span class="hljs-string">&quot;deletecollection&quot;</span>,<br>		<span class="hljs-string">&quot;get&quot;</span>,<br>		<span class="hljs-string">&quot;list&quot;</span>,<br>		<span class="hljs-string">&quot;patch&quot;</span>,<br>		<span class="hljs-string">&quot;update&quot;</span>,<br>		<span class="hljs-string">&quot;watch&quot;</span><br>	],<br>	<span class="hljs-attr">&quot;shortsNames&quot;:</span> [<br>		<span class="hljs-string">&quot;cm&quot;</span><br>	],<br>	<span class="hljs-attr">&quot;storageVersionHash&quot;:</span> <span class="hljs-string">&quot;qFsy16wFWjQ=&quot;</span><br>&#125;<span class="hljs-string">,</span><br></code></pre></td></tr></table></figure></li>
+</ol>
+<h2 id="应用场景"><a href="#应用场景" class="headerlink" title="应用场景"></a>应用场景</h2><ol>
+<li>通过调用Kubernetes API 搭建特定的分布式集群。</li>
+</ol>
+<p>API Server 本身也被注册为一个服务，通过访问服务进行创建过程</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># kubectl get service</span><br><span class="hljs-string">NAME</span>          <span class="hljs-string">CLUSTER-IP</span>          <span class="hljs-string">EXTERNAL-IP</span>      <span class="hljs-string">PORT(S)</span>     <span class="hljs-string">AGE</span><br><span class="hljs-string">kubernetes</span>    <span class="hljs-number">169.169</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span>         <span class="hljs-string">&lt;none&gt;</span>           <span class="hljs-number">443</span><span class="hljs-string">/TCP</span>     <span class="hljs-string">1d</span><br></code></pre></td></tr></table></figure>
+
+<ol>
+<li>开发基于Kubernetes的图形化管理平台</li>
+</ol>
+<h2 id="基于性能考虑的设计"><a href="#基于性能考虑的设计" class="headerlink" title="基于性能考虑的设计"></a>基于性能考虑的设计</h2><ol>
+<li>API Server拥有大量高性能的底层代码。在API Server源码中使用了协程及队列这种轻量级的高性能并发代码，使单进程的API Server具备超强的多核处理能力，从而可以快速地并发处理大量的请求</li>
+<li>普通List接口结合异步Watch接口，不但完美解决了Kubernete中各种资源对象的高性能同步问题，也提升了集群实时响应各种事件的灵敏度</li>
+<li>采用了高性能的etcd而非传统的关系数据库，不仅解决了数据的可靠性问题，也极大地提升了API Server数据访问层的性能。</li>
+</ol>
+<h2 id="架构"><a href="#架构" class="headerlink" title="架构"></a>架构</h2><p><img src="https://i.111666.best/image/WW8IA2se7MFPzM02QmOUL4.png" srcset="/img/loading.gif" lazyload alt="API Server"></p>
+<h3 id="API层"><a href="#API层" class="headerlink" title="API层"></a>API层</h3><p>以REST方式提供各种API，除了Kubernetes资源对象的CRUD和Watch等主要API，还有健康检查，日志，性能指标等与运维监控相关的API</p>
+<h3 id="访问控制层"><a href="#访问控制层" class="headerlink" title="访问控制层"></a>访问控制层</h3><p>当有客户端访问API时，访问控制层负责对用户身份进行鉴权，验证用户的身份，核准访问权限，并根据配置的各种资源访问许可逻辑，判断是否允许访问</p>
+<h3 id="Registry层"><a href="#Registry层" class="headerlink" title="Registry层"></a>Registry层</h3><p>Kubernetes把所有资源对象都保存在注册表中，准对注册表中的各种资源对象都定义了资源对象的类型，如何创建资源对象，如何转换资源的不同副本</p>
+<h3 id="etcd"><a href="#etcd" class="headerlink" title="etcd"></a>etcd</h3><p>用于持久化存储Kubernetes资源对象的KV数据库。etcd的Watch API对于API Server来说至关重要，因为通过这个接口，API Server创新性地设计了List-Watch这种高性能的资源对象实时同步机制。</p>
+<h2 id="List-Watch过程"><a href="#List-Watch过程" class="headerlink" title="List-Watch过程"></a>List-Watch过程</h2><ol>
+<li>借助etcd提供的Watch API ，API Server可以监听在etcd上发生的数据操作事件，比如Pod创建事件，更新事件，删除事件等。事件发生后，etcd会即时通知API Server</li>
+<li>etcd 会 委托API Server 使用API Server的Watch接口，来让其他应用可以在不直接访问etcd的情况下，获得etcd的事件信息</li>
+<li>List-Watch机制可用于实现数据同步的代码逻辑。客户端首先调用API Server的List 接口获取相关资源对象的全量数据并将其缓存到内存中，如何启动对应资源对象的Watch携程，在接收到Watch事件后，根据事件的类型对内存中的全量资源对象列表做出相应的同步修改。</li>
+</ol>
+<h2 id="Kubenetes-Proxy-API"><a href="#Kubenetes-Proxy-API" class="headerlink" title="Kubenetes Proxy API"></a>Kubenetes Proxy API</h2><p>Kubernetes Proxy API 用于代理REST请求，将API Server 收到的REST请求转发到某个kubelet进程的REST端口，由该kubelet进程负责响应。</p>
+<h3 id="Node相关接口"><a href="#Node相关接口" class="headerlink" title="Node相关接口"></a>Node相关接口</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-string">/api/v1/nodes/&#123;name&#125;/proxy/pods</span>           <span class="hljs-comment"># 列出指定Node内的所有Pod的信息</span><br><span class="hljs-string">/api/v1/nodes/&#123;name&#125;/proxy/metrics</span>        <span class="hljs-comment"># 列出指定Node的性能指标的统计信息</span><br><span class="hljs-string">/api/v1/nodes/&#123;name&#125;/proxy/spec</span>           <span class="hljs-comment"># 列出指定Node的概要信息</span><br><span class="hljs-string">/api/v1/nodes&#123;name&#125;/proxy/configz</span>         <span class="hljs-comment"># 列出指定Node的当前参数信息</span><br></code></pre></td></tr></table></figure>
+
+<p>通过设置Debug模式可以进行更多信息的请求</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-comment">--enable-debugging-handlers=true</span><br></code></pre></td></tr></table></figure>
+
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-operator">/</span>api<span class="hljs-operator">/</span>v1<span class="hljs-operator">/</span>nodes<span class="hljs-operator">/</span>&#123;name&#125;<span class="hljs-operator">/</span>proxy<span class="hljs-operator">/</span>run             # 在Node上运行某个容器<br><span class="hljs-operator">/</span>api<span class="hljs-operator">/</span>v1<span class="hljs-operator">/</span>nodes<span class="hljs-operator">/</span>&#123;name&#125;<span class="hljs-operator">/</span>proxy<span class="hljs-operator">/</span><span class="hljs-keyword">exec</span>            # 在Node上的某个容器内运行某个命令<br><span class="hljs-operator">/</span>api<span class="hljs-operator">/</span>v1<span class="hljs-operator">/</span>nodes<span class="hljs-operator">/</span>&#123;name&#125;<span class="hljs-operator">/</span>proxy<span class="hljs-operator">/</span>attach          # 在Node上attach某个容器<br><span class="hljs-operator">/</span>api<span class="hljs-operator">/</span>v1<span class="hljs-operator">/</span>nodes<span class="hljs-operator">/</span>&#123;name&#125;<span class="hljs-operator">/</span>proxy<span class="hljs-operator">/</span>portForward     # 实现Node上的Pod端口转发<br><span class="hljs-operator">/</span>api<span class="hljs-operator">/</span>v1<span class="hljs-operator">/</span>nodes<span class="hljs-operator">/</span>&#123;name&#125;<span class="hljs-operator">/</span>proxy<span class="hljs-operator">/</span>logs            # 列出Node的各类日志信息<br><span class="hljs-operator">/</span>api<span class="hljs-operator">/</span>v1<span class="hljs-operator">/</span>nodes<span class="hljs-operator">/</span>&#123;name&#125;<span class="hljs-operator">/</span>proxy<span class="hljs-operator">/</span>runningpods     # 列出在该Node上运行的Pod信息<br><span class="hljs-operator">/</span>api<span class="hljs-operator">/</span>v1<span class="hljs-operator">/</span>nodes<span class="hljs-operator">/</span>&#123;name&#125;<span class="hljs-operator">/</span>proxy<span class="hljs-operator">/</span>debug<span class="hljs-operator">/</span>pprof     # 列出node上当前Web服务的状态<br></code></pre></td></tr></table></figure>
+
+<h3 id="Pod相关接口"><a href="#Pod相关接口" class="headerlink" title="Pod相关接口"></a>Pod相关接口</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-operator">/</span>api<span class="hljs-operator">/</span>v1<span class="hljs-operator">/</span>namespaces<span class="hljs-operator">/</span>&#123;namespace&#125;<span class="hljs-operator">/</span>pods<span class="hljs-operator">/</span>&#123;name&#125;<span class="hljs-operator">/</span>proxy               #访问pod<br><span class="hljs-operator">/</span>api<span class="hljs-operator">/</span>v1<span class="hljs-operator">/</span>namespaces<span class="hljs-operator">/</span>&#123;namespace&#125;<span class="hljs-operator">/</span>pods<span class="hljs-operator">/</span>&#123;name&#125;<span class="hljs-operator">/</span>proxy<span class="hljs-operator">/</span>&#123;path:<span class="hljs-operator">*</span>&#125;      #访问Pod服务的URL路径<br></code></pre></td></tr></table></figure>
+
+<h3 id="Service相关接口"><a href="#Service相关接口" class="headerlink" title="Service相关接口"></a>Service相关接口</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-operator">/</span>api<span class="hljs-operator">/</span>v1<span class="hljs-operator">/</span>namespaces<span class="hljs-operator">/</span>&#123;namespace&#125;<span class="hljs-operator">/</span>services<span class="hljs-operator">/</span>&#123;name&#125;<span class="hljs-operator">/</span>proxy<br></code></pre></td></tr></table></figure>
+
+<h2 id="模块间通信"><a href="#模块间通信" class="headerlink" title="模块间通信"></a>模块间通信</h2><p>API Server作为集群的核心，负责集群各功能模块之间的通信，集群内的各个功能模块通过API Server将信息存入etcd中，当需要获取和操作这些信息时，则通过API Server 提供的REST接口来实现，从而实现各模块之间的信息交互</p>
+<h3 id="场景1"><a href="#场景1" class="headerlink" title="场景1"></a>场景1</h3><p>kubelet进程与API Server交互，每个Node上的kubelet每隔一段时间周期就会调用一次API Server 的REST接口信息来报告自身状态，API Server在接收到这些信息后，会将Node状态信息更新到etcd中。此外kubelet会通过API Server的Watch接口监听Pod信息，如果监听到新的Pod副本被调度绑定到本Node，则执行Pod对应的容器创建和启动逻辑；如果Pod被删除，就删除本Node上相应的Pod容器，如果监听到修改Pod的信息，则相应地修改本Node的Pod容器</p>
+<h3 id="场景2"><a href="#场景2" class="headerlink" title="场景2"></a>场景2</h3><p>kube-controller-manager进程与API Server的交互。 kube-controller-manager进程中的Node Controller模块通过API Server提供的Watch接口实时监控Node的信息，并做相应的处理</p>
+<h3 id="场景3"><a href="#场景3" class="headerlink" title="场景3"></a>场景3</h3><p>kube-scheduler与API Server的交互。Scheduler在注册过API Server的Watch接口监听到新建Pod副本的信息后，会检索所有符合该Pod要求的Node列表，开始执行Pod调度逻辑，在调度成功后将Pod绑定到目标Node上。</p>
+<h1 id="Controller-Manager"><a href="#Controller-Manager" class="headerlink" title="Controller Manager"></a>Controller Manager</h1><p>Controller Manager 通过API Server 接口实时监控集群中特定资源的变化，当系统发生故障或者因其他原因导致目标资源对象的属性或状态发生变化时，Controller尝试将其状态调整为期望状态</p>
+<p>Controller Manager中管理着多种Controller 对象分别管控对应的资源对象。</p>
+<h2 id="Finalizer机制"><a href="#Finalizer机制" class="headerlink" title="Finalizer机制"></a>Finalizer机制</h2><p>Finalizer 机制为了解决：</p>
+<ul>
+<li>如果资源对象之间有引用关系，则不能被删除。Kuberenetes通过资源对象的属主引用，这一特性来表明两个对象之间存在从属关系</li>
+<li>如果涉及物理资源和设备的占用，则需要先做资源释放和回收操作，然后才能删除</li>
+</ul>
+<p>Finalizer提供了一种删除操作前的拦截机制，能够让控制器在资源对象被删除前进行回调，查看被占用的资源和设备的释放这两项工作是否已经完成，进而判断资源对象是否可以被删除。如果一个资源对象需要对删除操作进行保护，则某些控制器会在合适的时机，添加相应的Finalizer机制到被被保护对象的metada.finalizers属性里并更新此对象。metadata.finalizers是一个数组属性，每个值都对应一个Finalizer。当Finalizer关联的控制器检测到目标资源对象正处于被删除状态时，就会执行相应的pre-delete操作，每执行完一个回调，就会删除finalizers列表中对应的Finalizer记录。当资源对象上的finalizers列表为空时，API Server才会将这个对象彻底删除。</p>
+<p><a target="_blank" rel="noopener" href="http://例如persistentvolume上的kubernetes.io/pv-protection%EF%BC%8C%E5%AE%83%E5%8F%AF%E7%94%A8%E4%BA%8E%E9%98%B2%E6%AD%A2%E6%84%8F%E5%A4%96%E5%88%A0%E9%99%A4PersistentVolume%E5%AF%B9%E8%B1%A1%E3%80%82%E5%BD%93%E4%B8%80%E4%B8%AAPV%E5%AF%B9%E8%B1%A1%E8%A2%AB%E6%9F%90%E4%B8%AAPod%E4%BD%BF%E7%94%A8%E6%97%B6%EF%BC%8CKubernetes%E4%BC%9A%E7%BB%99%E8%BF%99%E4%B8%AAPV%E5%AF%B9%E8%B1%A1%E6%B7%BB%E5%8A%A0pv-protection">例如PersistentVolume上的kubernetes.io&#x2F;pv-protection，它可用于防止意外删除PersistentVolume对象。当一个PV对象被某个Pod使用时，Kubernetes会给这个PV对象添加pv-protection</a>  Finalizer信息，如果此时我们试图删除这个PV对象，那么它将进入被删除状态，但是控制器因为该Finalizer存在而无法删除该资源。当Pod停止使用该PV对象时，Kubernetes就会清除pv-protection Finalizer，随后控制器删除该PV对象。</p>
+<p>在引入资源对象的Finalizer机制后，Kubernetes资源对象的删除操作就被设计成两步删除的模式</p>
+<ol>
+<li>API Server 通过标记对象的meta.deletionTimestamp属性，来告知系统中的各个相关组件，目标对象已进入被删除状态，并进入相关的对象销毁流程。<ol>
+<li>为Pod定制的优雅销毁流程，主要由kubelet负责执行</li>
+<li>其他资源对象的简单销毁流程</li>
+</ol>
+</li>
+<li>当资源对象上捆绑的Finalizer都被相应的处理器处理并清楚后，API Server执行资源对象的Delete操作，真正从etcd中删除对象</li>
+</ol>
+<h2 id="Deployment-Controller"><a href="#Deployment-Controller" class="headerlink" title="Deployment Controller"></a>Deployment Controller</h2><p>Deployment Controller的核心作用是确保集群中某个Deployment关联的Pod副本数量在任何时候都保持预设值。</p>
+<p>Deployment Controller在工作过程中实际上是在控制两类资源对象：Deployment和ReplicaSet。在创建了Deployment资源对象后，Deployment Controller也默默创建了对应的ReplicaSet。</p>
+<p>Deployment Controller 的作用有：</p>
+<ul>
+<li>确保在当前集群中有且仅有N各Pod实例，N是在Deployment中定义的Pod副本数量</li>
+<li>通过调整spec.replicas 属性的值来实现系统扩容或者缩容</li>
+<li>通过改变Pod模板来实现系统的滚动更新</li>
+</ul>
+<p>Deployment Controller的场景：</p>
+<ul>
+<li>重新调度： 不管想运行1各副本还是1000各副本，副本控制器都能确保指定数量的副本存在于集群中，即时发生Node故障或Pod副本被终止运行等意外状况</li>
+<li>弹性伸缩：手动或者通过自动扩容代理修改副本控制器spec.replicas属性的值，即可非常容易地增加或减少副本的数量</li>
+<li>滚动更新：副本控制器被设计成通过逐个替换Pod来辅助服务的滚动更新</li>
+</ul>
+<h2 id="Node-Controller"><a href="#Node-Controller" class="headerlink" title="Node Controller"></a>Node Controller</h2><p>kubelet进程在启动时通过API Server注册自身Node信息，并定时向API Server汇报状态信息。API Server在接收到这些信息后，会将这些信息更新到etcd中。在etcd中存储的Node信息包括Node健康状况，Node资源，Node名称，Node地址信息，操作系统版本，Docker版本，kubelet版本。Node健康状况包括就绪，未就绪和未知三种。Node Controller通过API Server 实时获取Node的相关信息，管理和监控集群中各个Node的相关控制功能</p>
+<p><img src="https://i.111666.best/image/rfKhWnjiEIkK8ZuA81VWtU.png" srcset="/img/loading.gif" lazyload alt="Controller决策"></p>
+<ol>
+<li>Controller Manager 在启动时，如果设置了 —cluster-cidr参数，那么就为每个没有设置Spec.PodCIDR的Node都生成一个CIDR地址，并用该CIDR地址设置Node的Spec.PodCIDR属性，这样做的目的是防止不同Node的CIDR地址发生冲突</li>
+<li>逐个读取Node信息，多次尝试修改nodeStatusMap中的Node状态信息，该Node信息和在Node Controller的nodeStatusMap中保存的Node信息进行比较。如果判断出没有收到Kubelet发送的Node信息，第一次收到Node上的kubelet发送的Node信息或在该处理过程中Node状态变成非‘健康’状态，则在nodeStatusMap中保存该Node的状态信息，并将Node Controller所在节点的系统事件作为探测时间和Node状态变化时间。如果判断出在指定时间内收到新的Node信息，但Node状态没发生变化，则在nodeStatusMap中保存该Node的状态信息，并将Node Controller所在Node的系统时间作为探测时间，将上次Node信息中的Node状态变化时间作为该Node状态变化时间，如果判断出在某段时间内没有收到Node状态信息，则设置Node状态为“未知”，并且通过API Server保存Node状态。</li>
+<li>逐个读取Node信息，如果Node状态变为非Ready状态，则将该Node加入待删除队列，否则将该Node从队列中删除。如果Node状态为非Ready状态，且系统指定了Cloud Provider，则Node Controller调用Cloud Provider查看Node，若发现Node故障，则删除etcd中的Node信息，并删除与该Node相关的Pod等资源的信息。</li>
+</ol>
+<p>在后续的版本中对Node Controller 进行了功能拆分：</p>
+<p>Node ipam Controller 是集群中为Node分配Pod CIDR的控制器。为了保证集群中的Pod的IP地址不重复，集群中的每个Node都需要使用一段相互不重复的PodCIDR地址段，每个Node上的Pod都从改地址段中获取一个Pod IP地址。如果在启动kube-controller-manager进程时没有设置—cluster-cidr参数，则需要Node ipam Controller来动态地给Node分配Pod CIDR地址段，此时需要设置参数—allocate-node-cidrs为true，即开启Node ipam Controller， 则具体负责分配Pod CIDR 的是CIDR Allocator组件，由—cidr-allocator-type来设置。可用的CIDR Allocator组件有以下几种：</p>
+<ul>
+<li>RangeAllocator: 使用内部的CIDR对Node 进行分配，它与RouteController配合使用，确保网络的连通性</li>
+<li>CloudAllocator: 从底层云平台同步Pod CIDR并分配。</li>
+</ul>
+<p>将基于污点的Pod驱逐功能拆分到Taint Eviction Controller中，其余功能则保留在Node Lifecycle Controller中。</p>
+<ul>
+<li>Node Lifecycle Controller 关于Node的健康情况，并给对应的Node添加NotReady 与Unreachable 污点标签</li>
+<li>Taint Eviction Controller 监测Node和Pod的update 变化情况，并执行基于NoExecute污点的Pod驱逐动作</li>
+</ul>
+<h2 id="ResourceQuota-Controller"><a href="#ResourceQuota-Controller" class="headerlink" title="ResourceQuota Controller"></a>ResourceQuota Controller</h2><p>ResourceQuota Controller 用于进行资源配额管理，使得指定的资源对象在任何时候都不会超量占用系统物理资源，保障整个集群的平稳运行</p>
+<p>目前Kubernete支持以下三个级别的资源配置管理：</p>
+<ul>
+<li>容器级别： 可以对容器分配的CPU和Memory 等计算资源进行限制</li>
+<li>Pod级别： 可以对一个Pod内所有容器占用的资源总量进行限制</li>
+<li>命名空间级别： 可以对Pod，Replication Controller， ResourceQuota，Secret和可持有PV对象等数量进行限制</li>
+</ul>
+<h3 id="资源配额控制的设计"><a href="#资源配额控制的设计" class="headerlink" title="资源配额控制的设计"></a>资源配额控制的设计</h3><p>Kubernetes的配额管理通过Admission Control来控制，它具备两种策略：</p>
+<p>LimitRanger</p>
+<p>当Pod定义中声明了LimitRanger,则用户通过API Server请求创建或者修改资源时，Admission Control会计算当前配额的使用情况。如果不符合配额约束，则创建对象失败。</p>
+<p>ResourceQuota</p>
+<p>对于定义了ResourceQuota的命名空间，ResourceQuota Controller会定期统计和生成该命名空间中各类对象的资源使用总量，包括Pod，Service，RC和Secret等的实例的个数，以及该命名空间中所有Container实例的资源使用量，之后将统计结果写入etcd的reourceQuotaStatusStorage目录中。写入resourceQuotaStatusStorage的内容包含Resource名称，配额值，当前使用量。随后这些统计信息会被Admission Contol使用，以确保相关命名空间中的资源配额总量不会超过ResourceQuota中的限定值</p>
+<h2 id="Namespace-Controller"><a href="#Namespace-Controller" class="headerlink" title="Namespace  Controller"></a>Namespace  Controller</h2><p>用户通过API Server可以创建新的命名空间并将其保存到etcd中，Namespace Controller 定时通过API Server读取命名空间的信息，如果命名空间被API标识为优雅删除，则将该命名空间设置为被删除状态并保存在etcd中。同时，Namespace Controller 删除该命名空间中的ServiceAccount，Deployment，Pod，Secret，PersistentVolume，ListRange，ResourceQuota和Event相关资源对象</p>
+<p>在命名空间被设置为被删除状态后，Admission Controller的NamespaceLifecycle插件会阻止为该Namespace创建新的资源。同时，在Namespace Controller删除该命名空间中的所有资源对象后，Namespace Controller会对该命名空间执行finalize操作，删除该命名空间的spec.finalizers域中的信息</p>
+<p>如果Namespace Controller 观察到命名空间设置了删除期限，同时该命名空间的spec.finalizers域是空的，那么Namespace Controller 将通过API Server删除该命名空间的资源</p>
+<h2 id="Endpoint-Controller"><a href="#Endpoint-Controller" class="headerlink" title="Endpoint Controller"></a>Endpoint Controller</h2><p>Endpoint Controller 负责生成和维护所有Endpoint对象的控制器</p>
+<p>Endpoint Controller 负责监控Service和对应的Pod副本的变化，如果检测到Service被删除，则删除和该Service对应的Endpoint对象。如果监控到新的Service被创建或者被修改，则根据该Service信息获取相关的Pod列表，然后创建或者更新Service对应的Endpoint对象。如果检测到Pod的事件，则更新它所对应的Service的Endpoiny对象。Endpoint Controller主要通过API Server提供的以下接口操作Endpoint对象</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-string">POST</span> <span class="hljs-string">/api/v1/namespaces/&#123;namespace&#125;/endpoints</span>            <span class="hljs-comment"># 创建Endpoint对象</span><br><span class="hljs-string">PUT</span>  <span class="hljs-string">/api/v1/namespaces/&#123;namespace&#125;/endpoints/&#123;name&#125;</span>     <span class="hljs-comment"># 更新Endpoint对象</span><br><span class="hljs-string">DELETE</span> <span class="hljs-string">/api/v1/namespaces/&#123;namespace&#125;/endpoints/&#123;name&#125;</span>   <span class="hljs-comment"># 删除Endpoint对象</span><br><span class="hljs-string">DELETE</span> <span class="hljs-string">/api/v1/namespaces/&#123;namespace&#125;/endpoints</span>          <span class="hljs-comment"># 删除Endpoints组</span><br></code></pre></td></tr></table></figure>
+
+<h1 id="Scheduler"><a href="#Scheduler" class="headerlink" title="Scheduler"></a>Scheduler</h1><p>Scheduler用于对待调度的Pod通过一些复杂的调度流程计算出其最佳目标Node，再将Pod绑定到目标Node上。Scheduler是负责Pod调度的进程。</p>
+<p>Scheduler的作用是将待调度的Pod按照特定的调度算法和调度策略绑定到集群中某个合适的Node上，并将绑定信息写入etcd。整个调度过程中涉及到3个对象，分别是待调度的Pod列表，可用Node列表及调度算法和调度策略，</p>
+<h2 id="调度流程"><a href="#调度流程" class="headerlink" title="调度流程"></a>调度流程</h2><ol>
+<li>通过调度算法为待调度Pod列表中的每个Pod都从Node列表中选择一个最合适它的Node。</li>
+<li>目标Node上的kubelet通过API Server监听到Scheduler产生的Pod绑定事件，获取对应的Pod清单，下载Image镜像并启动容器。</li>
+</ol>
+<h3 id="旧版本调度"><a href="#旧版本调度" class="headerlink" title="旧版本调度"></a>旧版本调度</h3><ol>
+<li>过滤阶段，遍历所有目标Node,筛选出符合要求的候选Node。在此阶段，Scheduler将不合适的Node全部过滤掉，在筛选完成后通常会有多个候选Node供调度，从而进入打分阶段。如果结果集为空， 则表示当前没有符合条件的Node,此时Pod会保持在Pending状态</li>
+<li>打分阶段，在过滤阶段的基础上，采用优选策略计算出每个候选Node的积分，积分最高者胜出。挑选出最佳Node后，Scheduler会把目标Pod安置在该Node上，完成调度</li>
+</ol>
+<h3 id="调度框架Scheduler-Framework"><a href="#调度框架Scheduler-Framework" class="headerlink" title="调度框架Scheduler Framework"></a>调度框架Scheduler Framework</h3><p>Scheduler Framework在原调度策略上进行了一些扩展</p>
+<ul>
+<li>PreEnqueue： 对新来的计划调度的Pod进行筛查，只有完全具备条件的Pod才能进入待调度队列中，不具备条件的Pod则被放到Unshedulable队列中等待机会。这里可以有多个插件对同一个Pod进行筛查，只有当所有插件的接口都返回成功时，该Pod才满足调度条件</li>
+<li>QueueSort： 对调度队列中待调度的Pod进行排序，一次只能启用一个队列排序插件</li>
+<li>PreFilter：在过滤之前预处理Pod或集群的信息，可以将Pod标记为不可调度</li>
+<li>Filter：相当于调度策略中的Predicates，用于过滤不能运行Pod的Node。过滤器的调用顺序是可配置的，如果么有Node通过所有过滤器的筛选，则该Pod将被标记为不可调度。</li>
+<li>PreScore： 信息扩展点，可用于Node预打分操作</li>
+<li>Score：给完成过滤的Node打分，调度器会选择得分最高的Node</li>
+<li>Reserve： 信息扩展点，当资源已被预留给Pod时，会通知插件</li>
+<li>Permit： 可以阻止或延迟Pod绑定</li>
+<li>PreBind：在Pod绑定Node之前执行</li>
+<li>Bind：将Pod与Node绑定</li>
+<li>…</li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Kubernetes/" class="category-chain-item">Kubernetes</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E5%BE%AE%E6%9C%8D%E5%8A%A1/" class="print-no-link">#微服务</a>
+      
+        <a href="/tags/%E8%99%9A%E6%8B%9F%E5%8C%96/" class="print-no-link">#虚拟化</a>
+      
+        <a href="/tags/Kubernetes/" class="print-no-link">#Kubernetes</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Kuberenetes 架构与核心组件</div>
+      <div>http://gadoid.io/2025/08/14/Kuberenetes-架构与核心组件/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Codfish</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年8月14日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/08/14/Kuberenetes-Kubelet/" title="Kuberenetes Kubelet">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Kuberenetes Kubelet</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/08/14/Kubernete-%E6%9C%8D%E5%8A%A1/" title="Kubernete Service">
+                        <span class="hidden-mobile">Kubernete Service</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"lQzCvqmOtewLtpMfvfxKLomU-MdYXbMMI","appKey":"daMNlw5XcjN8TelT6GCHh8RF","path":"window.location.pathname","placeholder":"让灵感在这里发生","avatar":"monsterid","meta":["nick","mail"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":true,"recordIP":true,"serverURLs":"https://lQzCvqmO.api.lncldglobal.com","emojiCDN":null,"emojiMaps":null,"enableQQ":false,"enable":true,"visitor":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      &copy; 2025 - 2025 <a target="_blank" rel="noopener" href="https://github.com/username">CODFISH</a>
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+<!-- hexo injector body_end start --><script src="/js/chatbot-loader.js" defer></script><!-- hexo injector body_end end --></body>
+</html>

@@ -1,0 +1,1000 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/bg/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Codfish">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="网桥网桥是一个二层虚拟网络设备，它把若干个网络接口”连接“起来，使得网络接口之间的报文能够互相转发。网桥能够解析收发的报文，读取目标MAC地址的信息。 Linux内核通过通过一个虚拟网桥设备来实现桥接的。这个虚拟网桥设备可以绑定若干个以太接口设备，从而将它们桥接起来。 网桥的常用命令新增一个网桥设备 1# krctl addbr xxxxx  增加接口 1# brctl addif xxxxx e">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kuberenetes 网络与通信">
+<meta property="og:url" content="http://gadoid.io/2025/08/14/Kuberenetes-%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/index.html">
+<meta property="og:site_name" content="西北有高楼">
+<meta property="og:description" content="网桥网桥是一个二层虚拟网络设备，它把若干个网络接口”连接“起来，使得网络接口之间的报文能够互相转发。网桥能够解析收发的报文，读取目标MAC地址的信息。 Linux内核通过通过一个虚拟网桥设备来实现桥接的。这个虚拟网桥设备可以绑定若干个以太接口设备，从而将它们桥接起来。 网桥的常用命令新增一个网桥设备 1# krctl addbr xxxxx  增加接口 1# brctl addif xxxxx e">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-08-14T02:33:42.000Z">
+<meta property="article:modified_time" content="2025-08-14T02:36:00.213Z">
+<meta property="article:author" content="Codfish">
+<meta property="article:tag" content="微服务">
+<meta property="article:tag" content="虚拟化">
+<meta property="article:tag" content="Kubernetes">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Kuberenetes 网络与通信 - 西北有高楼</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"gadoid.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>西北有高楼</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/downloads/" target="_self">
+                <i class="iconfont icon-books-fill"></i>
+                <span>资源下载</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/bg/img/ice.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Kuberenetes 网络与通信"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-08-14 10:33" pubdate>
+          2025年8月14日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          6.6k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          55 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Kuberenetes 网络与通信</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="网桥"><a href="#网桥" class="headerlink" title="网桥"></a>网桥</h1><p>网桥是一个二层虚拟网络设备，它把若干个网络接口”连接“起来，使得网络接口之间的报文能够互相转发。网桥能够解析收发的报文，读取目标MAC地址的信息。</p>
+<p>Linux内核通过通过一个虚拟网桥设备来实现桥接的。这个虚拟网桥设备可以绑定若干个以太接口设备，从而将它们桥接起来。</p>
+<h2 id="网桥的常用命令"><a href="#网桥的常用命令" class="headerlink" title="网桥的常用命令"></a>网桥的常用命令</h2><p>新增一个网桥设备</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># krctl addbr xxxxx</span><br></code></pre></td></tr></table></figure>
+
+<p>增加接口</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># brctl addif xxxxx ethx</span><br></code></pre></td></tr></table></figure>
+
+<p>配置IP地址</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">ifconfig brxxx xx.xx.xx.xx<br></code></pre></td></tr></table></figure>
+
+<h1 id="Netfilter和iptables"><a href="#Netfilter和iptables" class="headerlink" title="Netfilter和iptables"></a>Netfilter和iptables</h1><p>在Linux网络协议栈中有一组回调函数挂接点，通过这些挂接点挂接的钩子函数可以在Linux网络栈处理数据包的过程中对数据包进行一些操作。这种挂接点技术被叫做Netfilter和iptables</p>
+<p>Netfilter负责在内核中执行各种挂接的规则，运行在内核模式中，而iptables是在用户模式下运行的进程，负责协助和维护内核中Netfilter的各种规则表。</p>
+<p>Netfilter提供了多个挂载点用于执行Filter规则</p>
+<p>在配置规则时，需要理解 Netfilter 提供的规则表（table）与链（chain）结构：</p>
+<ul>
+<li><strong>表（Table）</strong><br>表是按照功能划分的规则集合，不同的表用于不同的处理目的：<ol>
+<li><strong>filter</strong> ：数据包过滤（决定放行&#x2F;拒绝&#x2F;丢弃），是最常用的表</li>
+<li><strong>nat</strong> ：网络地址转换（SNAT、DNAT、MASQUERADE 等）</li>
+<li><strong>mangle</strong> ：修改数据包的特定字段（如 TOS、TTL）</li>
+<li><strong>raw</strong> ：控制数据包是否进入连接跟踪（conntrack）</li>
+<li><strong>security</strong> ：配合 SELinux 等安全框架进行包级别的安全策略控制</li>
+</ol>
+</li>
+<li><strong>链（Chain）</strong><br>链决定规则在数据包处理过程中的位置。常见内置链：<ol>
+<li><strong>PREROUTING</strong> ：数据包刚到本机，还未进行路由判断前</li>
+<li><strong>INPUT</strong> ：目标是本机的入站数据包</li>
+<li><strong>FORWARD</strong> ：需要转发到其他主机的数据包</li>
+<li><strong>OUTPUT</strong> ：本机发出的数据包</li>
+<li><strong>POSTROUTING</strong> ：路由判断后、发出数据包前</li>
+</ol>
+</li>
+<li><strong>规则（Rule）</strong><br>每条规则由匹配条件（Match）和处理动作（Target）组成：<ul>
+<li><strong>匹配条件</strong> ：源&#x2F;目的 IP、端口、协议、接口、数据包状态（conntrack）、MAC 地址等</li>
+<li><strong>处理动作</strong> ：ACCEPT、DROP、REJECT、SNAT、DNAT、LOG、自定义链等</li>
+</ul>
+</li>
+</ul>
+<p>结合数据包路径，可以总结 Netfilter 的核心执行流程（简化）：</p>
+<figure class="highlight coq"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs coq">less<br>复制编辑<br>          [PREROUTING] --(路由判断)--&gt; [INPUT] --&gt; 本地进程<br>               |                         <span class="hljs-type">↑</span><br><span class="hljs-type">               v</span>                         |<br>           <span class="hljs-type">[FORWARD</span>] --------------------+<br>               |<br>          <span class="hljs-type">[POSTROUTING</span>] --&gt; 网络接口发送<br><br></code></pre></td></tr></table></figure>
+
+<p>在配置 iptables 规则时，本质上就是将<strong>匹配条件</strong>与<strong>处理动作</strong>注册到这些链上，由 Netfilter 在对应的挂载点进行回调执行，从而实现包过滤、地址转换、流量控制等功能。</p>
+<h1 id="路由"><a href="#路由" class="headerlink" title="路由"></a>路由</h1><p>Liunx系统包含一个完整的路由功能。IP层在处理数据发送或者转发时，会使用路由表来决定发往哪里。路由功能由IP维护的一张路由表来实现。当主机收到数据报文时，它用此表来决策接下来应该做什么操作。当从网络侧接收到数据报文时，IP层会先加插报文的IP地址，如果与主机自身的地址一致，那么报文将被发送到传输层相应的协议中，如果报文中的IP地址不是主机自身的地址，并且配置了路由功能，那么该报文被转发，否则丢弃报文。</p>
+<h1 id="命名空间与虚拟网络"><a href="#命名空间与虚拟网络" class="headerlink" title="命名空间与虚拟网络"></a>命名空间与虚拟网络</h1><p>请参考<a target="_blank" rel="noopener" href="https://gadoid.github.io/2025/04/06/%E5%AE%B9%E5%99%A8%E7%BD%91%E7%BB%9C/"></a><a target="_blank" rel="noopener" href="https://gadoid.github.io/2025/04/06/%E5%AE%B9%E5%99%A8%E7%BD%91%E7%BB%9C/">https://gadoid.github.io/2025/04/06/容器网络/</a>中的 命名空间与虚拟网络的讨论</p>
+<p>这里继续讨论Docker中的网络模式，和Docker部署前后的规则变化。</p>
+<h2 id="Docker的容器网络模式"><a href="#Docker的容器网络模式" class="headerlink" title="Docker的容器网络模式"></a>Docker的容器网络模式</h2><p>Docker支持以下网络模式</p>
+<ul>
+<li>host模式：  使用—net&#x3D;host注定</li>
+<li>container模式： 使用—net&#x3D;container:NAME_or_ID指定</li>
+<li>none模式：使用—net&#x3D;none指定</li>
+<li>bridge模式：使用—net&#x3D;brideg指定</li>
+</ul>
+<p>Kubernetes中使用了bridge模式。在bridge模式下，Docker Daemon 首次启动时会创建一个虚拟网桥，默认的名称是docker0，如何在私有网络命名空间中给这个网桥分配一个子网。针对由Docker创建的每一个容器，都会创建一个虚拟以太网设备，其中一端关联到网桥上，另一端使用Linux的网络命名空间技术映射到容器内的eth0设备。如何在网桥的地址段内给eth0接口分配一个IP地址</p>
+<h2 id="Docker启动后的系统响应"><a href="#Docker启动后的系统响应" class="headerlink" title="Docker启动后的系统响应"></a>Docker启动后的系统响应</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># systemctl start docker</span><br><span class="hljs-comment"># ip addr</span><br>1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000<br>    <span class="hljs-built_in">link</span>/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00<br>    inet 127.0.0.1/8 scope host lo<br>       valid_lft forever preferred_lft forever<br>    inet6 ::1/128 scope host <br>       valid_lft forever preferred_lft forever<br><br>2: eth0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc fq_codel state UP group default qlen 1000<br>    <span class="hljs-built_in">link</span>/ether 00:1a:2b:3c:4d:5e brd ff:ff:ff:ff:ff:ff<br>    inet 192.168.1.10/24 brd 192.168.1.255 scope global dynamic eth0<br>       valid_lft 86392sec preferred_lft 86392sec<br>    inet6 fe80::21a:2bff:fe3c:4d5e/64 scope <span class="hljs-built_in">link</span> <br>       valid_lft forever preferred_lft forever<br><br>3: docker0: &lt;NO-CARRIER,BROADCAST,MULTICAST,UP&gt; mtu 1500 qdisc noqueue state DOWN group default <br>    <span class="hljs-built_in">link</span>/ether 02:42:3d:94:8f:65 brd ff:ff:ff:ff:ff:ff<br>    inet 172.17.0.1/16 brd 172.17.255.255 scope global docker0<br>       valid_lft forever preferred_lft forever<br>    inet6 fe80::42:3dff:fe94:8f65/64 scope <span class="hljs-built_in">link</span> <br>       valid_lft forever preferred_lft forever<br>     <br><span class="hljs-comment"># iptables-save</span><br><span class="hljs-comment"># Generated by iptables-save v1.8.7 on Mon Aug 11 18:50:00 2025</span><br>*nat<br>:PREROUTING ACCEPT [7:878]<br>:INPUT ACCEPT [7:878]<br>:OUTPUT ACCEPT [3:536]<br>:POSTROUTING ACCEPT [3:536]<br>:DOCKER - [0:0]<br>-A PREROUTING -m addrtype --dst-type LOCAL -j DOCKER<br>-A OUTPUT ! -d 127.0.0.0/8 -m addrtype --dst-type LOCAL -j DOCKER<br>-A POSTROUTING -s 172.17.0.0/16 ! -o docker0 -j MASQUERADE<br><br>COMMIT<br><span class="hljs-comment"># Completed on Mon Aug 11 18:50:00 2025</span><br><br>*filter<br>:INPUT ACCEPT [113:11362]<br>:FORWARD ACCEPT [0:0]<br>:OUTPUT ACCEPT [37:5000]<br>:DOCKER - [0:0]<br>-A FORWARD -o docker0 -j DOCKER<br>-A FORWARD -o docker0 -m conntrack --ctstate RELATED,established -j ACCEPT<br>-A FORWARD -i docker0 ! -o docker0 -j ACCEPT<br>-A FORWARD -i docker0 -o docker0 -j ACCEPT<br><br>COMMIT<br><span class="hljs-comment"># Completed on Mon Aug 11 18:50:00 2025</span><br><br></code></pre></td></tr></table></figure>
+
+<p>Docker创建了docker0网桥，并添加了iptables规则。docker0网桥和iptables规则都处于root网络命名空间中。通过解读这些规则，我们发现在没有启动任何容器时，如果启动了Docker Daemon，那么它已经做好了通信准备</p>
+<ol>
+<li>在NAT表中有3条记录，在前两条匹配生效后，会继续执行DOCKER链，而此时DOCKER链未空，所以只是创建了框架</li>
+<li>NAT表第3条的含义是，若本地发出的数据包不是发往docker0的，而是发往主机之外的设备，则需要进行动态地修改，将源地址从容器的地址修改为宿主机网卡IP</li>
+<li>在FILTER表中，第1条也是一个框架</li>
+<li>在FILTER表中，第3条的含义是，docker0发出的包如果需要转发到非docker0本地IP地址的设备，则是允许的。这样docker0设备的包就可以根据路由规则中转到宿主机的网卡设备，从而访问外面的网络</li>
+<li>在FILTER表中，第4条的含义是，docker0的包还可以被中转给docker0本身，即连接在docker0网桥上的不同容器之间的通信也是允许的</li>
+<li>在FILTER表中，第2条的含义是，如果接收到的数据包属于以前已经建立好的连接，那么允许直接通过。</li>
+</ol>
+<h2 id="无端口映射创建容器后的网络配置"><a href="#无端口映射创建容器后的网络配置" class="headerlink" title="无端口映射创建容器后的网络配置"></a>无端口映射创建容器后的网络配置</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><code class="hljs bash">docker run --name register -d registry<br><span class="hljs-comment"># ip addr</span><br>1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000<br>    <span class="hljs-built_in">link</span>/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00<br>    inet 127.0.0.1/8 scope host lo<br>       valid_lft forever preferred_lft forever<br>    inet6 ::1/128 scope host <br>       valid_lft forever preferred_lft forever<br>2: eth0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc fq_codel state UP group default qlen 1000<br>    <span class="hljs-built_in">link</span>/ether 00:1a:2b:3c:4d:5e brd ff:ff:ff:ff:ff:ff<br>    inet 192.168.1.10/24 brd 192.168.1.255 scope global dynamic eth0<br>       valid_lft 86392sec preferred_lft 86392sec<br>    inet6 fe80::21a:2bff:fe3c:4d5e/64 scope <span class="hljs-built_in">link</span> <br>       valid_lft forever preferred_lft forever<br>3: docker0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue state UP group default <br>    <span class="hljs-built_in">link</span>/ether 02:42:3d:94:8f:65 brd ff:ff:ff:ff:ff:ff<br>    inet 172.17.0.1/16 brd 172.17.255.255 scope global docker0<br>       valid_lft forever preferred_lft forever<br>    inet6 fe80::42:3dff:fe94:8f65/64 scope <span class="hljs-built_in">link</span> <br>       valid_lft forever preferred_lft forever<br>5: veth12a4b9c@if4: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue master docker0 state UP group default <br>    <span class="hljs-built_in">link</span>/ether 8a:12:34:56:78:9a brd ff:ff:ff:ff:ff:ff link-netnsid 0<br>    inet6 fe80::8812:34ff:fe56:789a/64 scope <span class="hljs-built_in">link</span> <br>       valid_lft forever preferred_lft forever<br>     <br><span class="hljs-comment"># iptables-save</span><br><span class="hljs-comment"># Generated by iptables-save v1.8.7 on Mon Aug 11 18:51:30 2025</span><br>*nat<br>:PREROUTING ACCEPT [8:958]<br>:INPUT ACCEPT [8:958]<br>:OUTPUT ACCEPT [4:616]<br>:POSTROUTING ACCEPT [4:616]<br>:DOCKER - [0:0]<br>-A PREROUTING -m addrtype --dst-type LOCAL -j DOCKER<br>-A OUTPUT ! -d 127.0.0.0/8 -m addrtype --dst-type LOCAL -j DOCKER<br>-A POSTROUTING -s 172.17.0.0/16 ! -o docker0 -j MASQUERADE<br>COMMIT<br><span class="hljs-comment"># Completed on Mon Aug 11 18:51:30 2025</span><br><br>*filter<br>:INPUT ACCEPT [115:11562]<br>:FORWARD ACCEPT [0:0]<br>:OUTPUT ACCEPT [39:5200]<br>:DOCKER - [0:0]<br>-A FORWARD -o docker0 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT<br>-A FORWARD -o docker0 -j DOCKER<br>-A FORWARD -i docker0 ! -o docker0 -j ACCEPT<br>-A FORWARD -i docker0 -o docker0 -j ACCEPT<br>COMMIT<br><span class="hljs-comment"># Completed on Mon Aug 11 18:51:30 2025</span><br><br><span class="hljs-comment"># route -n</span><br>Kernel IP routing table<br>Destination     Gateway         Genmask         Flags Metric Ref    Use Iface<br>0.0.0.0         192.168.1.1     0.0.0.0         UG    100    0        0 eth0<br>172.17.0.0      0.0.0.0         255.255.0.0     U     0      0        0 docker0<br>192.168.1.0     0.0.0.0         255.255.255.0   U     100    0        0 eth0<br></code></pre></td></tr></table></figure>
+
+<p>宿主机上的Netfilter 和路由表都没有变换，说明在进行端口映射时，Docker的默认网络是没有进行特殊处理的。</p>
+<p>宿主机上的Veth设备对已经建立，并连接到容器内。而容器内的网络信息已经在虚拟端口配置了ip地址</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># docker exec register ip addr</span><br>1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000<br>    <span class="hljs-built_in">link</span>/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00<br>    inet 127.0.0.1/8 scope host lo<br>       valid_lft forever preferred_lft forever<br>4: eth0@if5: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue state UP group default <br>    <span class="hljs-built_in">link</span>/ether 02:42:ac:11:00:02 brd ff:ff:ff:ff:ff:ff link-netnsid 0<br>    inet 172.17.0.2/16 brd 172.17.255.255 scope global eth0<br>       valid_lft forever preferred_lft forever<br></code></pre></td></tr></table></figure>
+
+<h2 id="配置端口映射的容器网络配置"><a href="#配置端口映射的容器网络配置" class="headerlink" title="配置端口映射的容器网络配置"></a>配置端口映射的容器网络配置</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">docuer run --name register -d -p 1180:5000 registry<br></code></pre></td></tr></table></figure>
+
+<p>启动后的iptables</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># iptables-save</span><br><span class="hljs-comment"># Generated by iptables-save v1.8.7 on Mon Aug 11 18:51:30 2025</span><br>*nat<br>:PREROUTING ACCEPT [8:958]<br>:INPUT ACCEPT [8:958]<br>:OUTPUT ACCEPT [4:616]<br>:POSTROUTING ACCEPT [4:616]<br>:DOCKER - [0:0]<br>-A PREROUTING -m addrtype --dst-type LOCAL -j DOCKER<br>-A OUTPUT ! -d 127.0.0.0/8 -m addrtype --dst-type LOCAL -j DOCKER<br>-A POSTROUTING -s 172.17.0.0/16 ! -o docker0 -j MASQUERADE<br>-A POSTROUTING -s 172.17.0.2/32 -d 172.17.0.2/32 -p tcp -m tcp --dport 5000 -j MASQUERADE<br>-A DOCKER ! -i docker0 -p tcp -m tcp --dport 1180 -j DNAT --to-destination 172.17.0.2:5000<br>COMMIT<br><span class="hljs-comment"># Completed on Mon Aug 11 18:51:30 2025</span><br>*filter<br>:INPUT ACCEPT [115:11562]<br>:FORWARD ACCEPT [0:0]<br>:OUTPUT ACCEPT [39:5200]<br>:DOCKER - [0:0]<br>-A FORWARD -o docker0 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT<br>-A FORWARD -o docker0 -j DOCKER<br>-A FORWARD -i docker0 ! -o docker0 -j ACCEPT<br>-A FORWARD -i docker0 -o docker0 -j ACCEPT<br>-A DOCKER -d 172.17.0.2/32 ! -i docker0 -o docker0 -p tcp -m tcp --dport 5000 -j ACCEPT<br>COMMIT<br><span class="hljs-comment"># Completed on Mon Aug 11 18:51:30 2025</span><br></code></pre></td></tr></table></figure>
+
+<p>Docker服务在NAT和FILTER 两个表内添加的两个DOCKER子链都用于端口映射。</p>
+<h1 id="Kubernetes网络模型"><a href="#Kubernetes网络模型" class="headerlink" title="Kubernetes网络模型"></a>Kubernetes网络模型</h1><p>Kubernetes网络模型设计的一个基本原则是，每个Pod都拥有一个独立的IP地址，并假定所有的Pod都在一个可以直接联通的，扁平网络空间中。用户不需要额外考虑如何建立Pod之间的连接，也不需要考虑如何将容器端口映射到主机端口等问题。</p>
+<p>在Kubernetes网络里，IP是以Pod为单位进行分配的，一个Pod内部的所有容器共享一个网络堆栈。</p>
+<p>这样的网络模型叫做IP-per-Pod模型。</p>
+<p>通过IP-per-Pod 模型，Pod的内部和外部IP保持一致。这样Pod间互相访问不再需要进行转换，同时在同一个Pod内部，容器间共享网络协议栈，可以通过localhost的方式在容器间进行服务访问。</p>
+<p>基于以上设计，Kubernetes对于网络实现有以下要求：</p>
+<ol>
+<li>所有的Pod都可以在不用NAT的方式下与其他的Pod通信</li>
+<li>在所有的Node上运行的代理程序都可以在不用NAT的方式下与所有的Pod通信</li>
+<li>以hostnetwork模式运行的Pod都可以在不用NAT的方式下与其他的Pod通信</li>
+</ol>
+<h2 id="Kubernetes网络的实现机制"><a href="#Kubernetes网络的实现机制" class="headerlink" title="Kubernetes网络的实现机制"></a>Kubernetes网络的实现机制</h2><h3 id="容器与容器间的通信"><a href="#容器与容器间的通信" class="headerlink" title="容器与容器间的通信"></a>容器与容器间的通信</h3><p>同一个Pod内的不同容器共享同一个网络命名空间，共享同一个Linux协议栈。</p>
+<p>kubelet通过启动参数 —pod-infra-container-image 指定基础容器提供网络命名空间。再由CNI网络插件负责infra容器的地址管理。</p>
+<h3 id="Pod与Pod间的通信"><a href="#Pod与Pod间的通信" class="headerlink" title="Pod与Pod间的通信"></a>Pod与Pod间的通信</h3><p>每个Pod都有一个具体的全局唯一的IP地址。Pod间极可能在同一个Node上也可能在不同Node上进行通信。Pod通过infra容器连接到宿主机网络。再由CNI网络插件负责infra容器的地址管理</p>
+<h2 id="CNM网络模型"><a href="#CNM网络模型" class="headerlink" title="CNM网络模型"></a>CNM网络模型</h2><p>cnm网络主要由Network Sandbox ,Endpoint 和 Network 3个组件组合构建</p>
+<ul>
+<li>Network Sandbox ： 容器内部的网络栈，包括对网络接口，路由表，DNS等配置的管理。Sandbox可通过Linux网络命名空间，FreeBSD Jail等机制实现。 一个Sandbox可以包含多个Endpoint</li>
+<li>Endpoint ： 用于将容器内的Sandbox与外部网络相连的网络接口，可以使用Veth设备对，Open vSwitch 的内部port等技术进行实现。一个Endpoint 仅能加入一个Network</li>
+<li>Network ：可以直接互联的Endpoint的集合，可以通过Linux网桥，VLan等技术实现。一个Network可以包含多个Endpoint</li>
+</ul>
+<h1 id="CNI网络模型"><a href="#CNI网络模型" class="headerlink" title="CNI网络模型"></a>CNI网络模型</h1><h2 id="CNI规范"><a href="#CNI规范" class="headerlink" title="CNI规范"></a><strong>CNI规范</strong></h2><p>CNI提供了一种应用容器的插件化网络解决方案，来定义对容器网络进行操作和配置的规范，通过插件的形式对CNI接口进行实现，尝试提供一个普适的容器网络解决方案，CNI仅关注在创建容器时分配网络资源与在销毁容器时删除网络资源，这使得CNI规范非常轻巧，易于实现。</p>
+<h2 id="概念"><a href="#概念" class="headerlink" title="概念"></a><strong>概念</strong></h2><ul>
+<li>容器： 是独立于Linux网络命名空间的环境。关键之处是容器需要拥有自己的Linux网络命名空间，这是加入网络的必要条件</li>
+<li>网络：表示可以互联的一组网络端点，这些实体拥有各自独立，唯一的IP地址，可以是容器，物理机或者其他网络设备。可以将容器添加到一个或多个网络，也可以从一个或多个网络中删除</li>
+<li>运行时：运行CNI插件的程序</li>
+<li>插件：设置特定网络配置的程序</li>
+<li>CNI接口：运行时和插件之间的接口对容器网络的设置和操作都通过插件进行具体实现。CNI插件包括两种类型CNI Plugin和IPAM Plugin。 CNI Plugin 负责为容器配置网络资源，IPAM Plugin负责对容器的IP地址进行分配和管理。</li>
+</ul>
+<h2 id="容器运行时与CNI插件的关系"><a href="#容器运行时与CNI插件的关系" class="headerlink" title="容器运行时与CNI插件的关系"></a>容器运行时与CNI插件的关系</h2><p>容器运行时与CNI插件之间的关系和工作机制遵循以下原则</p>
+<ul>
+<li>容器运行时必须在调用任意插件前为容器创建一个新的网络命名空间</li>
+<li>容器运行时必须确定此容器所属的网络，以及每个网络必须执行哪个插件</li>
+<li>网络配置为JSON格式，便于在文件中存储。网络配置包括必填字段，如name和type，以及插件特有的字段。网络配置允许在调用时更高字段的值，为此必须在可选字段args中包含需要变更的信息</li>
+<li>容器运行时必须按照先后顺序为每个网络运行插件将容器添加到每个网络中</li>
+<li>容器生命周期结束后，容器运行时必须以逆序执行插件，以使容器与网络断开连接</li>
+<li>容器运行时一定不能为同一个容器的调用执行并行操作，但可以为多个不同的容器的调用执行并行操作。</li>
+<li>容器运行时必须对容器的ADD和DEL操作设置顺序，以便ADD操作最终跟随相应的DEL操作，DEL操作后面可能会有其他DEL操作，但插件应自由处理多个DEL操作（DEL 幂等）</li>
+<li>容器必须由ContainerID进行唯一标识，存储状态的插件应使用联合主键进行存储</li>
+<li>容器运行时不得为同一个实例调用两次ADD操作。对同一个容器仅在每次ADD操作都使用不同的网络接口名称时，才可以多次添加到特定网络中</li>
+<li>除非明确标记为可选配置，CNI结构中的字段都是必填字段</li>
+</ul>
+<h2 id="CNI-Plugin-详解"><a href="#CNI-Plugin-详解" class="headerlink" title="CNI Plugin 详解"></a><strong>CNI Plugin 详解</strong></h2><p>CNI Plugin必须是一个可执行程序，由容器管理系统调用</p>
+<p>CNI Plugin负责将网络接口插入容器的网络命名空间，并在主机上进行必要的更改，如何调用适当的IPAM插件，将IP地址分配给容器网络接口，并设置正确的路由规则</p>
+<p>CNI Plugin需要支持的操作包括ADD（添加），DEL（删除），CHECK(检查) 和 VERSION（版本查询）。这些操作的具体实现均由CNI Plugin可执行程序完成。容器运行时必须使用CNI Plugin网络配置参数中的type字段标识的文件名在环境变量CNI_PATH设定的路径下查找同名的可执行文件，一旦找到，容器运行时就将调用该可执行程序，并传入以下环境变量设置的网络配置参数，供该插件完成容器网络资源和参数的设置。</p>
+<p>输入参数需要以操作系统环境变量的形式进行设置，CNI要求包括以下环境变量</p>
+<ul>
+<li>CNI_COMMAND : 操作方法，包括ADD，DEL，CHECK和VERSION</li>
+<li>CNI_CONTAINED : 容器ID</li>
+<li>CNI_NETNS : 容器的网络命名空间路径，例如&#x2F;proc&#x2F;[pid]&#x2F;ns&#x2F;net</li>
+<li>CNI_IFNAME : 待设置的网络接口名称</li>
+<li>CNI_ARGS : 其他参数，key&#x3D;value格式</li>
+<li>CNI_PATH : 可执行文件的查找路径</li>
+</ul>
+<p>网络配置文件由JSON格式表示，以标准输入的方式传递给可执行程序</p>
+<h2 id="操作方法"><a href="#操作方法" class="headerlink" title="操作方法"></a><strong>操作方法</strong></h2><p>ADD</p>
+<p>将容器添加到某个网络中，主要过程为在Container Runtime创建容器时，首先创建好容器内的网络命名空间，并在其中为容器创建一个网络接口，然后调用CNI插件为该接口完成网络配置如何</p>
+<ul>
+<li>CNI_COMMAND  命令</li>
+<li>CNI_CONTAINERID 容器ID</li>
+<li>CNI_NETNS 容器的网络命名空间路径</li>
+<li>CNI_IFNAME 容器网络接口名称</li>
+</ul>
+<p>DEL</p>
+<p>在容器销毁时，将容器从某个网络中删除，或者回退之前ADD操作的结果</p>
+<ul>
+<li>CNI_COMMAND 命令</li>
+<li>CNI_CONTAINERID 容器ID</li>
+<li>CNI_IFNAME 容器网络接口名称</li>
+</ul>
+<p>DEL操作通常应该返回成功，即使在某些条件不满足的情况下</p>
+<p>DEL操作必须能够允许执行多次并返回成功，即使网络接口存在问题或已经被删除</p>
+<p>CHECK</p>
+<p>检查容器是否设置正确，返回结果为空，则表示检查成功</p>
+<ul>
+<li>CNI_COMMAND 命令</li>
+<li>CNI_CONTAINERID 容器ID</li>
+<li>CNI_IFNAME 容器网络接口名称</li>
+<li>CNI_NETNS 容器的网络命名空间路径</li>
+</ul>
+<p>VERSION</p>
+<p>查询网络插件支持的CNI规范版本号</p>
+<ul>
+<li>CNI_COMMAND 命令</li>
+<li>cniVersion ， 以JSON格式表示</li>
+</ul>
+<h2 id="CNI网络配置"><a href="#CNI网络配置" class="headerlink" title="CNI网络配置"></a>CNI网络配置</h2><p>CNI规范的网络配置参数</p>
+<p>cniVersion (string): CNI版本号</p>
+<p>name(string): 网络名称，应在一个Node或一个管理域内唯一</p>
+<p>disableCheck(string): 可设置为true或false</p>
+<p>plugins(list): 插件列表及其配置信息</p>
+<p>插件的主要配置参数</p>
+<p>type(string): CNI Plugin 二进制文件的名称</p>
+<p>capabilities: 插件特定的Linux能力列表</p>
+<p>runtimeConfig，args，以cni.dev&#x2F;开头的配置</p>
+<p>ipMasq(boolean) : 是否设置IP Masquerade</p>
+<p>ipam: IP地址管理的相关配置</p>
+<p>dns: DNS服务的相关配置</p>
+<ul>
+<li>nameserver(list of strings): 域名服务列表</li>
+<li>domain(string):本地域名</li>
+<li>search(list of strings): 按优先级排序的域名搜索后缀列表</li>
+<li>options(list of strings): 传递给域名解析器的选项列表</li>
+</ul>
+<h3 id="配置示例"><a href="#配置示例" class="headerlink" title="配置示例"></a>配置示例</h3><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>	<span class="hljs-attr">&quot;cniVersion&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;1.0.0&quot;</span><span class="hljs-punctuation">,</span><br>	<span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;dbnet&quot;</span><span class="hljs-punctuation">,</span><br>	<span class="hljs-attr">&quot;plugins&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>		<span class="hljs-punctuation">&#123;</span><br>			<span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;bridge&quot;</span><span class="hljs-punctuation">,</span><br>			<span class="hljs-attr">&quot;bridge&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;cni0&quot;</span><span class="hljs-punctuation">,</span><br>			<span class="hljs-attr">&quot;keyA&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;some more&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-string">&quot;plugin specific&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-string">&quot;configuration&quot;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>			<span class="hljs-attr">&quot;ipam&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>				<span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;host-local&quot;</span><span class="hljs-punctuation">,</span><br>				<span class="hljs-attr">&quot;subnet&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;10.1.0.0/16&quot;</span><span class="hljs-punctuation">,</span><br>				<span class="hljs-attr">&quot;gateway&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;10.1.0.1&quot;</span><span class="hljs-punctuation">,</span><br>				<span class="hljs-attr">&quot;route&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>					<span class="hljs-punctuation">&#123;</span><span class="hljs-attr">&quot;dst&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;0.0.0.0/0&quot;</span><span class="hljs-punctuation">&#125;</span><br>				<span class="hljs-punctuation">]</span>		<br>			<span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>			<span class="hljs-attr">&quot;dns&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>				<span class="hljs-attr">&quot;nameservers&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;10.1.0.1&quot;</span><span class="hljs-punctuation">]</span> <br>			<span class="hljs-punctuation">&#125;</span><br>		<span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>		<span class="hljs-punctuation">&#123;</span><br>			<span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;tuning&quot;</span><span class="hljs-punctuation">,</span><br>			<span class="hljs-attr">&quot;capabilities&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>				<span class="hljs-attr">&quot;mac&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">true</span></span>		<br>			<span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>			<span class="hljs-attr">&quot;sysctl&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>				<span class="hljs-attr">&quot;net.core.somaxconn&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;500&quot;</span><br>			<span class="hljs-punctuation">&#125;</span><br>		<span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>		<span class="hljs-punctuation">&#123;</span><br>			<span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;portmap&quot;</span><span class="hljs-punctuation">,</span><br>			<span class="hljs-attr">&quot;capabilities&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><span class="hljs-attr">&quot;portMappings&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">true</span></span><span class="hljs-punctuation">&#125;</span><br>		<span class="hljs-punctuation">&#125;</span><br>	<span class="hljs-punctuation">]</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>以上述配置观察CNI插件的加载过程</strong></p>
+<p>由容器运行时，执行ADD操作，按照描述顺序执行3个插件</p>
+<p>首先调用bridge插件，以如下配置进行ADD操作</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>	<span class="hljs-attr">&quot;cniVersion&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;1.0.0&quot;</span><span class="hljs-punctuation">,</span><br>	<span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;dbnet&quot;</span><span class="hljs-punctuation">,</span><br>	<span class="hljs-attr">&quot;plugins&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>		<span class="hljs-punctuation">&#123;</span><br>			<span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;bridge&quot;</span><span class="hljs-punctuation">,</span><br>			<span class="hljs-attr">&quot;bridge&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;cni0&quot;</span><span class="hljs-punctuation">,</span><br>			<span class="hljs-attr">&quot;keyA&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;some more&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-string">&quot;plugin specific&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-string">&quot;configuration&quot;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>			<span class="hljs-attr">&quot;ipam&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>				<span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;host-local&quot;</span><span class="hljs-punctuation">,</span><br>				<span class="hljs-attr">&quot;subnet&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;10.1.0.0/16&quot;</span><span class="hljs-punctuation">,</span><br>				<span class="hljs-attr">&quot;gateway&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;10.1.0.1&quot;</span><span class="hljs-punctuation">,</span><br>				<span class="hljs-attr">&quot;route&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>					<span class="hljs-punctuation">&#123;</span><span class="hljs-attr">&quot;dst&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;0.0.0.0/0&quot;</span><span class="hljs-punctuation">&#125;</span><br>				<span class="hljs-punctuation">]</span>		<br>			<span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>			<span class="hljs-attr">&quot;dns&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>				<span class="hljs-attr">&quot;nameservers&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;10.1.0.1&quot;</span><span class="hljs-punctuation">]</span> <br>			<span class="hljs-punctuation">&#125;</span><br>		<span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p>在bridge插件执行的过程中，会调用host-local插件为容器分配IP地址，同样也是ADD操作。host-local执行成功后返回以下结果。host-local 会对已经分配的地址 进行持久化记录，在后续分配时，会先查询文件中哪些ip已被使用，再从剩余的地址池中挑选一个</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>	<span class="hljs-attr">&quot;ips&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>		<span class="hljs-punctuation">&#123;</span><br>			<span class="hljs-attr">&quot;address&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;10.1.0.5/16&quot;</span><span class="hljs-punctuation">,</span><br>			<span class="hljs-attr">&quot;gateway&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;10.1.0.1&quot;</span><br>		<span class="hljs-punctuation">&#125;</span><br>	<span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>	<span class="hljs-attr">&quot;routes&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>		<span class="hljs-punctuation">&#123;</span><br>			<span class="hljs-attr">&quot;dst&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;0.0.0.0/0&quot;</span><br>		<span class="hljs-punctuation">&#125;</span><br>	<span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>	<span class="hljs-attr">&quot;dns&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>		<span class="hljs-attr">&quot;namesevers&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;10.1.0.1&quot;</span><span class="hljs-punctuation">]</span><br>	<span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p>bridge插件在获取ipam插件的返回结果之后，会将容器网络接口的配置设置为以下信息</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>	<span class="hljs-attr">&quot;ips&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>		<span class="hljs-punctuation">&#123;</span><br>			<span class="hljs-attr">&quot;address&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;10.1.0.5/16&quot;</span><span class="hljs-punctuation">,</span><br>			<span class="hljs-attr">&quot;gateway&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;10.1.0.1&quot;</span><br>		<span class="hljs-punctuation">&#125;</span><br>	<span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>	<span class="hljs-attr">&quot;routes&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>		<span class="hljs-punctuation">&#123;</span><br>			<span class="hljs-attr">&quot;dst&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;0.0.0.0/0&quot;</span><br>		<span class="hljs-punctuation">&#125;</span><br>	<span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>	<span class="hljs-attr">&quot;interfaces&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>			<span class="hljs-punctuation">&#123;</span><br>				<span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;cni0&quot;</span><span class="hljs-punctuation">,</span><br>				<span class="hljs-attr">&quot;mac&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;00:11:22:33:44:55&quot;</span><br>			<span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>			<span class="hljs-punctuation">&#123;</span><br>				<span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;veth3243&quot;</span><span class="hljs-punctuation">,</span><br>				<span class="hljs-attr">&quot;mac&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;55:44:33:22:11:11&quot;</span><br>			<span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>			<span class="hljs-punctuation">&#123;</span><br>				<span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;etho0&quot;</span><span class="hljs-punctuation">,</span><br>				<span class="hljs-attr">&quot;mac&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;99:88:77:66:55:44&quot;</span><span class="hljs-punctuation">,</span><br>				<span class="hljs-attr">&quot;sandbox&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;/var/run/netns/blue&quot;</span><br>			<span class="hljs-punctuation">&#125;</span><br>		<span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>		<span class="hljs-attr">&quot;dns&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>			<span class="hljs-attr">&quot;nameservers&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span> <span class="hljs-string">&quot;10.1.0.1&quot;</span> <span class="hljs-punctuation">]</span><br>		<span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p>bridge 运行结束，接下来运行tuning插件，基于其配置执行ADD操作，同时将上一个bridge 插件的运行结果设置在prevResult字段中</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>	<span class="hljs-attr">&quot;cniVersion&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;1.0.0&quot;</span><span class="hljs-punctuation">,</span><br>	<span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;dbnet&quot;</span><span class="hljs-punctuation">,</span><br>	<span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;tuning&quot;</span><span class="hljs-punctuation">,</span><br>	<span class="hljs-attr">&quot;sysctl&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>		<span class="hljs-attr">&quot;net.core.somaxconn&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;500&quot;</span><br>	<span class="hljs-punctuation">&#125;</span><br>	<span class="hljs-attr">&quot;runtimeConfig&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">&#123;</span><br>		<span class="hljs-attr">&quot;mac&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;00:11:22:33:44:66&quot;</span><br>	<span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>	<span class="hljs-attr">&quot;prevResult&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">&#123;</span><br>			<span class="hljs-attr">&quot;ips&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>		<span class="hljs-punctuation">&#123;</span><br>			<span class="hljs-attr">&quot;address&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;10.1.0.5/16&quot;</span><span class="hljs-punctuation">,</span><br>			<span class="hljs-attr">&quot;gateway&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;10.1.0.1&quot;</span><br>		<span class="hljs-punctuation">&#125;</span><br>	<span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>	<span class="hljs-attr">&quot;routes&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>		<span class="hljs-punctuation">&#123;</span><br>			<span class="hljs-attr">&quot;dst&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;0.0.0.0/0&quot;</span><br>		<span class="hljs-punctuation">&#125;</span><br>	<span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>	<span class="hljs-attr">&quot;interfaces&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>			<span class="hljs-punctuation">&#123;</span><br>				<span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;cni0&quot;</span><span class="hljs-punctuation">,</span><br>				<span class="hljs-attr">&quot;mac&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;00:11:22:33:44:55&quot;</span><br>			<span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>			<span class="hljs-punctuation">&#123;</span><br>				<span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;veth3243&quot;</span><span class="hljs-punctuation">,</span><br>				<span class="hljs-attr">&quot;mac&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;55:44:33:22:11:11&quot;</span><br>			<span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>			<span class="hljs-punctuation">&#123;</span><br>				<span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;eth0&quot;</span><span class="hljs-punctuation">,</span><br>				<span class="hljs-attr">&quot;mac&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;99:88:77:66:55:44&quot;</span><span class="hljs-punctuation">,</span><br>				<span class="hljs-attr">&quot;sandbox&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;/var/run/netns/blue&quot;</span><br>			<span class="hljs-punctuation">&#125;</span><br>		<span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>		<span class="hljs-attr">&quot;dns&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>			<span class="hljs-attr">&quot;nameservers&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span> <span class="hljs-string">&quot;10.1.0.1&quot;</span> <span class="hljs-punctuation">]</span><br>		<span class="hljs-punctuation">&#125;</span><br>	<span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p>… 依次对容器内的网络进行配置。</p>
+<p>Check过程</p>
+<p>首先调用bridge插件执行CHECK操作，将之前执行了3个插件ADD操作的结果设置在prevResult字段中</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>	<span class="hljs-attr">&quot;cniVersion&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;1.0.0&quot;</span><span class="hljs-punctuation">,</span><br>	<span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;dbnet&quot;</span><span class="hljs-punctuation">,</span><br>	<span class="hljs-attr">&quot;plugins&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>		<span class="hljs-punctuation">&#123;</span><br>			<span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;bridge&quot;</span><span class="hljs-punctuation">,</span><br>			<span class="hljs-attr">&quot;bridge&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;cni0&quot;</span><span class="hljs-punctuation">,</span><br>			<span class="hljs-attr">&quot;keyA&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;some more&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-string">&quot;plugin specific&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-string">&quot;configuration&quot;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>			<span class="hljs-attr">&quot;ipam&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>				<span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;host-local&quot;</span><span class="hljs-punctuation">,</span><br>				<span class="hljs-attr">&quot;subnet&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;10.1.0.0/16&quot;</span><span class="hljs-punctuation">,</span><br>				<span class="hljs-attr">&quot;gateway&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;10.1.0.1&quot;</span><span class="hljs-punctuation">,</span><br>				<span class="hljs-attr">&quot;route&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>					<span class="hljs-punctuation">&#123;</span><span class="hljs-attr">&quot;dst&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;0.0.0.0/0&quot;</span><span class="hljs-punctuation">&#125;</span><br>				<span class="hljs-punctuation">]</span>		<br>			<span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>			<span class="hljs-attr">&quot;dns&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>				<span class="hljs-attr">&quot;nameservers&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;10.1.0.1&quot;</span><span class="hljs-punctuation">]</span> <br>			<span class="hljs-punctuation">&#125;</span><br>		<span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>		<span class="hljs-attr">&quot;prevResult&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">&#123;</span><br>					<span class="hljs-attr">&quot;ips&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>				<span class="hljs-punctuation">&#123;</span><br>					<span class="hljs-attr">&quot;address&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;10.1.0.5/16&quot;</span><span class="hljs-punctuation">,</span><br>					<span class="hljs-attr">&quot;gateway&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;10.1.0.1&quot;</span><br>				<span class="hljs-punctuation">&#125;</span><br>			<span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>			<span class="hljs-attr">&quot;routes&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>				<span class="hljs-punctuation">&#123;</span><br>					<span class="hljs-attr">&quot;dst&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;0.0.0.0/0&quot;</span><br>				<span class="hljs-punctuation">&#125;</span><br>			<span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>			<span class="hljs-attr">&quot;interfaces&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>					<span class="hljs-punctuation">&#123;</span><br>						<span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;cni0&quot;</span><span class="hljs-punctuation">,</span><br>						<span class="hljs-attr">&quot;mac&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;00:11:22:33:44:55&quot;</span><br>					<span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>					<span class="hljs-punctuation">&#123;</span><br>						<span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;veth3243&quot;</span><span class="hljs-punctuation">,</span><br>						<span class="hljs-attr">&quot;mac&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;55:44:33:22:11:11&quot;</span><br>					<span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>					<span class="hljs-punctuation">&#123;</span><br>						<span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;eth0&quot;</span><span class="hljs-punctuation">,</span><br>						<span class="hljs-attr">&quot;mac&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;00:11:22:33:44:66&quot;</span><span class="hljs-punctuation">,</span><br>						<span class="hljs-attr">&quot;sandbox&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;/var/run/netns/blue&quot;</span><br>					<span class="hljs-punctuation">&#125;</span><br>				<span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>				<span class="hljs-attr">&quot;dns&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>					<span class="hljs-attr">&quot;nameservers&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span> <span class="hljs-string">&quot;10.1.0.1&quot;</span> <span class="hljs-punctuation">]</span><br>				<span class="hljs-punctuation">&#125;</span><br>			<span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p>… 执行所有插件的Check操作，并使用prevResult字段保留上一个插件的结果内容</p>
+<p>DEL操作与前面的ADD&#x2F;CHECK 操作类似。</p>
+<h3 id="IPAM-Plugin"><a href="#IPAM-Plugin" class="headerlink" title="IPAM Plugin"></a>IPAM Plugin</h3><p>为了减轻CNI Plugin在IP地址管理方面的负担，CNI规范设置了一个独立的插件来管理容器的IP地址。IPAM Plugin负责为容器分配IP地址，网关，路由和DNS，并负责将IP地址操作结果返回给主CNI Plugin。</p>
+<p>host-local 配置</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>	<span class="hljs-attr">&quot;ipam&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>		<span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;host-local&quot;</span><span class="hljs-punctuation">,</span><br>		<span class="hljs-attr">&quot;ranges&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>			<span class="hljs-punctuation">[</span><br>				<span class="hljs-punctuation">&#123;</span><br>					<span class="hljs-attr">&quot;subnet&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;10.10.0.0/16&quot;</span><span class="hljs-punctuation">,</span><br>					<span class="hljs-attr">&quot;rangeStart&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;10.10.1.20&quot;</span><span class="hljs-punctuation">,</span><br>					<span class="hljs-attr">&quot;rangeEnd&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;10.10.3.50&quot;</span><span class="hljs-punctuation">,</span><br>					<span class="hljs-attr">&quot;gateway&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;10.10.0.254&quot;</span><br>				<span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>				<span class="hljs-punctuation">&#123;</span><br>					<span class="hljs-attr">&quot;subnet&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;172.16.5.0/24&quot;</span><br>				<span class="hljs-punctuation">&#125;</span><br>			<span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>			<span class="hljs-punctuation">[</span><br>				<span class="hljs-punctuation">&#123;</span><br>					<span class="hljs-attr">&quot;subnet&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;3ffe:ffff:0:01ff::/64&quot;</span><span class="hljs-punctuation">,</span><br>					<span class="hljs-attr">&quot;rangeStart&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;3ffe:ffff:0:01ff::0010&quot;</span><span class="hljs-punctuation">,</span><br>					<span class="hljs-attr">&quot;rangeEnd&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;3ffe:ffff:0:01ff::0020&quot;</span><br>				<span class="hljs-punctuation">&#125;</span><br>			<span class="hljs-punctuation">]</span><br>		<span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>		<span class="hljs-attr">&quot;routes&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>			<span class="hljs-punctuation">&#123;</span><span class="hljs-attr">&quot;dst&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;0.0.0.0/0&quot;</span><span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>			<span class="hljs-punctuation">&#123;</span><span class="hljs-attr">&quot;dst&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;192.168.0.0/16&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;gw&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;10.10.51&quot;</span><span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>			<span class="hljs-punctuation">&#123;</span><span class="hljs-attr">&quot;dst&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;3ffe:ffff:0:01ff::1/64&quot;</span><span class="hljs-punctuation">&#125;</span><br>		<span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>		<span class="hljs-attr">&quot;dataDir&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;/run/my-orchestrator/container-ipam-state&quot;</span><br>	<span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p>主要参数</p>
+<ul>
+<li>type : 插件类型</li>
+<li>routes : 路由信息</li>
+<li>ranges : 可分配地址范围<ul>
+<li>subnet : 子网CIDR地址范围</li>
+<li>rangeStart: 范围的起始IP地址</li>
+<li>rangeEnd: 范围的结束IP地址</li>
+<li>getway: 网关地址</li>
+</ul>
+</li>
+<li>resolvConf: 域名解析服务配置</li>
+<li>dataDir: 数据目录，用于保存已分配IP地址等信息</li>
+</ul>
+<h1 id="容器网络方案"><a href="#容器网络方案" class="headerlink" title="容器网络方案"></a>容器网络方案</h1><h2 id="Flannel"><a href="#Flannel" class="headerlink" title="Flannel"></a>Flannel</h2><p>Flannel是一个轻量级的三层网络CNI插件，在每个Node上会运行一个flanneld代理来管理Node上Pod的网络配置。Flannel可以使用keubernetes或etcd 作为后端存储，以保存为每个Node分配一段互不冲突的PodIP CIDR地址池。</p>
+<p>Flannel 在每个Node上运行一个flanneld进程，创建两个网络接口flannel.1 和 cni0,其中cni0作为Pod网络的网关管理容器网络与宿主机网络的通信，跨主机网络通信适用VXLAN协议实现。</p>
+<h2 id="Open-vSwitch"><a href="#Open-vSwitch" class="headerlink" title="Open vSwitch"></a>Open vSwitch</h2><p>Open vSwitch 是一个开源的虚拟交换机软件，与Linux中的bridge类似。Open vSwitch的网桥可以直接建立多种通信通道。</p>
+<h3 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h3><ol>
+<li>删除docker0网桥，创建Linux网桥，并配置IP地址</li>
+<li>建立Open vSwitch的OVS网桥，适用ovs-vsctl命令给OVS网桥增加gre接口，设置连接的NodeIP 为对端的IP地址</li>
+<li>将OVS网桥作为网络接口加入Docekr网桥</li>
+<li>重启OVS网桥和Docker网桥，将一个Docker的地址段添加到Docker网桥的路由规则中</li>
+</ol>
+<h3 id="实际过程"><a href="#实际过程" class="headerlink" title="实际过程"></a>实际过程</h3><ol>
+<li>按照OVS</li>
+</ol>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs json"># yum localinstall openvswitch<span class="hljs-number">-2.4</span><span class="hljs-number">.0</span><span class="hljs-number">-1.</span>x86_64.rpm<br># systemctl start openvswitch<br># service openswitch status<br>ovsdb-server is running with pid <span class="hljs-number">2429</span><br>ovs-vswitchd is running with pid <span class="hljs-number">2439</span><br></code></pre></td></tr></table></figure>
+
+<ol>
+<li><p>创建网桥和GRE隧道</p>
+<ol>
+<li>创建网桥</li>
+</ol>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs json"># ovs-vsctl add-br br0 <br></code></pre></td></tr></table></figure>
+
+<p>b.  创建GRE隧道连接对端网桥</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs json"># ovs-vsctl add-port br0 gre1 -- set interface gre1 type=gre<br>option<span class="hljs-punctuation">:</span>remote_ip=<span class="hljs-number">192.168</span><span class="hljs-number">.18</span><span class="hljs-number">.128</span><br></code></pre></td></tr></table></figure>
+
+<figure class="highlight llvm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs llvm"><span class="hljs-keyword">c</span>.  添加<span class="hljs-keyword">br</span><span class="hljs-number">0</span>到本地docker<span class="hljs-number">0</span><br></code></pre></td></tr></table></figure></li>
+</ol>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs json"># brctl addif docker0 br0<br></code></pre></td></tr></table></figure>
+
+<p>d.  启动br0和docker0网桥</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs json"># ip link set dev br0 up<br># ip link set dev docker0 up<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs">e.  添加路由规则，将发往容器的网段路由到docker0网络<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs json"># ip route add <span class="hljs-number">172.17</span><span class="hljs-number">.0</span><span class="hljs-number">.0</span>/<span class="hljs-number">16</span> dev docker0<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs">f.  清空Docker自带的iptables规则及Linux的规则<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs json"># iptables -t nat -F ; iptables -F<br></code></pre></td></tr></table></figure>
+
+<h2 id="直接路由"><a href="#直接路由" class="headerlink" title="直接路由"></a>直接路由</h2><p>通过部署MultiLayer ，配置每个Node 中的容器网络到其他Node的路由来完成容器间的通信。</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs json"># route add -net <span class="hljs-number">10.1</span><span class="hljs-number">.20</span><span class="hljs-number">.0</span> netmask <span class="hljs-number">255.255</span><span class="hljs-number">.255</span><span class="hljs-number">.0</span> gw <span class="hljs-number">192.168</span><span class="hljs-number">.1</span><span class="hljs-number">.129</span>  <span class="hljs-comment">//Node1</span><br># route add -net <span class="hljs-number">10.1</span><span class="hljs-number">.10</span><span class="hljs-number">.0</span> netmask <span class="hljs-number">255.255</span><span class="hljs-number">.255</span><span class="hljs-number">.0</span> gw <span class="hljs-number">192.168</span><span class="hljs-number">.1</span><span class="hljs-number">.128</span>  <span class="hljs-comment">//Node2</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="通过容器进行docker0容器网络发现与路由"><a href="#通过容器进行docker0容器网络发现与路由" class="headerlink" title="通过容器进行docker0容器网络发现与路由"></a>通过容器进行docker0容器网络发现与路由</h3><p>拉取Quagga</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs json">$ docker pull index.alauda.cn/georce/router<br></code></pre></td></tr></table></figure>
+
+<p>保证每个Node间的docker0 子网网段地址不重叠，启动Quagga容器</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs json">$ docker run -itd --name=router --privileged --net=host index.alauda.cn/georce/router<br></code></pre></td></tr></table></figure>
+
+<p>之后等待动态路由自动发现处于不同节点上的容器网络</p>
+<h2 id="Calico"><a href="#Calico" class="headerlink" title="Calico"></a>Calico</h2><p>Calico是一个基于BGP的纯三层网络方案，Calico 在每个Node上都利用Linux Kernel实现了一个高效的vRouter来负责数据转发。每个vRouter都通过BGP1协议把本Node上运行的容器的路由信息向这个那个Calico网络广播，并自动设置到达其他Node的路由转发规则，它保证了容器间的数据都是通过IP路由的方式完成的互通。不需要额外的封装结构，效率更高。</p>
+<h3 id="组件"><a href="#组件" class="headerlink" title="组件"></a>组件</h3><p>Felix: Calico Agent，运行在每个Node上，负责为容器设置网络资源，保证跨主机容器间的网络互通</p>
+<p>etcd: Calico使用的后端存储</p>
+<p>BGP Client(BIRD) : 负责把Felix 在各Node上设置的路由信息通过BGP广播Calico网络</p>
+<p>Route Reflector: 通过一个或者多个BGP Route Reflector完成大规模集群的分级路由分发</p>
+<p>CalicoCtl: 命令行工具</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Kubernetes/" class="category-chain-item">Kubernetes</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E5%BE%AE%E6%9C%8D%E5%8A%A1/" class="print-no-link">#微服务</a>
+      
+        <a href="/tags/%E8%99%9A%E6%8B%9F%E5%8C%96/" class="print-no-link">#虚拟化</a>
+      
+        <a href="/tags/Kubernetes/" class="print-no-link">#Kubernetes</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Kuberenetes 网络与通信</div>
+      <div>http://gadoid.io/2025/08/14/Kuberenetes-网络与通信/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Codfish</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年8月14日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/08/14/Kuberenetes-%E5%AD%98%E5%82%A8/" title="Kuberenetes 存储">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Kuberenetes 存储</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/08/14/Kuberenetes-Kubelet/" title="Kuberenetes Kubelet">
+                        <span class="hidden-mobile">Kuberenetes Kubelet</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"lQzCvqmOtewLtpMfvfxKLomU-MdYXbMMI","appKey":"daMNlw5XcjN8TelT6GCHh8RF","path":"window.location.pathname","placeholder":"让灵感在这里发生","avatar":"monsterid","meta":["nick","mail"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":true,"recordIP":true,"serverURLs":"https://lQzCvqmO.api.lncldglobal.com","emojiCDN":null,"emojiMaps":null,"enableQQ":false,"enable":true,"visitor":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      &copy; 2025 - 2025 <a target="_blank" rel="noopener" href="https://github.com/username">CODFISH</a>
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+<!-- hexo injector body_end start --><script src="/js/chatbot-loader.js" defer></script><!-- hexo injector body_end end --></body>
+</html>

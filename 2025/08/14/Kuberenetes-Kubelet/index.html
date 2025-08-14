@@ -1,0 +1,864 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/bg/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Codfish">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="kubeletkubelet 进程用于处理Master下发到本Node的任务，管理Pod和Pod中的容器。每个kubelet进程都会在API Server上注册Node信息，定期向Master汇报Node资源的使用情况，并通过cAdvisor监控容器和Node的资源。kubelet中会合并以下几部分的配置  命令行参数 kubelet配置文件 排序的插件配置文件 在命令行中指定的特性门控 —fea">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kuberenetes Kubelet">
+<meta property="og:url" content="http://gadoid.io/2025/08/14/Kuberenetes-Kubelet/index.html">
+<meta property="og:site_name" content="西北有高楼">
+<meta property="og:description" content="kubeletkubelet 进程用于处理Master下发到本Node的任务，管理Pod和Pod中的容器。每个kubelet进程都会在API Server上注册Node信息，定期向Master汇报Node资源的使用情况，并通过cAdvisor监控容器和Node的资源。kubelet中会合并以下几部分的配置  命令行参数 kubelet配置文件 排序的插件配置文件 在命令行中指定的特性门控 —fea">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-08-14T02:32:25.000Z">
+<meta property="article:modified_time" content="2025-08-14T02:33:20.536Z">
+<meta property="article:author" content="Codfish">
+<meta property="article:tag" content="微服务">
+<meta property="article:tag" content="虚拟化">
+<meta property="article:tag" content="Kubernetes">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Kuberenetes Kubelet - 西北有高楼</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"gadoid.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>西北有高楼</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/downloads/" target="_self">
+                <i class="iconfont icon-books-fill"></i>
+                <span>资源下载</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/bg/img/ice.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Kuberenetes Kubelet"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-08-14 10:32" pubdate>
+          2025年8月14日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.8k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          32 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Kuberenetes Kubelet</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="kubelet"><a href="#kubelet" class="headerlink" title="kubelet"></a>kubelet</h1><p>kubelet 进程用于处理Master下发到本Node的任务，管理Pod和Pod中的容器。每个kubelet进程都会在API Server上注册Node信息，定期向Master汇报Node资源的使用情况，并通过cAdvisor监控容器和Node的资源。kubelet中会合并以下几部分的配置</p>
+<ul>
+<li>命令行参数</li>
+<li>kubelet配置文件</li>
+<li>排序的插件配置文件</li>
+<li>在命令行中指定的特性门控 —feature-gates</li>
+</ul>
+<p>Node通过设置kubelet的启动参数—register-node来决定是否向API Server注册自己。如果该参数的值为true，那么kubelet将试着通过API Server 注册自己。在注册时，kubelet启动还涉及以下参数</p>
+<p>—api-servers： API Server的位置</p>
+<p>—kubeconfig:  kubeconfig文件，用于访问API Server的安全配置文件</p>
+<p>kubelet在启动时通过API Server注册Node信息，并定时向API Server 发送Node的新信息，API Server在接收到这些信息后，会将其写入etcd。通过kubelet的启动参数nodeStatusUpdateFrequency，可设置kubelet每隔多长时间向API Server报告Node状态，默认为10s。目前仅允许kubelet修改和创建其所在的Node。</p>
+<h1 id="资源管理"><a href="#资源管理" class="headerlink" title="资源管理"></a>资源管理</h1><h2 id="节点可分配资源"><a href="#节点可分配资源" class="headerlink" title="节点可分配资源"></a>节点可分配资源</h2><p>Cgroups 用于对容器资源进行限制</p>
+<p>核心概念</p>
+<p>task ：task是一个要被Cgroups控制的进程</p>
+<p>cgroup：cgroup定义了一组task作为一个整体，对其进行具体的配额限制和保护。一个task在被加入到某个cgroup后，就受到这个cgroup的资源限制和保护。cgroup有层级关系，类似树结构，子节点的cgroup继承父节点的cgroup资源限制配额</p>
+<p>subsystem：子系统代表了一种资源控制器，Kubernetes中常用的子系统有cpu,cpuset,memory,huge_tlb 和 pids等</p>
+<p>Cgroups 会根据每种子系统定义一套cgroup控制树。</p>
+<p>当我们需要针对某个进程实施资源控制时，就把它的进程与对应资的cgourp控制树上的某个节点cgroup捆绑，控制哪几类资源就绑定到哪几类资源的控制树上。Cgroup 作为虚拟文件系统结构挂载在&#x2F;sys&#x2F;fs&#x2F;cgroup目录</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># mount | grep cgroup</span><br>tmpfs on /sys/fs/cgroup <span class="hljs-built_in">type</span> tmpfs <br>cgroup on /sys/fs/cgroup/systemd <span class="hljs-built_in">type</span> cgroup ( ,xattr)<br>cgroup on /sys/fs/cgroup/blkio <span class="hljs-built_in">type</span> cgroup ( ,blkio)<br>cgroup on /sys/fs/cgroup/cpuset <span class="hljs-built_in">type</span> cgroup ( ,cpuset)<br>cgroup on /sys/fs/cgroup/memory <span class="hljs-built_in">type</span> cgroup ( ,memory)<br>cgroup on /sys/fs/cgroup/cpu,cpuacct <span class="hljs-built_in">type</span> cgroup ( ,cpuacct,cpu)<br>cgroup on /sys/fs/cgroup/net_cls,net_prio <span class="hljs-built_in">type</span> cgroup ( ,net_prio,net_cls)<br>cgroup on /sys/fs/cgroup/pids <span class="hljs-built_in">type</span> cgroup ( ,pids)<br>cgroup on /sys/fs/cgroup/perf_event <span class="hljs-built_in">type</span> cgroup ( ,perf_event)<br>cgroup on /sys/fs/cgroup/hugetlb <span class="hljs-built_in">type</span> cgroup ( ,hugetlb)<br>cgroup on /sys/fs/cgroup/freezer <span class="hljs-built_in">type</span> cgroup ( ,freezer)<br>cgroup on /sys/fs/cgroup/devices <span class="hljs-built_in">type</span> cgroup ( ,devices)<br></code></pre></td></tr></table></figure>
+
+<p>在默认情况下，systemd会设置3个slice单元</p>
+<ul>
+<li>system.slice : 所有系统服务的默认位置</li>
+<li>user.slice：所有用户会话的默认位置</li>
+<li>machine.slice：所有虚拟机和Linux容器的默认位置</li>
+</ul>
+<p>systemd会在slice下面挂载两种名称的cgroup</p>
+<ul>
+<li>service： 一个或一组进程，systemd管理的每个服务都作为一个service单元被控制，在service cgroup中关联具体的服务进程</li>
+<li>scope：一组外部创建的进程，由强制进程通过fork函数启动和终止，之后由systemd在运行时注册的进程被认为是scope</li>
+</ul>
+<p>systemd在每个具体的cgroup控制树上都创建了一组与systemd目录结构相对应的Cgroups，后者才是真正实现资源控制的根控制器</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># ls /sys/fs/cgroup/systemd</span><br><span class="hljs-string">cgroup.clone_children</span> <span class="hljs-string">cgroup.procs</span> <span class="hljs-string">notify_on_release</span> <span class="hljs-string">system.slices</span> <span class="hljs-string">user.slice</span> <span class="hljs-string">cgroup.event_control</span><br><span class="hljs-string">cgroup.sane_behavior</span> <span class="hljs-string">release_agent</span> <span class="hljs-string">tasks</span> <span class="hljs-string">...</span><br><span class="hljs-comment"># ls /sys/fs/cgroup/cpu</span><br><span class="hljs-string">cgroup.event_control</span> <span class="hljs-string">cpuacct.stat</span> <span class="hljs-string">cpu.cfs_period.us</span> <span class="hljs-string">cpu.rt_runtime_us</span> <span class="hljs-string">release_agent</span> <span class="hljs-string">user.slice</span><br><span class="hljs-string">cpu.cfs_quota_us</span>  <span class="hljs-string">cpu.shares</span> <span class="hljs-string">system.slice</span> <span class="hljs-string">...</span><br><span class="hljs-comment"># ls /sys/fs/cgroup/memory</span><br><span class="hljs-string">memory.kmem.tcp.max_usage_in_bytes</span> <span class="hljs-string">memory.numa_stat</span> <span class="hljs-string">system.slice</span> <span class="hljs-string">memory.pressure_level</span> <span class="hljs-string">user.slice</span> <span class="hljs-string">memory.force_empty</span><br><span class="hljs-string">memory.limit_in_bytes</span>  <span class="hljs-string">...</span><br><br></code></pre></td></tr></table></figure>
+
+<p>通过设计两个slice 来分别控制</p>
+<ul>
+<li>kube-reserved 资源预留</li>
+<li>system-reserved 资源预留</li>
+</ul>
+<p>一个 32GB 内存，16各CPU 和100GB 本地磁盘存储的 资源设置示例</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">system-reserved:</span> <span class="hljs-string">设置为cpu=500m</span> <span class="hljs-string">,memroy=1Gi</span> <span class="hljs-string">,</span> <span class="hljs-string">ephemeral-storage=1Gi</span><br><span class="hljs-attr">kube-reserved:</span> <span class="hljs-string">设置为cpu=1</span> <span class="hljs-string">,memory=2Gi,</span> <span class="hljs-string">ephemeral-storage=1Gi</span><br><span class="hljs-attr">eviction-hard:</span> <span class="hljs-string">设置为memroy.available&lt;500Mi,</span> <span class="hljs-string">nodefs.available&lt;10%</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="CPU资源限制"><a href="#CPU资源限制" class="headerlink" title="CPU资源限制"></a>CPU资源限制</h3><p>CPU属于Kubernete中的可压缩资源，如果一个容器鲜卑分配了0.1Core的CPU资源上限，则容器实际使用的CPU资源是无法超过这个上限的。kubelet通过控制容器进程所能占用的CPU时间片数量来完成对进程CPU占用量的限制</p>
+<p>CPU Limit 限制是通过Cgroups的cpu.cfs_quota_us 和 cpu.cfs_period_us参数来实现的。CPU Request限制通过Cgroups的cpu.shares参数来实现的。当一个CPU被多个进程共享时，每个进程的cpu.shares值都表示它最少能占用的CPU时间百分比。而CPU Limt则会严格限制进程请求的时间片小于所限制的资源</p>
+<h3 id="Memory资源限制"><a href="#Memory资源限制" class="headerlink" title="Memory资源限制"></a>Memory资源限制</h3><p>Memory属于Kubernete中的不可压缩资源。资源限制一旦确认，当进程尝试申请超过限制的资源时就会触发OOM异常。在Cgroups v2中提供了更详细的内存控制</p>
+<ul>
+<li>memory.min : 进程所能分配的最小内存，被设置为容器的Memory Request值。即使系统内存不足，Linux内核也不能回收这些内存，由此确保了内存分配的服务质量等级</li>
+<li>memory.max : 进程所能分配的最大内存，被设置为容器的Memory Limit值，当进程占用的内存达到memory.max 设定值且不再减少内存使用量时，则会触发OOM并被终止。</li>
+<li>memory.high : 内存限流阀，用于内存使用量的预警和限流控制，当进程使用的内存达到memory.high后，会触发内存限流动作，同时增加系统执行内存回收的压力。</li>
+</ul>
+<p>在设置了系统和kubelet的预留资源后，再通过cgroups 的设计， Node Allocatable Resources 解决了以下两个关键问题：</p>
+<ol>
+<li>Node上实际可分配资源的数量</li>
+<li>基于QoS实现了资源保护机制，当资源严重不足时，低优先级的Pod会优先被清除，包括被操作系统优先清除</li>
+</ol>
+<p>通过查询Pod的QoS优先级和Pod的cgroup根控制器中提供的容器占用的实时资源数据，kubelet就可以实现基于Pod优先级的资资源驱逐计划，当优先级相同时，优先驱逐高耗能的Pod。</p>
+<p>对于操作系统来说，只要触发了超过cgroup内存访问大小的进程就可以进行清除过程，</p>
+<p>所以在kubelet中也为 每一个pod设置了 kubepods.slice 的 根控制器，用于控制Pod可使用资源的大小。最终</p>
+<ul>
+<li>Node上的Pod只能一起分配和共享Node Allocatable的资源总量，并且从机制上保证它们不会突破许可的资源总量</li>
+<li>通过Cgroups机制结合Pod的QoS等级的方式，确保每一类QoS等级的Pod都能使用其许可范围内的资源</li>
+<li>通过单独为Burstable和BestEffor级别的Pod设置cgroup 根控制器来限制它们可用的资源总量</li>
+</ul>
+<p>其结构为</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-string">|-service.slice,</span> <span class="hljs-string">system-reserved</span> <span class="hljs-string">资源预留</span><br><span class="hljs-string">|-kubeonly.slice,</span> <span class="hljs-string">kube-reserved</span> <span class="hljs-string">资源预留</span><br><span class="hljs-string">|-kubepods.slices,</span> <span class="hljs-string">Pod资源分配池的cgroup根控制器</span><br><span class="hljs-string">-|-kubepods-pod_xxxx_xxx.slice</span> <span class="hljs-string">(Guaranteed级别的某个Pod)</span><br>				<span class="hljs-string">-|</span> <span class="hljs-string">cri-containerd-xxx.slice</span> <span class="hljs-string">(Pod的每个容器的cgroup根控制器)</span><br><span class="hljs-string">-|-kubepods-burstable.slice</span> <span class="hljs-string">(Burstable级别的Pod的根cgroup根控制器)</span><br>		<span class="hljs-string">-|</span> <span class="hljs-string">kubepods-burstable-pod_xxxx.slice</span> <span class="hljs-string">(Burstable级别的某个Pod)</span><br>				<span class="hljs-string">-|</span> <span class="hljs-string">cri-containerd-xxx.slice</span> <span class="hljs-string">(Pod的每个容器的cgroup根控制器)</span><br><span class="hljs-string">-|-kubepods-besteffort.slice</span> <span class="hljs-string">(BestEffort级别的Pod的根cgroup根控制器)</span><br>		<span class="hljs-string">-|</span> <span class="hljs-string">kubepods-besteffor-pod_xxxx.slice</span> <span class="hljs-string">(BestEffor级别的某个Pod)</span><br>				<span class="hljs-string">-|</span> <span class="hljs-string">cri-containerd-xxx.slice</span> <span class="hljs-string">(Pod的每个容器的cgroup根控制器)</span><br><br></code></pre></td></tr></table></figure>
+
+<h2 id="Node资源管理"><a href="#Node资源管理" class="headerlink" title="Node资源管理"></a>Node资源管理</h2><h3 id="HugePage"><a href="#HugePage" class="headerlink" title="HugePage"></a>HugePage</h3><p>在现代操作系统中，内存是以页而不是以字节为单位继续宁管理的，内存的分配和回收都是基于Page进行。典型的Page大小为4KB。当需要申请较多内存时则会导致：</p>
+<ul>
+<li>这些分配的内存页在物理内存地址上并不是连续的，因此数据的读写性能会比单一的Page要差一些</li>
+<li>由于进程分配的内存页数量非常多，所以会导致内存地址寻址表TLB的缓存命中率大大降低。</li>
+</ul>
+<p>所以通过使用HugePage 可用解决命中率和内存地址连续性问题。</p>
+<h3 id="PID"><a href="#PID" class="headerlink" title="PID"></a>PID</h3><p>PID是Linux操作系统中很重要的一种基础资源，每个进程都有唯一的PID，每创建一个进程就需要分配一个新的PID，如果Pod容器滥用多进程，随意开启大量的子进程，容易触及系统上线。Kubernete中增加了“pod-max-pids”对PID最大值的限制</p>
+<h1 id="Pod管理"><a href="#Pod管理" class="headerlink" title="Pod管理"></a>Pod管理</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>kubelet通过以下方式获取在自身Node上运行的Pod清单</p>
+<ol>
+<li>静态Pod配置文件： kubelet通过启动参数 —config来指定目录中的Pod YAML文件。kubelet会持续监控指定目录中的文件变化，以创建或删除Pod。</li>
+<li>HTTP端点：通过—manifest-url 参数设置，通过—http-check-frequency参数检测该HTTP端点数据的时间间隔，默认为20s</li>
+<li>API Server：kubelet通过API Server监听 etcd目录，同步Pod列表</li>
+</ol>
+<p>kubelet 监听etcd, 所有针对Pod的操作都会被kubelet监听，如果发现有新绑定到本Node的Pod，则kubelet按照Pod清单的要求创建该Pod。如果发现本地的Pod需要被修改，则kubelet会做出相应的修改。</p>
+<p>当kubelet读取到的信息是创建和修改Pod任务时，会做如下处理</p>
+<ol>
+<li>为该Pod创建一个数据目录</li>
+<li>从API Server中读取该Pod清单</li>
+<li>为该Pod挂载外部卷</li>
+<li>下载Pod用到的Secret</li>
+<li>检查已经运行在Node上的Pod，如果该Pod没有容器或Pause容器没有启动，则先停止Pod中所有容器的进程，如果Pod中有需要删除的容器，则删除这些容器</li>
+<li>用kubernetes&#x2F;pause 镜像为每个Pod都创建一个容器。该Pause容器是用于接管Pod中所有其他容器的网络。每创建一个新的Pod,kubelet 都会创建又给Pause容器，再创建其他容器。</li>
+<li>为Pod的每个容器都做如下处理<ol>
+<li>为容器计算一个哈希值，然后用容器的名称去查询对应Docker容器的哈希值，若查找到容器，且二者的哈希值不同，则停止Docker中容器的进程，并停止与之关联的Pause进程；若两者相同，则不做任何处理。</li>
+<li>如果容器被终止，且容器没有指定的重启策略，则不做任何处理</li>
+<li>调用Docker Client 下载容器镜像，调用Docker Client 运行容器</li>
+</ol>
+</li>
+</ol>
+<h2 id="容器探针"><a href="#容器探针" class="headerlink" title="容器探针"></a>容器探针</h2><p>kubelet 通过三种探针用于检查Pod的状态</p>
+<ul>
+<li>Startup Probe</li>
+</ul>
+<p>只有等到Startup Probe执行结果返回success后才开始执行其他探针，如果执行失败则尝试重启容器</p>
+<ul>
+<li>Readiness Probe</li>
+</ul>
+<p>Readiness Probe 用于判断容器是否已经启动完成且处于可用状态，如果Readiness Probe检测到容器启动失败，则Pod的状态将被修改，Endpoint Controller 将从Service的Endpoint中删除包含该容器所在Pod的IP地址的Endpoint 条目</p>
+<ul>
+<li>Liveness Probe</li>
+</ul>
+<p>Liveness Probe 用于判断容器是否处于正常工作状态，如果探测到容器不健康，则将删除该容器，并根据重启策略尝试做出相应的处理。</p>
+<h1 id="kube-proxy"><a href="#kube-proxy" class="headerlink" title="kube-proxy"></a>kube-proxy</h1><p>在Kubernetes集群的每个Node上都运行着一个kube-proxy服务进程，我们可用把这个进程看作Service的透明代理兼负载均衡器，其核心功能是将某个Service上的访问请求转发到后端的多个Pod上。</p>
+<h2 id="第一代Proxy"><a href="#第一代Proxy" class="headerlink" title="第一代Proxy"></a>第一代Proxy</h2><p>kube-proxy 作为一个真实的TCP&#x2F;UDP数据代理，负责转发从Service到Pod的访问流量。当某个Pod以ClusterIP地址访问某个Service时，这个流量就被Pod所在的Node的iptables规则转发到kube-proxy，由kube-proxy建立到后端Pod的TCP&#x2F;UDP连接，之后将请求转发到后端的某个Pod上，并在这个过程中实现负载均衡</p>
+<p>Service的ClusterIP与NodePort等概念是kube-proxy服务通过iptables的NAT规则实现的。kube-proxy在运行过程中动态地创建于Service相关的iptables规则，这些规则实现了将访问服务的请求负载分发到后端Pod的功能，由于iptables针对的是本地的kube-proxy端口，所以每个Node上都要运行kube-proxy组件。这样一来，在Kubernetes集群内部，我们可以在任意Node上发起对Service的访问请求。</p>
+<h2 id="第二代Proxy"><a href="#第二代Proxy" class="headerlink" title="第二代Proxy"></a>第二代Proxy</h2><p>iptables模式下的第二代kube-proxy不再起到数据层面的Proxy作用，Client向Server的请求流量通过iptables的NAT规则直接发送到目标Pod，不经过kube-proxy转发，kube-proxy只承担了控制层面的功能，即通过API Server的watch接口实时跟踪Service与Endpoint的变更信息，并更新Node上相应的iptables规则。</p>
+<h2 id="第三代Proxy"><a href="#第三代Proxy" class="headerlink" title="第三代Proxy"></a>第三代Proxy</h2><p>基于IPVS模式相比iptables模式 可以提供更高的转发性能。</p>
+<ul>
+<li>为大型集群提供了更好的可扩展性和性能</li>
+<li>支持比iptables更复杂的负载均衡算法</li>
+<li>支持服务器健康检查和连接重试</li>
+<li>可以动态修改ipset的集合，即使iptables规则正在使用这个集合</li>
+</ul>
+<p>由于IPVS模式无法提供包过滤等功能，因此某些场景下要与iptables模式搭配使用。</p>
+<h1 id="垃圾回收"><a href="#垃圾回收" class="headerlink" title="垃圾回收"></a>垃圾回收</h1><h2 id="Pod对象的垃圾回收"><a href="#Pod对象的垃圾回收" class="headerlink" title="Pod对象的垃圾回收"></a>Pod对象的垃圾回收</h2><p>对于阶段为Failed的Pod，对应的容器虽然已经停止，但是其资源对象仍然存储在API Server中。kube-controller-manager 提供了一个PodGC的服务专门清理这些Pod。当垃圾Pod数量超过kube-controller-manager参数设置的—terminated-pod-gc-threshold值时，会触发清理过程</p>
+<h2 id="Job对象的垃圾回收"><a href="#Job对象的垃圾回收" class="headerlink" title="Job对象的垃圾回收"></a>Job对象的垃圾回收</h2><p>Job对象的.spec.ttlSecondsAfterFinished属性中设置合理的过期时间，然后Kubernetes TTL Controller会等待Job对象的TTL时间结束，并自动回收该对象。</p>
+<h2 id="无主对象的垃圾回收"><a href="#无主对象的垃圾回收" class="headerlink" title="无主对象的垃圾回收"></a>无主对象的垃圾回收</h2><p>kubernetes中的很多对象都具有所属关系，即一个对象属于另外一个对象，对象的Owner属性显示了Kubernetes控制层和其他关注者的依赖关系，同时给了删除对象及其所关联对象的机会。在正常情况下，Kubernete会根据对象之间的关联关系，实现关联性删除操作。但是如果删除了一些中间层对象，导致其关联对象变为无主对象。Kubernetes会检查并自动删除这些无主对象，以完成垃圾回收。</p>
+<h2 id="容器和镜像的垃圾回收"><a href="#容器和镜像的垃圾回收" class="headerlink" title="容器和镜像的垃圾回收"></a>容器和镜像的垃圾回收</h2><p>kubelet进程负责清理容器和镜像垃圾，默认频率如下</p>
+<ul>
+<li>每两分钟清理一次镜像垃圾</li>
+<li>每一分钟清理一次容器垃圾</li>
+</ul>
+<p>通常情况下，kubelet会先回收“死亡”最久的容器，具体来说，kubelet基于以下几个参数调整容器的回收动作</p>
+<ul>
+<li>MinAge : kubelet可回收的容器的最短生存时间，如果设置为零，则禁止回收</li>
+<li>MaxPerPodContainer : 每个Pod允许的最大“死亡”容器数量</li>
+<li>MaxContainers : 集群中允许的最大“死亡”容器数量</li>
+</ul>
+<h2 id="Node与Node-Lease对象的垃圾回收"><a href="#Node与Node-Lease对象的垃圾回收" class="headerlink" title="Node与Node Lease对象的垃圾回收"></a>Node与Node Lease对象的垃圾回收</h2><p>当Node对应的Server在公有云上被删除或终止后，该Node也将被Cloud Controller Manager自动清除。如果Kubernetes集群规模很大，则大量的Node心跳汇报会大大加重API Server的负担。因为API Server需要更新并持久化Node Statue对象，而Node Statue对象是一个比较重的资源对象。为了解决这个问题，Kubernetes用非常轻量级的Node Lease对象替代了Node Statue对象，实现了高性能的心跳检查和Node状态更新功能。每个Node都有一个同名的Node Lease对象。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># kubectl -n kube-node-lease get lease</span><br><span class="hljs-string">NAME</span>                       <span class="hljs-string">HOLDER</span>                    <span class="hljs-string">AGE</span><br><span class="hljs-string">k8slab-control-plane</span>       <span class="hljs-string">k8slab-control-plane</span>      <span class="hljs-string">3d13h</span><br><span class="hljs-string">k8slab-worker</span>              <span class="hljs-string">k8slab-worker</span>             <span class="hljs-string">3d13h</span><br><span class="hljs-string">k8slab-worker2</span>             <span class="hljs-string">k8slab-worker2</span>            <span class="hljs-string">3d13h</span><br></code></pre></td></tr></table></figure>
+
+<p>Node Lease对象的RenewTime表示Node最后一次更新的时间戳，Controller可以用这个时间戳来判断对应的Node是否Ready。当Node被回收后，对应的Node Lease对象会被Kubernetes自动清除</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Kubernetes/" class="category-chain-item">Kubernetes</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E5%BE%AE%E6%9C%8D%E5%8A%A1/" class="print-no-link">#微服务</a>
+      
+        <a href="/tags/%E8%99%9A%E6%8B%9F%E5%8C%96/" class="print-no-link">#虚拟化</a>
+      
+        <a href="/tags/Kubernetes/" class="print-no-link">#Kubernetes</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Kuberenetes Kubelet</div>
+      <div>http://gadoid.io/2025/08/14/Kuberenetes-Kubelet/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Codfish</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年8月14日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/08/14/Kuberenetes-%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/" title="Kuberenetes 网络与通信">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Kuberenetes 网络与通信</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/08/14/Kuberenetes-%E6%9E%B6%E6%9E%84%E4%B8%8E%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6/" title="Kuberenetes 架构与核心组件">
+                        <span class="hidden-mobile">Kuberenetes 架构与核心组件</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"lQzCvqmOtewLtpMfvfxKLomU-MdYXbMMI","appKey":"daMNlw5XcjN8TelT6GCHh8RF","path":"window.location.pathname","placeholder":"让灵感在这里发生","avatar":"monsterid","meta":["nick","mail"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":true,"recordIP":true,"serverURLs":"https://lQzCvqmO.api.lncldglobal.com","emojiCDN":null,"emojiMaps":null,"enableQQ":false,"enable":true,"visitor":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      &copy; 2025 - 2025 <a target="_blank" rel="noopener" href="https://github.com/username">CODFISH</a>
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+<!-- hexo injector body_end start --><script src="/js/chatbot-loader.js" defer></script><!-- hexo injector body_end end --></body>
+</html>
