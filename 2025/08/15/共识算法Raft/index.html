@@ -1,0 +1,1215 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/bg/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Codfish">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="前提设备限制 ： 单台设备的核心数&#x2F;内存&#x2F;存储存在最大上限，随着单台设备的性能越高，设备的成本也就快速增加 一致性： 立即一致性 最终一致性 应对网络的不可靠以及节点的失败： 可读写 可读 不可用 组织机器使其状态最终一致并允许局部失败的算法称之为一致性算法 复制状态机一致性算法的目标就是保证集群上所有节点的状态一致，节点要执行的指令可以分为两种，读和写，只有写指令会改变节点状">
+<meta property="og:type" content="article">
+<meta property="og:title" content="分布式系统 共识算法Raft">
+<meta property="og:url" content="http://gadoid.io/2025/08/15/%E5%85%B1%E8%AF%86%E7%AE%97%E6%B3%95Raft/index.html">
+<meta property="og:site_name" content="西北有高楼">
+<meta property="og:description" content="前提设备限制 ： 单台设备的核心数&#x2F;内存&#x2F;存储存在最大上限，随着单台设备的性能越高，设备的成本也就快速增加 一致性： 立即一致性 最终一致性 应对网络的不可靠以及节点的失败： 可读写 可读 不可用 组织机器使其状态最终一致并允许局部失败的算法称之为一致性算法 复制状态机一致性算法的目标就是保证集群上所有节点的状态一致，节点要执行的指令可以分为两种，读和写，只有写指令会改变节点状">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://i.111666.best/image/WEIgNGkt0MAJPRkpDTqA2j.png">
+<meta property="article:published_time" content="2025-08-15T14:11:47.000Z">
+<meta property="article:modified_time" content="2025-08-15T14:14:05.156Z">
+<meta property="article:author" content="Codfish">
+<meta property="article:tag" content="分布式">
+<meta property="article:tag" content="Raft">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://i.111666.best/image/WEIgNGkt0MAJPRkpDTqA2j.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>分布式系统 共识算法Raft - 西北有高楼</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"gadoid.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>西北有高楼</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/downloads/" target="_self">
+                <i class="iconfont icon-books-fill"></i>
+                <span>资源下载</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/bg/img/ice.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="分布式系统 共识算法Raft"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-08-15 22:11" pubdate>
+          2025年8月15日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          5.8k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          49 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">分布式系统 共识算法Raft</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="前提"><a href="#前提" class="headerlink" title="前提"></a>前提</h2><p>设备限制 ：</p>
+<p>单台设备的核心数&#x2F;内存&#x2F;存储存在最大上限，随着单台设备的性能越高，设备的成本也就快速增加</p>
+<p>一致性：</p>
+<p>立即一致性</p>
+<p>最终一致性</p>
+<p>应对网络的不可靠以及节点的失败：</p>
+<p>可读写</p>
+<p>可读</p>
+<p>不可用</p>
+<p>组织机器使其状态最终一致并允许局部失败的算法称之为一致性算法</p>
+<h1 id="复制状态机"><a href="#复制状态机" class="headerlink" title="复制状态机"></a>复制状态机</h1><p>一致性算法的目标就是保证集群上所有节点的状态一致，节点要执行的指令可以分为两种，读和写，只有写指令会改变节点状态，因此为了保证集群各个节点的状态一致，那就必须将写指定同步给所有节点。</p>
+<p>理想状态下，我们期望任意节点发生写命令都会立即的在其他节点上变更状态，这其中没有任何时延，所有节点都好像是单机一样被变更状态。</p>
+<p>网络延迟要远远慢于内存操作，写入命令不可能被同时执行，因此如果在不同节点发生不同的写命令，那么在其他节点上这些写命令被应用的顺序很可能完全不同。</p>
+<p>如果我们不要求所有节点的写命令立即被执行，而仅仅是保证所有的写命令在所有节点上按同样的顺序最终被执行，则可以进行1.允许一个节点处理写命令，2.所有的节点维护一份顺序一致的日志</p>
+<p>每个节点上的状态机按照自己的节奏，逐条应用日志上的写命令来变更状态</p>
+<h2 id="定义问题"><a href="#定义问题" class="headerlink" title="定义问题"></a>定义问题</h2><ol>
+<li>输入:写入命令</li>
+<li>输出: 所有节点最终处于相同的状态</li>
+<li>约束<ol>
+<li>网络不确定性： 在非拜占庭情况下，出现网络分区&#x2F;冗余&#x2F;丢失乱序等问题下要保证正确</li>
+<li>基本可用性： 集群中大部分节点能够保持相互通信，那么集群就应该能够正确响应客户端</li>
+<li>不依赖时序：不依赖物理时钟或极端的消息延迟来保持一致性</li>
+<li>快速响应：对客户端请求的响应不能依赖集群中最慢的节点</li>
+</ol>
+</li>
+</ol>
+<h2 id="一个可行解"><a href="#一个可行解" class="headerlink" title="一个可行解"></a>一个可行解</h2><p>1.初始化的时候有一个领导者节点，负责发送日志到其他跟随者，并决定日志的顺序</p>
+<p>2.当读请求到来时，在任意节点都可以读，而写请求只能重定向到领导者进行</p>
+<ol start="3">
+<li>领导者先写入自己的日志，然后同步给半数以上节点，跟随者表示都Ok，领导者才提交日志</li>
+<li>日志最终由领导者先按顺序应用于状态机，其他跟随者随机应用到状态机</li>
+<li>当领导者崩溃后，其他跟随着通过心跳感知并选举出新的领导者继续集群的正常运转</li>
+<li>当有新的节点加入或退出集群，需要将配置信息同步给整个集群</li>
+</ol>
+<h2 id="Raft实现"><a href="#Raft实现" class="headerlink" title="Raft实现"></a>Raft实现</h2><p><img src="https://i.111666.best/image/WEIgNGkt0MAJPRkpDTqA2j.png" srcset="/img/loading.gif" lazyload alt="复制状态机"></p>
+<p>状态:</p>
+<p>1 Follower : 接收来自Leader 的保活报文，当定时器超时后，角色变更为Candidate, 发起竞选过程，作为Follower, 可以参与竞选阶段，但是票只能投给Candidate</p>
+<p>2 Candidate : 作为竞选者，参与竞选，触发竞选过程，先给自己投一票，然后发起请求给其他节点，请求为该节点投票，当所得票数超过一半的节点数后，变更为Leader。而当竞选计时器超时后，重新发起选举。而如果这期间收到了Leader的保活报文&#x2F;收到了更高任期的请求，则变更为Follower状态</p>
+<p>3 Leader : 作为领导者，负责发送心跳报文，确保自己和其他节点的保活状态。通过会发送请求要求其他节点复制它所记录的日志信息</p>
+<ol>
+<li>启动阶段 ：所有节点都被设置为Follower状态</li>
+<li>Follower 启动心跳计时器，监听是否能接收到来自领导者的保活信息</li>
+<li>监听一段时间后未能收到保活信息后，将自身设置为竞选者，参与竞选，这时竞选者会向其他节点发送投票请求<ol>
+<li>投票成功  变更为Leader,发送心跳报文给其他节点</li>
+<li>投票失败 更新任期，重新发起竞选</li>
+<li>收到 Leader的保活信息，状态变更为Follower</li>
+<li>当存在多个领导者时，比较任期大小，任期更大的作为新的领导者</li>
+</ol>
+</li>
+<li>设置 心跳计时器 和 选举计时器 为区间内的随机值，这样避免选票瓜分问题</li>
+</ol>
+<p>不同状态的数据结构</p>
+<h3 id="共同结构"><a href="#共同结构" class="headerlink" title="共同结构"></a>共同结构</h3><table>
+<thead>
+<tr>
+<th>currentTerm</th>
+<th>服务器已知最新的任期（在服务器首次启动的时候初始化为0，单调递增）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>voteFor</td>
+<td>当任期内收到选票的候选者id,如果没有投给任何候选者，则为空</td>
+</tr>
+<tr>
+<td>log[]</td>
+<td>日志条目；每个条目包含了用于状态机的命令，以及领导者接收到该条目的任期</td>
+</tr>
+</tbody></table>
+<p>通用容失性状态</p>
+<table>
+<thead>
+<tr>
+<th>LastApplied</th>
+<th>已经被应用到状态机的最高的日志条目索引</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CommitIndex</td>
+<td>已知已提交的最高的日志条目的索引</td>
+</tr>
+</tbody></table>
+<p>领导者的易失性状态</p>
+<table>
+<thead>
+<tr>
+<th>nextIndex[]</th>
+<th>对于每一台服务器，发送到该服务器的下一个日志条目索引(初始值为领导者最后的日志条目的索引+1)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>matchIndex[]</td>
+<td>对于每一台服务器，已知的已经复制到该服务器的最高日志条目的索引 （初始值为0）</td>
+</tr>
+</tbody></table>
+<h1 id="RPC"><a href="#RPC" class="headerlink" title="RPC"></a>RPC</h1><blockquote>
+<p>选举人发起选举投票RPC到跟随者或选举人</p>
+</blockquote>
+<blockquote>
+<p>领导者发起RPC到跟随者 ： 日志追加 &#x2F; 心跳通知</p>
+</blockquote>
+<h2 id="请求投票"><a href="#请求投票" class="headerlink" title="请求投票"></a>请求投票</h2><ol>
+<li>跟随着变更为候选人后</li>
+<li>选举超时后</li>
+</ol>
+<p>请求参数</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>解释</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>term</td>
+<td>候选人的任期号</td>
+</tr>
+<tr>
+<td>candidateId</td>
+<td>请求选票的候选人的id</td>
+</tr>
+<tr>
+<td>lastLogindex</td>
+<td>选举人的最后日志条目的索引值</td>
+</tr>
+<tr>
+<td>lastLogTerm</td>
+<td>选举人最后日志条目的任期号</td>
+</tr>
+</tbody></table>
+<p>返回值</p>
+<table>
+<thead>
+<tr>
+<th>返回值</th>
+<th>解释</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>term</td>
+<td>当前任期号，以便于候选人去更新自己的任期号</td>
+</tr>
+<tr>
+<td>voteGranted</td>
+<td>候选人赢得了此张选票时为真</td>
+</tr>
+</tbody></table>
+<h3 id="选举规则"><a href="#选举规则" class="headerlink" title="选举规则"></a><strong>选举规则</strong></h3><ol>
+<li>如果领导者的任期 小于 接收者的当前任期，则直接返回假</li>
+<li>在接收者日志中，如果能找到一个和preLogIndex以及prevlogTerm 一样的索引和任期的条目 则继续执行下面的步骤，否则返回假</li>
+<li>如果一个已经存在的条目和新条目发生了冲突（索引相同，任期不同），那么就删除这个已经存在的条目以及它之后的条目</li>
+<li>追加日志中常委存储任何新的条目</li>
+<li>如果领导者的已知已经提交的最高的日志条目的索引leaderCommit大于接收者的已知已提交的最高的日志条目CommitIndex，则把接收者的日志条目的索引commitIndex重置为领导者的已知已经提交的最高的日志条目索引，或最新日志条目的索引 取两者最小值</li>
+</ol>
+<h2 id="追加日志-心跳"><a href="#追加日志-心跳" class="headerlink" title="追加日志&amp;心跳"></a>追加日志&amp;心跳</h2><ol>
+<li>客户端发起写命令请求时</li>
+<li>发送心跳时</li>
+<li>日志匹配失败时</li>
+</ol>
+<h3 id="请求参数"><a href="#请求参数" class="headerlink" title="请求参数"></a>请求参数</h3><table>
+<thead>
+<tr>
+<th>参数</th>
+<th>解释</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>term</td>
+<td>当前领导者的任期</td>
+</tr>
+<tr>
+<td>leaderId</td>
+<td>领导者ID 因此跟随者可以对客户端进行重定向</td>
+</tr>
+<tr>
+<td>prevLogIndex</td>
+<td>紧邻新日志条目之前的那个日志条目的索引</td>
+</tr>
+<tr>
+<td>prevLogTerm</td>
+<td>紧邻新日志条目之前的那个日志条目的任期</td>
+</tr>
+<tr>
+<td>entries[]</td>
+<td>需要被保存的日志条目（被当作心跳使用时，则日志条目内容为空；）</td>
+</tr>
+<tr>
+<td>leaderCommit</td>
+<td>领导者的已知已提交的最高的日志条目的索引</td>
+</tr>
+</tbody></table>
+<h3 id="返回值"><a href="#返回值" class="headerlink" title="返回值"></a>返回值</h3><table>
+<thead>
+<tr>
+<th>返回值</th>
+<th>解释</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>term</td>
+<td>当前任期，对于领导者而言，它会更新自己的任期</td>
+</tr>
+<tr>
+<td>success</td>
+<td>结果为真，如果跟随者所含有的条目和prevLogIndex以及prevLogTerm匹配上了</td>
+</tr>
+</tbody></table>
+<h3 id="日志追加"><a href="#日志追加" class="headerlink" title="日志追加"></a>日志追加</h3><ol>
+<li>一旦成为领导人： 发送空的附加日志RPC 给其他所有的服务器，在一定的空余时间之后不停的重复发送，以阻止跟随者超时</li>
+<li>如果接收到来自客户端的请求：附加条目到本地日志中，在条目被应用到状态机后响应客户端</li>
+<li>如果对于一个跟随着，最后日志条目的索引值大于等于nextIndex，那么：发送从nextIndex开始的所有日志条目<ol>
+<li>如果成功，更新响应跟随着的nextIndex和matchIndex</li>
+<li>如果因为日志不一致而失败，减少nextIndex重试</li>
+</ol>
+</li>
+<li>如果存在一个满足N&gt;commitIndex的N，并且大多数的matchIndex[i] ≥ N成立，并且log(N).term &#x3D;&#x3D; currentTerm 成立，那么令commitIndex等于这个N</li>
+</ol>
+<h2 id="安全性证明"><a href="#安全性证明" class="headerlink" title="安全性证明"></a>安全性证明</h2><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>解释</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>选举安全特性</td>
+<td>对于一个给定的任期号，最多只会有一个领导人被选举出来</td>
+</tr>
+<tr>
+<td>领导人只附加原则</td>
+<td>领导人绝对不会删除或者覆盖自己的日志，只会追加</td>
+</tr>
+<tr>
+<td>日志匹配规则</td>
+<td>如果两个日志在相同的索引位置的日志条目的任期号相同，那么我们旧认为整个日志从头到这个索引位置之间完全相同</td>
+</tr>
+<tr>
+<td>领导人完全特性</td>
+<td>如果某个日志条目在某个任期号中已经被提交，那么整个条目必然出现在更大任期号的所有领导人中</td>
+</tr>
+<tr>
+<td>状态机安全特性</td>
+<td>如果一个领导人已经将给定的索引值位置的日志条目应用到状态机中，那么其他任何的服务器在整个索引位置不会应用一个不同的日志</td>
+</tr>
+</tbody></table>
+<p>日志复制过程的完全匹配</p>
+<ol>
+<li>因为集群在任意时刻最多有一个leader存在，leader在一个任期内只会在同一个索引处写入一次日志</li>
+<li>又因为领导者从来不会删除或者覆盖自己的日志，并且日志一旦写入就不允许修改</li>
+<li>所以 只要任期和索引相同，那么在任何节点上的日志也都相同</li>
+<li>因为 跟随者每次只会从与leader的PerLog匹配处追加日志，如果不匹配 则nextIndex - 1 重试</li>
+<li>所以 由递归的性质可知， 一旦跟随者和leader在PreLog处匹配，那么之前的所有日志都是匹配的</li>
+<li>所以 只要把preLog之后的日志全部按此次Leader同步RPC的日志顺序覆盖即可保证 二者的一致性</li>
+</ol>
+<p>安全性</p>
+<p>每一任的领导者 一定会有所有任期内领导者的全部已提交日</p>
+<h1 id="工程优化"><a href="#工程优化" class="headerlink" title="工程优化"></a>工程优化</h1><h3 id="容错性"><a href="#容错性" class="headerlink" title="容错性"></a>容错性</h3><ol>
+<li>领导者崩溃通过选举可以解决，但跟随着与候选者？</li>
+</ol>
+<p>基础raft算法，通过无限次幂等的附加复制rpc进行重试来解决</p>
+<ol>
+<li>当平均故障时间大于信息交换时间，系统将没有一个稳定的领导者，集群无法工作</li>
+</ol>
+<p>广播时间&lt;&lt; 心跳超时时间 &lt;&lt; 平均故障时间</p>
+<ol>
+<li>客户端如何连接raft的server节点</li>
+</ol>
+<p>客户端随机选择一个节点取访问，如果是跟随着，跟随着会把自己知道的领导者告知客户端</p>
+<ol>
+<li>领导者提交后返回时崩溃，客户端重试不就导致相同的命令反复执行？</li>
+</ol>
+<p>客户端为每次请求标记唯一序列号，服务端在状态中维护客户端最新啊的序列号标记，进行幂等处理</p>
+<ol>
+<li>客户端给领导者set a&#x3D;3 并进行了提交，此时客户端如果从一个未被同步的节点读取a读不到写后的值</li>
+</ol>
+<p>每个客户端应该维持一个lastestldx值，每个节点在接收读请求的时候与自己的lastApplied值比较，如果这个值大于自己的lastApplied，则拒绝此次请求，客户端重定向到一个lastApplied大于等于自己laststIdx的请求，并且每次读取请求都会返回这个节点的lastApplied值，客户端将latestIdx更新为此值，保证读取的线性一致。</p>
+<ol>
+<li>如果leader被孤立，其他跟随着选出leader，但是当前leader还是向外提供脏数据怎么办？</li>
+</ol>
+<p>写入数据由于无法提交，因此会立即失败，但无法防止读到脏数据</p>
+<p>解决办法： 半数心跳失败，leader感知自己处于少数分区而被孤立进而拒绝提供读写服务</p>
+<ol>
+<li>当出现网络分区后，被孤立少数集合的节点无法选举，只会不断的增加自己的任期，分区恢复后由于失联的节点任期更大，会强行更新所有节点的任期，触发一次重新选举，而又因为其日志不够新，被孤立的节点不可能成为新的leader所以其状态机是安全的，只是触发了一次重新选举，使得集群有一定时间的不可用</li>
+</ol>
+<p>在跟随者成为候选人时，先发送一轮pre-vote rpc 来判断自己是否在大多数分区内，如果是则任期加1进行选举，否则的话就不断尝试pre-vote请求</p>
+<h3 id="扩展性"><a href="#扩展性" class="headerlink" title="扩展性"></a>扩展性</h3><p>向集群中新增节点</p>
+<p>会存在某一个时刻新老配置同存，进而有选举出两个领导者的可能性</p>
+<ol>
+<li>新集群节点在配置变更期间必须获得老配置的多数派投票才能成为leader</li>
+<li>发送新配置c-new给集群的领导者</li>
+<li>领导者将自己的c-old配置与c-new合并为一个c-old-new 配置</li>
+<li>然后下发给其他所有跟随者<ol>
+<li>当c-old-new 被同步给半数以上节点后，那么此配置已经提交，遵循raft安全机制</li>
+<li>当leader在将c-old-new写入半数跟随者之前崩溃了，那么选举出来的新leader会退回到老的配置，此时重试更新配置即可</li>
+</ol>
+</li>
+<li>当c-old-new被提交之后，leader会真正的提交c-new配置<ol>
+<li>如果提交给了半数节点，则c-new真正的被提交</li>
+<li>如果未提交给半数节点时崩溃，则选举新的leader，必定包含c-old-new，更新配置即可</li>
+</ol>
+</li>
+</ol>
+<p>2 单节点变更时，如果leader挂了，造成一致性问题如何处理</p>
+<blockquote>
+<p>新节点先发一条no-op日志再开始配置变更</p>
+</blockquote>
+<p>Raft成员变更的工程实践</p>
+<ol>
+<li>单节点变更时，偶数节点遇到网络分区，则没办法选举leader了怎么办</li>
+</ol>
+<p>重新定义偶尔节点情况下的法定人数模型下的大多数情况</p>
+<ol>
+<li>新服务器没有任何存储日志，需要复制很长时间不能参加选举否则会使得整体不可用</li>
+</ol>
+<p>新加入节点设置一个保护器，在此把耦合器内不会参加选举与日志提交决策，只会用来同步日志</p>
+<ol>
+<li>如果集群中的领导不是集群中的一员，该如何处理</li>
+</ol>
+<p>在提交c-new时，不将自己算作半数提交，并且在提交后要主动退位</p>
+<ol>
+<li>被移除的节点如果不即时关闭，会导致选举超时后强行发起投票请求干扰在线集群</li>
+</ol>
+<p>每个节点如果未达到最小心跳超时事件，则不会进行投票</p>
+<h3 id="性能"><a href="#性能" class="headerlink" title="性能"></a>性能</h3><ol>
+<li>生成快照</li>
+</ol>
+<p>日志如果无限增长会将本地磁盘打满，会造成可用性问题。</p>
+<p>定时将状态机种的状态生成快照，而将之前的日志全部删除，是一种常见的压缩方式</p>
+<ol>
+<li>将节点的状态保存为LSM Tree，然后存储最后应用日志的索引和任期，以保证日志匹配特性</li>
+<li>为支持集群的配置更新，快照中也要讲最后一你个用的集群配置也当作状态保存下来</li>
+<li>当追随者需要的日志已经在领导者上面被删除时（nextIndex—）需要讲快照通过RPC发送</li>
+</ol>
+<p>参数</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>解释</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>term</td>
+<td>领导人的任期号</td>
+</tr>
+<tr>
+<td>leaderId</td>
+<td>领导人的id，以便于跟踪者重定向请求</td>
+</tr>
+<tr>
+<td>lastIncludeIndex</td>
+<td>快照中包含的最后日志条目的索引值</td>
+</tr>
+<tr>
+<td>lastIncludeTerm</td>
+<td>快照中包含的最后日志条目的任期号</td>
+</tr>
+<tr>
+<td>offset</td>
+<td>分块在快照中的字节偏移量</td>
+</tr>
+<tr>
+<td>data[]</td>
+<td>从偏移量开始的快照分块的原始字节</td>
+</tr>
+<tr>
+<td>done</td>
+<td>如果这是最后一个分块则为true</td>
+</tr>
+</tbody></table>
+<p>返回</p>
+<table>
+<thead>
+<tr>
+<th>结果</th>
+<th>解释</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>term</td>
+<td>当前任期号，便于领导人更新自己</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<h3 id="跟随者创建快照"><a href="#跟随者创建快照" class="headerlink" title="跟随者创建快照"></a>跟随者创建快照</h3><ol>
+<li>如果term &lt; currentTerm</li>
+<li>如果是第一个分块 （offset 为 0 ） 就创建一个新的快照</li>
+<li>在指定偏移量写入数据</li>
+<li>如果done是false，则继续等待更多的数据ack</li>
+<li>保存快照文件，丢弃具有较小索引的任何现有或部分快照</li>
+<li>如果保存的日志条目与快照中最后包含的日志条目具有相同的索引值和任期号，则保留其后的日志并</li>
+<li>否则，丢弃整个日子hi</li>
+<li>使用快照重置状态机</li>
+</ol>
+<h3 id="调节"><a href="#调节" class="headerlink" title="调节"></a>调节</h3><p>参数</p>
+<ol>
+<li>心跳的随机时间，过快会增加网络负载，过慢则会导致感知领导者崩溃浪费的事件更长（100-300ms）</li>
+<li>选举的随机时间，如果大部分跟随者同时变为候选人则会导致选票被瓜分</li>
+</ol>
+<h3 id="流批结合"><a href="#流批结合" class="headerlink" title="流批结合"></a>流批结合</h3><h3 id="并行追加"><a href="#并行追加" class="headerlink" title="并行追加"></a>并行追加</h3><h3 id="异步应用"><a href="#异步应用" class="headerlink" title="异步应用"></a>异步应用</h3><h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>Raft 共识算法的 核心点在于通过算法，可以保持多个节点上的存储一致性。</p>
+<p>它定义了三个角色：</p>
+<p>Follower ： 跟随者</p>
+<p>接收来自Leader的心跳保活和日志追加请求；</p>
+<p>当心跳保活超时后，会尝试转换为Candidate；</p>
+<p>作为Follower的节点在选举流程中只能进行投票；</p>
+<p>Candidate ： 候选人</p>
+<p>当集群环境失去Leader角色时，由Follower转换为Candidate 发起选举</p>
+<p>保留一个选举超时计时器，当计时器超时仍未成功选举时，将任期+1，继续尝试发起选举</p>
+<p>选举时会先为自己投票，之后向其他节点发送投票的远程调用</p>
+<p>当发起选举请求的过程中收到了来自Leader的心跳保活，切换状态回Follower</p>
+<p>Leader ：领导者</p>
+<p>当投票流程结束后，自己所获选票超过集群的半数节点以上，该节点自动转换为Leader</p>
+<p>Leader 负责处理集群中日志的写操作，以及发送心跳保活和日志追加数据到其他跟随者节点</p>
+<h2 id="关键定义"><a href="#关键定义" class="headerlink" title="关键定义"></a>关键定义</h2><p>对于  Raft中的角色来说，存在以下关键属性</p>
+<table>
+<thead>
+<tr>
+<th>属性名</th>
+<th>定义</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>currentTerm</td>
+<td>节点自身持有的任期信息，从服务器启动后开始计数</td>
+<td>提供了一个计数器，用于快速比较节点间的“领导性”</td>
+</tr>
+<tr>
+<td>voteFor</td>
+<td>任期内收到选票的候选者id,如果没有投给任何候选者，则为空</td>
+<td>用于标记当前服务器的投票状态，每个节点只能投一票</td>
+</tr>
+<tr>
+<td>log[]</td>
+<td>日志条目；每个条目包含了用于状态机的命令，以及领导者接收到该条目的任期</td>
+<td></td>
+</tr>
+<tr>
+<td>LastApplied</td>
+<td>已经被应用的日志索引条目</td>
+<td>确认哪些信息是已经通过共识协议应用的 (大部分节点认为已应用)</td>
+</tr>
+<tr>
+<td>CommitIndex</td>
+<td>已知已提交的最高的日志条目</td>
+<td>确定哪些信息是已经提交的（大部分节点认为已提交）</td>
+</tr>
+<tr>
+<td>nextIndex[]</td>
+<td>当前服务器期望接收的下一条日志索引</td>
+<td>用于通知&#x2F;校验其他节点，保证消息的顺序性</td>
+</tr>
+<tr>
+<td>matchIndex[]</td>
+<td>已知的已经复制到该服务器的最高日志条目索引</td>
+<td>用于在追加日志时，记录当前同步信息的位置</td>
+</tr>
+</tbody></table>
+<h2 id="选举过程"><a href="#选举过程" class="headerlink" title="选举过程"></a>选举过程</h2><h3 id="Raft-中使用了3种-计时器："><a href="#Raft-中使用了3种-计时器：" class="headerlink" title="Raft 中使用了3种 计时器："></a><strong>Raft 中使用了3种 计时器：</strong></h3><ol>
+<li>选举计时器 ： 用于选举者选举超时时，重置选举请求 。 通常为一个随机时间（100-300ms）</li>
+<li>心跳保活计时器 ： 用于领导者向跟随者请求，相互检查对方的存货状态，超时后意味着节点状态异常，触发其他节点的选举过程。</li>
+<li>心跳保活超时计时器： 用于追随者等待领导者心跳的最大时长，超时后变更状态，发起选举过程。</li>
+</ol>
+<h3 id="投票策略"><a href="#投票策略" class="headerlink" title="投票策略"></a>投票策略</h3><p>作为Candidate， 会先为自己投票，再想其他节点发送RPC请求</p>
+<p>作为Follower，接收到RPC请求后，会进行以下处理：</p>
+<ol>
+<li>检查任期长度</li>
+</ol>
+<p>当请求中描述的任期小于当前节点的任期时，直接拒绝投票给该Candidate</p>
+<ol>
+<li>检查自身是否已经进行过投票</li>
+</ol>
+<p>当自身已经进行过投票了，直接拒绝投票给该Candidate</p>
+<ol>
+<li>比较收到的最后一条日志的索引</li>
+</ol>
+<ul>
+<li><strong>首先比较最后一条日志的任期</strong> ：任期更大的日志更新</li>
+<li><strong>任期相同时才比较索引</strong> ：索引更大的日志更新</li>
+</ul>
+<h3 id="投票过程"><a href="#投票过程" class="headerlink" title="投票过程"></a>投票过程</h3><ol>
+<li>集群失效后，某个节点，优先心跳超时计时器超时，将自身状态变更为Candidate。先为自己投一票，然后包装自己的任期，和ID，以及最后条目索引和最后条目的任期号属性，发送RPC调用给其他集群中的节点</li>
+<li>其他节点接收到该请求后，启动投票流程，检查该节点的任期，和自己投票状态，比较双方的索引长度， 最终确认投票</li>
+<li>竞选节点 接收到 超过半数的投票后，切换状态到领导者，定时向其他节点发送保活报文，并且发起PRC请求，向其他节点追加日志记录最终达成共识</li>
+</ol>
+<h3 id="日志追加-1"><a href="#日志追加-1" class="headerlink" title="日志追加"></a>日志追加</h3><ol>
+<li>完成选举后，由Leader发起日志追加请求</li>
+<li>对于Leader来说，最终的追加目的是在当前任期内，所有跟随者都依据Leader的索引顺序进行提交&#x2F;应用过程。所以这里会做的是在日志追加过程中比较Leader 的prevLogIndex和prevLogTerm , 如果不一致则回溯到两者的一致索引位置，之后由Leader完成日志追加过程。</li>
+</ol>
+<h2 id="基于实际情况的讨论"><a href="#基于实际情况的讨论" class="headerlink" title="基于实际情况的讨论"></a>基于实际情况的讨论</h2><p>现在我们从现实情况下讨论共识性算法的安全性问题。</p>
+<p>共识性算法保证最终一致性的组件 ：</p>
+<p>通过监听保活的失效触发选举过程 → 保证系统绝大部分时间内处于Leader&#x2F;选举过程当中。</p>
+<p>通过任期比较，选择具有更长任期的候选者&#x2F;通过lastcommit 比较，选择lastcommit 索引最长的候选者作为领导者。</p>
+<p>那么结果就是我们最终会选择一个最早发现心跳失效，且具备日志最长的应用记录的节点作为合适的领导者。又因为应用需要半数以上节点确认后才会被应用，所以具有最长任期，最长日志应用记录的节点必然是具备最完整日志记录信息的节点。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E7%AE%97%E6%B3%95/" class="category-chain-item">算法</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F/" class="print-no-link">#分布式</a>
+      
+        <a href="/tags/Raft/" class="print-no-link">#Raft</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>分布式系统 共识算法Raft</div>
+      <div>http://gadoid.io/2025/08/15/共识算法Raft/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Codfish</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年8月15日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/08/14/Kubernetes-%E5%AD%98%E5%82%A8/" title="Kubernetes 存储">
+                        <span class="hidden-mobile">Kubernetes 存储</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"lQzCvqmOtewLtpMfvfxKLomU-MdYXbMMI","appKey":"daMNlw5XcjN8TelT6GCHh8RF","path":"window.location.pathname","placeholder":"让灵感在这里发生","avatar":"monsterid","meta":["nick","mail"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":true,"recordIP":true,"serverURLs":"https://lQzCvqmO.api.lncldglobal.com","emojiCDN":null,"emojiMaps":null,"enableQQ":false,"enable":true,"visitor":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      &copy; 2025 - 2025 <a target="_blank" rel="noopener" href="https://github.com/username">CODFISH</a>
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+<!-- hexo injector body_end start --><script src="/js/chatbot-loader.js" defer></script><!-- hexo injector body_end end --></body>
+</html>
