@@ -1,0 +1,929 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/bg/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Codfish">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="基于Unix socket的数据通信Unix domain socket 又叫IPC socket ，用于实现同一主机上的进程间通信，socket原本是为网络通讯设计的，但后来在socket的框架上发展出一种IPC机制，就是UNIX domain socket。虽然网络socket也可用于同一台主机的进程间通信，但是UNIX domain socket用于IPC 更有效率，不需要经过网络协议栈，不">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Docker启动过程">
+<meta property="og:url" content="http://gadoid.io/2025/08/21/Docker%E5%90%AF%E5%8A%A8%E8%BF%87%E7%A8%8B/index.html">
+<meta property="og:site_name" content="西北有高楼">
+<meta property="og:description" content="基于Unix socket的数据通信Unix domain socket 又叫IPC socket ，用于实现同一主机上的进程间通信，socket原本是为网络通讯设计的，但后来在socket的框架上发展出一种IPC机制，就是UNIX domain socket。虽然网络socket也可用于同一台主机的进程间通信，但是UNIX domain socket用于IPC 更有效率，不需要经过网络协议栈，不">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://i.111666.best/image/w8PJDhW5yPn3vR9Y2JOIwj.png">
+<meta property="article:published_time" content="2025-08-21T09:13:00.000Z">
+<meta property="article:modified_time" content="2025-08-21T09:16:06.354Z">
+<meta property="article:author" content="Codfish">
+<meta property="article:tag" content="虚拟化">
+<meta property="article:tag" content="容器">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://i.111666.best/image/w8PJDhW5yPn3vR9Y2JOIwj.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Docker启动过程 - 西北有高楼</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"gadoid.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>西北有高楼</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/downloads/" target="_self">
+                <i class="iconfont icon-books-fill"></i>
+                <span>资源下载</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/bg/img/ice.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Docker启动过程"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-08-21 17:13" pubdate>
+          2025年8月21日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          6.1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          51 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Docker启动过程</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="基于Unix-socket的数据通信"><a href="#基于Unix-socket的数据通信" class="headerlink" title="基于Unix socket的数据通信"></a>基于Unix socket的数据通信</h1><p>Unix domain socket 又叫IPC socket ，用于实现同一主机上的进程间通信，socket原本是为网络通讯设计的，但后来在socket的框架上发展出一种IPC机制，就是UNIX domain socket。虽然网络socket也可用于同一台主机的进程间通信，但是UNIX domain socket用于IPC 更有效率，不需要经过网络协议栈，不需要打包拆包，计算校验和，维护序号和应答等，只是将应用层数据从一个进程拷贝到另一个进程，这是因为IPC机制本质上是可靠的通讯，而网络协议是为不可靠的通讯设计的</p>
+<p>UNIX domain socket是全双工的，API 接口语义丰富，相比其他IPC机制有明显的优越性，目前已成为使用最广泛的IPC 机制，比如X Window 服务器和GUI 程序之间就是通过UNIX domain socket 通讯的。</p>
+<h1 id="Docker-组件"><a href="#Docker-组件" class="headerlink" title="Docker 组件"></a>Docker 组件</h1><p>docker 是一个Docker 客户端的完整实现，它是一个二进制文件，对用户可见的操作形式为docker命令，通过docker命令可以完成所有的Docker客户端与服务端的通信。</p>
+<p>Docker客户端与服务端的交互过程是：docker组件向服务端发送请求后，服务端根据请求执行具体的动作，并将结果返回给docker，docker解析服务端的返回结果，并将结果通过命令行标准输出展示给客户。</p>
+<h2 id="docker-proxy"><a href="#docker-proxy" class="headerlink" title="docker proxy"></a>docker proxy</h2><p>docekr-proxy 主要用来做端口映射。当我们使用docker run 命令启动容器时，如果使用了-p 参数，docker-proxy 组件就会把容器内相应的端口映射到主机上来，底层是依赖于iptables实现的。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs bash">root@node: /usr/bin# docker run --name=nginx -d -p 8080:80 nginx<br><br>root@node: /usr/bin# docker inspect --format <span class="hljs-string">&#x27;&#123;&#123; .NetworkSettings.IPAddress &#125;&#125;&#x27;</span><br>nginx<br>172.17.0.2<br><span class="hljs-comment">#  会多一个docker-proxy 进程</span><br>root@node: /usr/bin# ps aux | grep docker-proxy<br>root 1983163 0.0 0.0 105912 4252 ?     s1   15:42   0:00 /bin/docker-proxy -<br>proto tcp -host-ip 0.0.0.0 -host-port 8080 -container-ip 172.17.0.2 -container-port 80<br>root 1985160 0.0 0.0 13544  2600 pts/1 s+   15:43   0:00 grep docker-proxy<br></code></pre></td></tr></table></figure>
+
+<h2 id="docker-init"><a href="#docker-init" class="headerlink" title="docker-init"></a>docker-init</h2><p>在执行docker run启动容器时可以添加—init 参数，此时Docker会使用docker-init作为1号进程，帮你管理容器内子进程，例如回收僵尸进程</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs bash">root@node: /usr/bin# <span class="hljs-built_in">ls</span> docker*<br>docker dockerd dockerd-ce docker-init docker-proxy<br>root@node: /usr/bin#<br><br>root@node: /usr/bin# docker run -it busybox sh<br>/ <span class="hljs-comment"># ps aux</span><br>PID  USER  TIME COMMAND<br>	1  root  0:00 sh<br>	6  root  0:00 ps aux<br><br>root@node: /usr/bin# docker run -it --init busybox sh<br>/ <span class="hljs-comment"># ps aux </span><br>PID USER   TIME COMMAND<br>	1 root   0:00 /dev/init --sh<br>	6 root   0:00 sh<br>	7 root   0:00 ps aux<br></code></pre></td></tr></table></figure>
+
+<h2 id="runc"><a href="#runc" class="headerlink" title="runc"></a>runc</h2><p>runc 是一个标准的OCI 容器运行时的实现，它是一个命令行工具，可以直接用来创建和运行容器。</p>
+<ol>
+<li>准备容器运行时文件</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs bash">root@node: / <span class="hljs-built_in">cd</span> /root<br>root@node: / <span class="hljs-built_in">mkdir</span> runc<br>root@node: / <span class="hljs-built_in">mkdir</span> rootfs &amp;&amp;docker <span class="hljs-built_in">export</span> $(docker create busybox) | tar -C<br>rootfs -xvf -<br><br>root@node: /home/codfish/runc# tree -L 2 <br><span class="hljs-comment"># 容器存储结构</span><br></code></pre></td></tr></table></figure>
+
+<ol>
+<li>准备config文件</li>
+</ol>
+<p>使用runc spec命令根据文件系统生成对应的config.json 文件</p>
+<p>在config.json 里指定了容器运行的args，env等等</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br></pre></td><td class="code"><pre><code class="hljs bash">root@node: /home/codfish/runc# runc spec<br><br>root@node: /home/codfish/runc# <span class="hljs-built_in">cat</span> config.json<br>&#123;<br>		<span class="hljs-string">&quot;ociVersion&quot;</span>: <span class="hljs-string">&quot;1.0.1-dev&quot;</span>,<br>		<span class="hljs-string">&quot;process&quot;</span>: &#123;<br>				<span class="hljs-string">&quot;terminal&quot;</span>: <span class="hljs-literal">true</span>,<br>				<span class="hljs-string">&quot;user&quot;</span>: &#123;<br>						<span class="hljs-string">&quot;uid&quot;</span> : 0,<br>						<span class="hljs-string">&quot;gid&quot;</span> : 0<br>				&#125;,<br>				<span class="hljs-string">&quot;args&quot;</span>: [<br>						<span class="hljs-string">&quot;sh&quot;</span>			<br>				]<br>				<span class="hljs-string">&quot;env&quot;</span>: [<br>						<span class="hljs-string">&quot;PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin&quot;</span>,<br>						<span class="hljs-string">&quot;TERM=xterm&quot;</span><br>				],<br>				<span class="hljs-string">&quot;cwd&quot;</span>: <span class="hljs-string">&quot;/&quot;</span>,<br>				<span class="hljs-string">&quot;capabilities&quot;</span>: &#123;<br>						<span class="hljs-string">&quot;bounding&quot;</span>: [<br>								<span class="hljs-string">&quot;CAP_AUDIT_WRITE&quot;</span>,<br>								<span class="hljs-string">&quot;CAP_KILL&quot;</span>,<br>								<span class="hljs-string">&quot;CAP_NET_BIND_SERVICE&quot;</span>					<br>						],<br>						<span class="hljs-string">&quot;effective&quot;</span>: [<br>								<span class="hljs-string">&quot;CAP_AUDIT_WRITE&quot;</span>,<br>								<span class="hljs-string">&quot;CAP_KILL&quot;</span>,<br>								<span class="hljs-string">&quot;CAP_NET_BIND_SERVICE&quot;</span><br>						],<br>						<span class="hljs-string">&quot;inheritable&quot;</span>: [<br>								<span class="hljs-string">&quot;CAP_AUDIT_WRITE&quot;</span>,<br>								<span class="hljs-string">&quot;CAP_KILL&quot;</span>,<br>								<span class="hljs-string">&quot;CAP_NET_BIND_SERVICE&quot;</span>					<br>						],<br>						<span class="hljs-string">&quot;ambient&quot;</span>: [<br>								<span class="hljs-string">&quot;CAP_AUDIT_WRITE&quot;</span>,<br>								<span class="hljs-string">&quot;CAP_KILL&quot;</span>,<br>								<span class="hljs-string">&quot;CAP_NET_BIND_SERVICE&quot;</span><br>						]<br>				&#125;,<br>				<span class="hljs-string">&quot;rlimits&quot;</span> : [<br>						&#123;<br>								<span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;RLIMIT_NOFILE&quot;</span>,<br>								<span class="hljs-string">&quot;hard&quot;</span>: 1024,<br>								<span class="hljs-string">&quot;soft&quot;</span>: 1024					<br>						&#125;<br>				],<br>				<span class="hljs-string">&quot;noNewPrivileges&quot;</span>: <span class="hljs-literal">true</span>	<br>		&#125;,<br>		<span class="hljs-string">&quot;root&quot;</span>: &#123;<br>				<span class="hljs-string">&quot;path&quot;</span>: <span class="hljs-string">&quot;rootfs&quot;</span>,<br>				<span class="hljs-string">&quot;readonly&quot;</span>: <span class="hljs-literal">true</span>	<br>		&#125;,<br>		<span class="hljs-string">&quot;hostname&quot;</span>: <span class="hljs-string">&quot;runc&quot;</span>,<br>		<span class="hljs-string">&quot;mounts&quot;</span>: [<br>				&#123;<br>						<span class="hljs-string">&quot;destination&quot;</span>: <span class="hljs-string">&quot;/proc&quot;</span>,<br>						<span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;proc&quot;</span>,<br>						<span class="hljs-string">&quot;source&quot;</span>: <span class="hljs-string">&quot;proc&quot;</span>			<br>				&#125;,<br>				&#123;<br>						<span class="hljs-string">&quot;destination&quot;</span>: <span class="hljs-string">&quot;/dev&quot;</span>,<br>						<span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;tmpfs&quot;</span>,<br>						<span class="hljs-string">&quot;source&quot;</span>: <span class="hljs-string">&quot;tmpfs&quot;</span>,<br>						<span class="hljs-string">&quot;options&quot;</span>: [<br>								<span class="hljs-string">&quot;nosuid&quot;</span>,<br>								<span class="hljs-string">&quot;strictatime&quot;</span>,<br>								<span class="hljs-string">&quot;mode=755&quot;</span>,<br>								<span class="hljs-string">&quot;size=65536k&quot;</span>					<br>						]<br>				&#125;,<br>				&#123;<br>						<span class="hljs-string">&quot;destination&quot;</span>: <span class="hljs-string">&quot;/dev/pts&quot;</span>,<br>						<span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;devpts&quot;</span>,<br>						<span class="hljs-string">&quot;source&quot;</span>: <span class="hljs-string">&quot;devpts&quot;</span>,<br>						<span class="hljs-string">&quot;options&quot;</span>: [<br>								<span class="hljs-string">&quot;nosuid&quot;</span>,<br>								<span class="hljs-string">&quot;noexec&quot;</span>,<br>								<span class="hljs-string">&quot;newinstance&quot;</span>,					<br>								<span class="hljs-string">&quot;ptmxmode=0666&quot;</span>,<br>								<span class="hljs-string">&quot;mode=0620&quot;</span>,<br>								<span class="hljs-string">&quot;gid=5&quot;</span><br>						]			<br>				&#125;,<br>				&#123;<br>						<span class="hljs-string">&quot;destination&quot;</span>: <span class="hljs-string">&quot;/dev/shm&quot;</span>,<br>						<span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;tmpfs&quot;</span>,<br>						<span class="hljs-string">&quot;source&quot;</span>: <span class="hljs-string">&quot;shm&quot;</span>,<br>						<span class="hljs-string">&quot;options&quot;</span>: [<br>								<span class="hljs-string">&quot;nosuid&quot;</span>,<br>								<span class="hljs-string">&quot;noexec&quot;</span>,<br>								<span class="hljs-string">&quot;nodev&quot;</span>,<br>								<span class="hljs-string">&quot;mode=1777&quot;</span>,<br>								<span class="hljs-string">&quot;size=65535k&quot;</span><br>						]<br>				&#125;,<br>				&#123;<br>						<span class="hljs-string">&quot;destination&quot;</span>: <span class="hljs-string">&quot;/dev/mqueue&quot;</span>,<br>						<span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;mqueue&quot;</span>,<br>						<span class="hljs-string">&quot;source&quot;</span>: <span class="hljs-string">&quot;mqueue&quot;</span>,<br>						<span class="hljs-string">&quot;options&quot;</span>: [<br>								<span class="hljs-string">&quot;nosuid&quot;</span>,<br>								<span class="hljs-string">&quot;noexec&quot;</span>,<br>								<span class="hljs-string">&quot;nodev&quot;</span>,					<br>						]<br>				&#125;,<br>				&#123;<br>						<span class="hljs-string">&quot;destination&quot;</span>: <span class="hljs-string">&quot;/sys&quot;</span>,<br>						<span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;sysfs&quot;</span>,<br>						<span class="hljs-string">&quot;source&quot;</span>: <span class="hljs-string">&quot;sysfs&quot;</span>,<br>						<span class="hljs-string">&quot;options&quot;</span>: [<br>								<span class="hljs-string">&quot;nosuid&quot;</span>,<br>								<span class="hljs-string">&quot;noexec&quot;</span>,<br>								<span class="hljs-string">&quot;nodev&quot;</span>,<br>								<span class="hljs-string">&quot;ro&quot;</span>			<br>						]		<br>				&#125;,<br>				&#123;<br>						<span class="hljs-string">&quot;destionation&quot;</span>: <span class="hljs-string">&quot;/sys/fs/cgroup&quot;</span>,<br>						<span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;cgroup&quot;</span>,<br>						<span class="hljs-string">&quot;source&quot;</span>: <span class="hljs-string">&quot;cgroup&quot;</span>,<br>						<span class="hljs-string">&quot;options&quot;</span>: [<br>								<span class="hljs-string">&quot;nosuid&quot;</span>,<br>								<span class="hljs-string">&quot;noexec&quot;</span>,<br>								<span class="hljs-string">&quot;nodev&quot;</span>,<br>								<span class="hljs-string">&quot;relatime&quot;</span>,<br>								<span class="hljs-string">&quot;ro&quot;</span>					<br>						]	<br>				&#125;		<br>		],<br>		<span class="hljs-string">&quot;linux&quot;</span>: &#123;<br>				<span class="hljs-string">&quot;resources&quot;</span>: &#123;<br>						<span class="hljs-string">&quot;devices&quot;</span>: [<br>								&#123;<br>										<span class="hljs-string">&quot;allow&quot;</span>: <span class="hljs-literal">false</span>,<br>										<span class="hljs-string">&quot;access&quot;</span>: <span class="hljs-string">&quot;rwm&quot;</span>							<br>								&#125;<br>						]<br>				&#125;,<br>				<span class="hljs-string">&quot;namespace&quot;</span>: [<br>						&#123;<br>								<span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;pid&quot;</span><br>						&#125;,<br>						&#123;<br>								<span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;network&quot;</span><br>						&#125;,<br>						&#123;<br>								<span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;ipc&quot;</span><br>						&#125;,<br>						&#123;<br>								<span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;uts&quot;</span><br>						&#125;,<br>						&#123;<br>								<span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;mount&quot;</span><br>						&#125;,<br>				],<br>				<span class="hljs-string">&quot;maskedPaths&quot;</span>: [<br>						<span class="hljs-string">&quot;/proc/acpi&quot;</span>,<br>						<span class="hljs-string">&quot;/proc/asound&quot;</span>,<br>						<span class="hljs-string">&quot;/proc/kcore&quot;</span>,<br>						<span class="hljs-string">&quot;/proc/keys&quot;</span>,<br>						<span class="hljs-string">&quot;/proc/latency_stats&quot;</span>,<br>						<span class="hljs-string">&quot;/proc/timer_list&quot;</span>,<br>						<span class="hljs-string">&quot;/proc/sched_debug&quot;</span>,<br>						<span class="hljs-string">&quot;/sys/firmware&quot;</span>,<br>						<span class="hljs-string">&quot;/proc/scsi&quot;</span>	<br>				],<br>				<span class="hljs-string">&quot;readonlyPaths&quot;</span>: [<br>						<span class="hljs-string">&quot;/proc/bus&quot;</span>,<br>						<span class="hljs-string">&quot;/proc/fs&quot;</span>,<br>						<span class="hljs-string">&quot;/proc/irq&quot;</span>,<br>						<span class="hljs-string">&quot;proc/sys&quot;</span>,<br>						<span class="hljs-string">&quot;proc/sysrq-trigger&quot;</span>			<br>				]<br>		&#125;<br>&#125;<br><br><span class="hljs-comment"># config.json 由 runc spec 根据rootfs 生成</span><br></code></pre></td></tr></table></figure>
+
+<ol>
+<li>运行容器</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs bash">root@node: /home/codfish/runc# runc run container1<br>/ <span class="hljs-comment"># ps aux</span><br>PID   USER       TIME   COMMAND<br>	1   root       0:00   sh<br>	7   root       0:00   ps aux<br><span class="hljs-comment"># 查询 runc 状态</span><br>root@node: /home/codfish/# runc list<br>IP           PID          STATUS       BUNDLE           CREATED           OWNER<br>container1   2040317      running   /home/codfish/runc  2022-01-26T08:21:13  root<br></code></pre></td></tr></table></figure>
+
+<h2 id="dockerd"><a href="#dockerd" class="headerlink" title="dockerd"></a>dockerd</h2><p>dockerd 是docker服务端的后台常驻进程，用来接收客户端发送的请求，执行具体的处理任务，处理完成后将结果返回给客户端。</p>
+<p>docker run&#x2F;ps 是客户端，dockerd是服务器端。</p>
+<h2 id="containerd"><a href="#containerd" class="headerlink" title="containerd"></a>containerd</h2><p>contaienrd是用于处理客户端请求的真正进程，提供了生命周期管理等功能</p>
+<ul>
+<li>镜像的股那里，容器运行前从镜像仓库拉取镜像到本地；</li>
+<li>接收dockerd的请求，通过是藏的参数调用runc启动容器；</li>
+<li>管理存储相关资源</li>
+<li>管理容器相关资源</li>
+</ul>
+<p>containerd 包含一个后台常驻进程，默认的socket路径为&#x2F;run&#x2F;containerd&#x2F;containerd.sock, dockerd通过UNIX套接字向containerd发送请求，containerd接收到请求后负责执行相关的动作并把执行结果返回给dockerd。</p>
+<h2 id="containerd-shim"><a href="#containerd-shim" class="headerlink" title="containerd-shim"></a>containerd-shim</h2><p>containerd-shim的主要作用是将containerd和真正的容器进程解耦，使用containerd-shim作为容器进程的父进程，从而实现重启containerd不影响已经启动的容器进程。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs bash">root@node: /usr/bin# containerd-shim -h<br>Usage of containerd-shim:<br>	-address string<br>			grpc address back to main containerd<br>	-containerd-binary containerd publish<br>			path to containerd binary <br>	-criu string<br>			path to criu binary<br>	-debug<br>			<span class="hljs-built_in">enable</span> debug output <span class="hljs-keyword">in</span> logs<br>	-namespace string<br>			root directory <span class="hljs-keyword">for</span> the runtime <br>	-socket string<br>			abstract socket path to serve<br>	-systemd-cgroup<br>			<span class="hljs-built_in">set</span> runtime to use systemd-cgroup<br>	-workdir string<br>			path used to storge large temporary data<br></code></pre></td></tr></table></figure>
+
+<ol>
+<li>当kubelet 通过CRI接口（gRPC）调用dockershim请求创建一个容器，CRI即容器运行时接口，kubelet 可以视为一个简单的CRI Client，而dockershim就是接收请求的Server，目前dockershim 的代码其实是内嵌在Kublet中的。所以接受调用的凑巧就是Kubelet进程</li>
+<li>dockershim 收到请求后，转换为Docker Daemon能听懂的请求，发送到Docker Daemon上请求创建一个容器</li>
+<li>Docker Daemon通知containerd创建一个容器</li>
+<li>containerd收到请求后，并不会直接去操作容器，而是创建一个叫做containerd-shim的进程让containerd-shim去操作容器，这是因为容器进程需要一个父进程来做状体收集，维持stdin等工作，而如果直接使用contianerd作为父进程，父进程的重启会导致所有子进程退出。</li>
+<li>containerd-shim 调用runc 工具来启动容器</li>
+<li>runc启动完容器后会直接退出，containerd-shim则会成为容器的父进程，负责收集容器进程的状态并上报给containerd，并在容器中pid为1 的进程退出后接管容器中的子进程进行处理。</li>
+<li>为什么需要docker-shim</li>
+</ol>
+<p>因为k8s定义了CRI，这样可以和docker，rkt等容器运行时解耦，但是dockerd没有不支持CRI，需要docker-shim进行一次转换。</p>
+<ol>
+<li>为什么需要containers-shim</li>
+</ol>
+<p>主要作用是将containerd和真正的容器进程解耦，使用containerd-shim作为容器进程的父进程，从而实现重启containerd 不影响已经启动的容器进程。</p>
+<h1 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h1><p><img src="https://i.111666.best/image/w8PJDhW5yPn3vR9Y2JOIwj.png" srcset="/img/loading.gif" lazyload alt="Docker启动过程"></p>
+<h1 id="Docker-CLI"><a href="#Docker-CLI" class="headerlink" title="Docker CLI"></a>Docker CLI</h1><p>docker cli 即docker命令行工具，通过docker命令来完成docker容器的创建，它的主要工作</p>
+<ol>
+<li><p>通过main函数入口 ，接收传入的参数，创建cmd对象，进行参数校验。最终返回cmd 进行执行</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">runDocker</span><span class="hljs-params">(dockerCli *command.DockerCli)</span></span> <span class="hljs-type">error</span> &#123;<br>		tcmd := newDockerCommand(dockerCli)<br>		<span class="hljs-comment">// 初始化一个dockerCommand对象</span><br>		cmd,args,err := tcmd.HandleGlobalFlags()<br>		... <br>		<span class="hljs-keyword">return</span> cmd.Execute()<br>&#125;<br><span class="hljs-comment">// 初始化 Command 对象和 初始化dockerCli 客户端</span><br></code></pre></td></tr></table></figure>
+
+<ol>
+<li>创建DockerCommand，调用HandleGlobalFlags方法 返回cmd,args,err 3个对象</li>
+<li>err用于校验 传入的命令是否符合语法树规范</li>
+<li>args 分析args，解析其中的别名，转换为实际需要执行的命令，设置到cmd中</li>
+<li>cmd最终需要执行的命令行对象</li>
+</ol>
+</li>
+<li><p>使用cobra.Command构建命令解析树，定义IMAGE 命令，最终执行由runRun方法执行</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">NewRunCommand</span><span class="hljs-params">(dockerCli command.cli)</span></span> *cobra.Command&#123;<br>		<span class="hljs-keyword">var</span> opts runOptions<br>		<span class="hljs-keyword">var</span> copts *containerOptions<br><br>	cmd:= &amp;cobra.Command&#123;<br>		Use: <span class="hljs-string">&quot;run [OPTIONS] IMAGE [COMMAND] [ARG...]&quot;</span>,<br>		Short: <span class="hljs-string">&quot;Run a command in a new container&quot;</span><br>		Args:  cli.RequiresMinArgs(<span class="hljs-number">1</span>),<br>		RunE: <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(cmd *cobra.Command, args []<span class="hljs-type">string</span>)</span></span> <span class="hljs-type">error</span> &#123;<br>				copts.Image = args[<span class="hljs-number">0</span>]<br>				<span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(args) &gt; <span class="hljs-number">1</span>&#123;<br>						copts.Args = args[<span class="hljs-number">1</span>:]							<br>				&#125;<br>				<span class="hljs-keyword">return</span> runRun(dockerCli, cmd.Flags(), &amp;opts, copts)<br>			&#125;,<br>		&#125;<br>		...<br>		<span class="hljs-keyword">return</span> cmd<br>&#125;<br></code></pre></td></tr></table></figure></li>
+<li><p>在runRun方法中，解析本地的Deamon配置文件，加载配置信息，校验API版本，执行runContainer进入配置流程</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">runRun</span><span class="hljs-params">(dockerCli command.Cli, flags *pflag.FlagSet , ropts *runOptions , copts *containerOptions)</span></span> <span class="hljs-type">error</span>&#123;<br>		proxyConfig := dockerCli.ConfigFile().ParseProxyConfig(dockerCli.Client().DeamonHost()<br>		opts.ConvertKVStringsToMapWithNil(copts.env.GetAll()))<br>		newEnv := []<span class="hljs-type">string</span>&#123;&#125;<br>		<span class="hljs-keyword">for</span> k, v := <span class="hljs-keyword">range</span> proxyConfig &#123;<br>					<span class="hljs-keyword">if</span> v ==<span class="hljs-literal">nil</span>&#123;<br>							newEnv = <span class="hljs-built_in">append</span>(newEnv, k)				<br>					&#125;<span class="hljs-keyword">else</span> &#123;<br>							newEnv = <span class="hljs-built_in">append</span>(newEnv, fmt.Sprintf(<span class="hljs-string">&quot;%s=%s&quot;</span>,k,*v))<br>					&#125;<br>		&#125;<br>		copts.env = *opts.NewListOptsRef(&amp;newEnv, <span class="hljs-literal">nil</span>)<br>		contaienrConfig , err := parse(flags, copts, dockerCli.ServerInfo().OSType)<br><br>		<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>				reportError(dockerCli.Err(), <span class="hljs-string">&quot;run&quot;</span>, err.Error(), <span class="hljs-literal">true</span>)<br>				<span class="hljs-keyword">return</span> cli.StatusError&#123;StatusCode: <span class="hljs-number">125</span>&#125;<br>		&#125;<br>		<span class="hljs-keyword">if</span> err = validateAPIVersion(containerConfig, dockerCli.Client().ClientVersion()); err != <span class="hljs-literal">nil</span>&#123;<br>			reportError(dockerCli.Err(), <span class="hljs-string">&quot;run&quot;</span>, err.Error(), <span class="hljs-literal">true</span>)<br>			<span class="hljs-keyword">return</span> cli.StatusError&#123;StatusCode : <span class="hljs-number">125</span>&#125;<br>			&#125;<br>			<span class="hljs-keyword">return</span> runContainer(dockerCli, ropts, copts, containerConfig)<br>&#125;<br></code></pre></td></tr></table></figure></li>
+</ol>
+<p>run container 分为两个过程 createContainer和 startContainer 。</p>
+<p>这里就是通过配置信息向docker deamon 发起 配置Container和启动Container 的请求</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-comment">// 在ContianerCreate() 和 ContainerStart()中分别向daemon发送了create 和start 命令</span><br>createResponse , err := createContainer(ctx,dockerCli, containerConfig, opts.name)<br><span class="hljs-keyword">if</span> err := client.ContainerStart(ctx, createResponse.ID, types.ContainerStartOptions&#123;&#125;);<br>err != <span class="hljs-literal">nil</span><br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">runContainer</span><span class="hljs-params">(dockerCli command.Cli , opts *runOptions , copts *containerOptions,</span></span><br><span class="hljs-params"><span class="hljs-function">containerConfig *containerConfig)</span></span> <span class="hljs-type">error</span> &#123;<br>		...<br>		createResponse , err := createContainer(ctx, dockerCli, containerConfig, &amp;opts.createOptions)<br>		<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>				reportError(stderr, <span class="hljs-string">&quot;run&quot;</span> , err.Error() , <span class="hljs-literal">true</span>)<br>				<span class="hljs-keyword">return</span> runStartContainerErr(err)	<br>		&#125;<br>		...	<br>		<span class="hljs-keyword">var</span> (<br>				waitDisplayID   <span class="hljs-keyword">chan</span> <span class="hljs-keyword">struct</span>&#123;&#125;<br>				errCh           <span class="hljs-keyword">chan</span> <span class="hljs-type">error</span><br>		)<br>		...<br>			<span class="hljs-keyword">if</span> err := client.ContaienrStart(ctx, createReponse.ID , types.ContainerStartOptions&#123;&#125;) ; err!=<span class="hljs-literal">nil</span> &#123;<br>		... <br>			&#125;<br>			<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span><br>	&#125;<br></code></pre></td></tr></table></figure>
+
+<h1 id="Docker-Deamon（Dockerd）"><a href="#Docker-Deamon（Dockerd）" class="headerlink" title="Docker Deamon（Dockerd）"></a>Docker Deamon（Dockerd）</h1><p>dockerd是持续运行在服务器上的后台服务，它通过unix socket接收 客户端发送的命令请求</p>
+<p>docker会以linux服务的形式被配置在服务器上</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs go">[Unit]<br>Description=Docker Application Container Engine<br>Documentation=https:<span class="hljs-comment">//docs.docker.com</span><br>After=network-online.target containerd.service<br>Wants=network-online.target<br>Requires=docker.socket<br><br>[Service]<br>Type=notify<br>ExecStart=/usr/bin/dockerd -H fd:<span class="hljs-comment">// --containerd=/run/containerd/containerd.sock</span><br>ExecReload=/bin/kill -s HUP $MAINPID<br>TimeoutStartSec=<span class="hljs-number">0</span><br>Restart=on-failure<br>RestartSec=<span class="hljs-number">2</span><br>LimitNOFILE=infinity<br>LimitNPROC=infinity<br>TasksMax=infinity<br>Delegate=yes<br>KillMode=process<br><br>[Install]<br>WantedBy=multi-user.target<br></code></pre></td></tr></table></figure>
+
+<p>daemon.json 则作为dockerd的配置目录</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs go">&#123;<br>	<span class="hljs-string">&quot;registry-mirrors&quot;</span> : [<span class="hljs-string">&quot;&lt;https://b9pmyelo.mirror.aliyuncs.com&gt;&quot;</span>]<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>dockerd 创建根目录命令，加载默认配置。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">newDaemonCommand</span><span class="hljs-params">()</span></span> (*cobra.Command, <span class="hljs-type">error</span>) &#123;<br>		cmd := &amp;cobra.Command&#123;<br>				Use:           <span class="hljs-string">&quot;dockerd [OPTIONS]&quot;</span>,<br>				Short:         <span class="hljs-string">&quot;A self-sufficient runtime for containers&quot;</span>,<br>				SilenceUsage:  <span class="hljs-literal">true</span>,<br>				SilenceErrors: <span class="hljs-literal">true</span>,<br>				Args:          cli.NoArgs,<br>				RunE:          <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(cmd *cobra.Command, args []<span class="hljs-type">string</span>)</span></span> <span class="hljs-type">error</span>&#123;<br>						opts.flags = cmd.Flags()<br>						<span class="hljs-keyword">return</span> runDaemon(opts)			<br>				&#125;,<br>				DisableFlagsInUseLine: <span class="hljs-literal">true</span>,<br>				Version:       fmt.Sprintf(<span class="hljs-string">&quot;%s, build %s&quot;</span>, dockerversion.Version , dockerversion.GitCommit),<br>		&#125;<br>		...<br>		defaultDaemonConfigFile , err := getDefaultDaemonConfigFile()<br>		...<br>	<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>之后执行 runDeamon</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">runDaemon</span><span class="hljs-params">(opts *daemonOptions)</span></span> <span class="hljs-type">error</span>&#123;<br>		deamonCli := NewDaemonCli()<br>		<span class="hljs-keyword">return</span> daemonCli.start(opts)<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>daemonCli.start 执行</p>
+<ul>
+<li>设置默认配置，检测配置</li>
+<li>设置相关的目录与文件</li>
+<li>创建监听server</li>
+<li>初始化 插件，中间件，http服务</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(cli *DaemonCli)</span></span> start(opts *daemonOptions) (err <span class="hljs-type">error</span>)&#123;<br>		...<br>		<span class="hljs-keyword">if</span> err := daemon.CreateDaemonRoot(cli.Confi); err!=<span class="hljs-literal">nil</span> &#123;<br>	<br>		&#125;<br>		...<br>		serverConfig , err := newAPIServerConfig(cli)<br>		<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>				<span class="hljs-keyword">return</span> errors.wrap(err, <span class="hljs-string">&quot;failed to create API Server&quot;</span>)<br>		&#125;<br>		...<br>		cli.api = apiserver.New(serverConfig)<br>		...<br>		waitForContainerDshutdown, err :=  cli.initContainerD(ctx)<br> 		...<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>initContainerD 初始化容器，启动一个containerd进程，最终返回对方的监听地址</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(cli *DaemonCli)</span></span> initContainerD(ctx context.Context) (<span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(time.Duration)</span></span> <span class="hljs-type">error</span> , <span class="hljs-type">error</span>)&#123;<br>	  ... <br>			  r, err := supervisor.Start(ctx, filepath.join(cli.config.Root,<span class="hljs-string">&quot;containerd&quot;</span>),<br>			  filepath.Join(cli.Config.ExecRoot, <span class="hljs-string">&quot;containerd&quot;</span>), opts...)<br>			  ...<br>			  cli.Config.ContainerAddr = r.Address()<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>之后进行文件配置，并将来自客户端的rest请求路径 转换为对containerd的调用</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(r *contaienrRouter)</span></span> initRoutes()&#123;<br>	r.routes = []router.Route&#123;<br>		<span class="hljs-comment">// HEAD</span><br>		router.NewHeadRoute(<span class="hljs-string">&quot;/containers/&#123;name: .*&#125;/archive&quot;</span>, r.headContainersArchive).<br>		...<br>		router.NewPostRoute(<span class="hljs-string">&quot;/containers/create&quot;</span>, r.postContainersKill)<br>		...<br>		&#125;	<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>由dockerd 完成对containerd的调用，创建容器</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(s *containerRouter)</span></span> postContainersCreate(ctx context.Context, http.ResponseWriter, r *<br>	http.Request , vars <span class="hljs-keyword">map</span>[String]<span class="hljs-type">string</span>) <span class="hljs-type">error</span>&#123;<br>	<span class="hljs-comment">// 请求校验</span><br>	<span class="hljs-comment">// 通过表单获取container name</span><br>	<span class="hljs-comment">// 获取配置信息</span><br>	<span class="hljs-comment">// 传入配置 使用ContainerCreate创建 容器</span><br><br>	&#125;<br></code></pre></td></tr></table></figure>
+
+<p>ContainerCreate 创建容器</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(daemon *Daemon)</span></span> ContainerCreate(params types.ContainerCreateConfig)<br>(containertypes.ContainerCreateCreatedBody, <span class="hljs-type">error</span>)&#123;<br>		<span class="hljs-keyword">return</span> daemon.containerCreate(crateOpts)&#123;<br>				params:                  params,<br>				managed:                 <span class="hljs-literal">false</span>,<br>				ignoreImagesArgsEscaped: <span class="hljs-literal">false</span>&#125;)<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>containerCreate 进行计时，配置校验信息，之后调用daemon.create 创建容器</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(daemon *Daemon)</span></span> containerCreate(opts createOpts) (containertypes.ContainerCreateCreatedBody, <span class="hljs-type">error</span>) &#123;<br>		...<br>		container , err := daemon.create(opts)<br>		...<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>create 主要为容器创建提供最终的准备</p>
+<ol>
+<li>组织 镜像信息</li>
+<li>校验信息</li>
+<li>创建进程</li>
+<li>设置权限，可读层，以及命名空间，网络设置。</li>
+</ol>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(daemon *Daemon)</span></span> crate(opts crateOpts) (retc *container.Container, retErr <span class="hljs-type">error</span>)&#123;<br>		...<br>		<span class="hljs-keyword">if</span> container , err = daemon.newContainer(opts.params.Name , os, opts.params.Config,<br>		opts.params.HostConfig, imgID, opts.managed); err != <span class="hljs-literal">nil</span> &#123;<br>				<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>	<br>		&#125;<br><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>postContainerExecStart</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(s *containerRouter)</span></span> postContainersStart(ctx context.context , w http.ResponseWriter, <br>r *http.Request, vars <span class="hljs-keyword">map</span>[<span class="hljs-type">string</span>]<span class="hljs-type">string</span>) <span class="hljs-type">error</span> &#123;<br>		...<br>		<span class="hljs-keyword">if</span> err := s.backend.ContainerStart(vars[<span class="hljs-string">&quot;name&quot;</span>],hostConfig,checkpoint,checkpointDir); err != <span class="hljs-literal">nil</span>&#123;<br>			<span class="hljs-keyword">return</span> err <br>		&#125;<br>		...<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>ContainerStart</p>
+<ol>
+<li>根据容器name，判断容器状态，</li>
+<li>判断hostconfig信息</li>
+<li>调用containerStart 进行容器的启动</li>
+</ol>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(daemon *Daemon)</span></span> ContainerStart(name <span class="hljs-type">string</span> , hostConfig *containertypes.HostConfig,<br>checkpoint <span class="hljs-type">string</span>,  checkpointDir <span class="hljs-type">string</span>) <span class="hljs-type">error</span>&#123;<br>	...<br>	<span class="hljs-keyword">return</span> daemon.containerStart(container, checkpoint , checkpointDir ,<span class="hljs-literal">true</span>)<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>containerStart</p>
+<ol>
+<li>判断容器状态</li>
+<li>在容器启动前，为其准备挂载目录，网络配置，之后使用daemon.containerd.start调用Contianerd启动容器。</li>
+</ol>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-comment">// daemon/start.go (Docker 17.06.x)</span><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(daemon *Daemon)</span></span> containerStart(container *container.Container, checkpoint <span class="hljs-type">string</span>, checkpointDir <span class="hljs-type">string</span>, resetRestartManager <span class="hljs-type">bool</span>) (err <span class="hljs-type">error</span>) &#123;<br>    <span class="hljs-comment">// 1. 检查状态</span><br>		<span class="hljs-keyword">if</span> ressetRestartManager &amp;&amp; container.Running<br>  <br>    <span class="hljs-comment">// 2. 重置重启管理器</span><br>    <span class="hljs-keyword">if</span> resetRestartManager &amp;&amp; container.RestartManager != <span class="hljs-literal">nil</span> &#123;<br>        container.RestartManager.Cancel()<br>    &#125;<br>  <br>    <span class="hljs-comment">// 3. 准备链接到其他容器（老功能）</span><br>    <span class="hljs-keyword">if</span> err := daemon.registerLinks(container, container.HostConfig); err != <span class="hljs-literal">nil</span> &#123;<br>        <span class="hljs-keyword">return</span> err<br>    &#125;<br>  <br>    <span class="hljs-comment">// 4. 挂载容器文件系统</span><br>    <span class="hljs-keyword">if</span> err := daemon.Mount(container); err != <span class="hljs-literal">nil</span> &#123;<br>        <span class="hljs-keyword">return</span> err<br>    &#125;<br>    <span class="hljs-keyword">defer</span> <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span> &#123;<br>        <span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>            daemon.Unmount(container)<br>        &#125;<br>    &#125;()<br>  <br>    <span class="hljs-comment">// 5. 初始化网络（Docker 管理）</span><br>    <span class="hljs-keyword">if</span> err := daemon.initializeNetworking(container); err != <span class="hljs-literal">nil</span> &#123;<br>        <span class="hljs-keyword">return</span> err<br>    &#125;<br>    <span class="hljs-keyword">defer</span> <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span> &#123;<br>        <span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>            daemon.releaseNetwork(container)<br>        &#125;<br>    &#125;()<br>  <br>    <span class="hljs-comment">// 6. 准备 containerd 创建选项</span><br>    createOptions, err := daemon.getLibcontainerdCreateOptions(container)<br>    <span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>        <span class="hljs-keyword">return</span> err<br>    &#125;<br>  <br>    <span class="hljs-comment">// 7. 调用 containerd（通过 libcontainerd）</span><br>    <span class="hljs-keyword">if</span> err := daemon.containerd.Create(ctx, container.ID, *spec, createOptions); err != <span class="hljs-literal">nil</span> &#123;<br>        <span class="hljs-keyword">if</span> strings.Contains(err.Error(), <span class="hljs-string">&quot;already exists&quot;</span>) &#123;<br>            <span class="hljs-comment">// 容器已存在，直接启动</span><br>            <span class="hljs-keyword">if</span> err := daemon.containerd.Start(context.Background(), container.ID, checkpointDir, withStdin, createOptions.attachStdio); err != <span class="hljs-literal">nil</span> &#123;<br>                <span class="hljs-keyword">return</span> err<br>            &#125;<br>        &#125; <span class="hljs-keyword">else</span> &#123;<br>            <span class="hljs-keyword">return</span> err<br>        &#125;<br>    &#125;<br>  <br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h1 id="Containerd-Shim"><a href="#Containerd-Shim" class="headerlink" title="Containerd-Shim"></a>Containerd-Shim</h1><p>当dockerd 对containerd 发起创建的调用后，Containerd 会调用Shim的二进制程序，创建一个新的进程，该进程与Containerd脱离，Containerd不会等待Shim创建进程，之后再由Contaienr-Shim会设置新的进程组，重定向标准输入输出，更换工作目录。完成启动过程（调用runc创建实际的容器进程），并通过 Unix socket 连接回 Containerd，注册自己的 gRPC 服务端点，准备接收来自 Containerd 的任务指令。</p>
+<h1 id="runc-1"><a href="#runc-1" class="headerlink" title="runc"></a>runc</h1><p>runc 是一个容器运行时实现，Container 最终通过调用这个程序完成的容器进程创建和配置过程</p>
+<p>主要涉及到3个命令</p>
+<p>runc create</p>
+<p>&#x2F;proc&#x2F;self&#x2F;exe init</p>
+<p>runc start</p>
+<h2 id="create"><a href="#create" class="headerlink" title="create"></a>create</h2><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">var</span> createCommand = cli.Command&#123;<br>		Name : <span class="hljs-string">&quot;create&quot;</span>,<br>		Usage: <span class="hljs-string">&quot;create a contaienr&quot;</span>,<br>		ArgsUsage: &lt;container-id&gt;<br>		...<br>		...<br>		Action: <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(context *cli.Context)</span></span> <span class="hljs-type">error</span>&#123;<br>				spec, err := setupSpec(context)<br>				<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span>&#123;<br>						<span class="hljs-keyword">return</span> err<br>				&#125;<br>				status , err := startContaiiner(context, spec, <span class="hljs-literal">true</span>)<br>				<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span>&#123;<br>						<span class="hljs-keyword">return</span> err <br>				&#125;<br>				os.Exit(status)<br>				<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span><br>		&#125;<br>&#125;<br><span class="hljs-comment">// 在runc craete 执行完毕后，runc进程退出。</span><br><span class="hljs-comment">// 子进程会被container-shim接管。</span><br><span class="hljs-comment">// 通过设置child subreaper 属性完成了接管</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="startContainer"><a href="#startContainer" class="headerlink" title="startContainer"></a>startContainer</h3><ol>
+<li>生成一个libcontainer.Container 状态处于stopped&#x2F;destroyed</li>
+<li>然后把libcontainer.Container封装到type runner struct对象中</li>
+<li><a target="_blank" rel="noopener" href="http://通过runner.run/">通过runner.run</a> 来把容器中进程给跑起来</li>
+</ol>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">startContainer</span><span class="hljs-params">(context *cli.Context, spec *specs.Spec , createbool)</span></span> (<span class="hljs-type">int</span>,<span class="hljs-type">error</span>) &#123;<br>		id := context.Args().First()<br>		<span class="hljs-keyword">if</span> id == <span class="hljs-string">&quot;&quot;</span> &#123;<br>				<span class="hljs-keyword">return</span> <span class="hljs-number">-1</span> , errEmptyID<br>		&#125;<br>		container, err := crateContainer(contexxt, id , spec)<br>		<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>				<span class="hljs-keyword">return</span> <span class="hljs-number">-1</span> , err<br>		&#125;<br>		detach := context.Bool(<span class="hljs-string">&quot;detach&quot;</span>)<br>		listenFDs := []*os.File&#123;&#125;<br>		<span class="hljs-keyword">if</span> os.Getenv(<span class="hljs-string">&quot;LISTEN_FDS&quot;</span>) != <span class="hljs-string">&quot;&quot;</span>&#123;<br>				listenFDs = activation.Files(<span class="hljs-literal">false</span>)<br>		&#125;<br>		r := &amp;runner&#123;<br>				enableSubrepaper: !context.Bool(<span class="hljs-string">&quot;no-subreaper&quot;</span>),<br>				shouldDestroy: <span class="hljs-literal">true</span><br>				container:     container,<br>				listenFDs:     listenFDs,<br>				console:       context.String(<span class="hljs-string">&quot;console&quot;</span>),<br>				detach:        detach,<br>				pidFile:       context.String(<span class="hljs-string">&quot;pid-file&quot;</span>),<br>				create:        create,<br>		&#125;<br>		<span class="hljs-keyword">return</span> r.run(&amp;spec.Process)<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="createContainer"><a href="#createContainer" class="headerlink" title="createContainer"></a>createContainer</h3><ol>
+<li>生成一个libcontainer.Factory, 用于配置容器</li>
+<li>调用factory.Create()方法生成libcontainer.Container</li>
+</ol>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">createContainer</span><span class="hljs-params">(context *cli.Context , id <span class="hljs-type">string</span> , spec *specs.Spec)</span></span><br>(libcontainer.Container , <span class="hljs-type">error</span>) &#123;<br>		config, err := specconv.CreateLibcontainerConfig(&amp;specconv.CreateOpts&#123;<br>				CgroupName:             id,<br>				UseSystemdCgroup:       context.GlobalBool(<span class="hljs-string">&quot;systemd-cgroup&quot;</span>),<br>				NoPivotRoot:            context.Bool(<span class="hljs-string">&quot;no-pivot&quot;</span>),<br>				NoNewKeyring:           context.Bool(<span class="hljs-string">&quot;no-new-keyring&quot;</span>),<br>				Spec:                   spec,<br>		&#125;)<br>		<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>				<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>, err<br>		&#125;<br>		<span class="hljs-keyword">if</span> _, err := os.Stat(config.Rootfs); err != <span class="hljs-literal">nil</span>&#123;<br>				<span class="hljs-keyword">if</span> os.IsNotExist(err)&#123;<br>							<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>, fmt.Errorf(<span class="hljs-string">&quot;rootfs (%q) does not exist&quot;</span>, config.Rootfs)<br>				&#125;<br>				<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>, err				  <br>		&#125;<br>		...<br>		factory, err := loadFactory(context)<br>		<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>				<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span> , err<br>		&#125;<br>	<br>		<span class="hljs-keyword">return</span> factory.Create(id , config)<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="工厂结构"><a href="#工厂结构" class="headerlink" title="工厂结构"></a>工厂结构</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">type</span> LinuxFactory <span class="hljs-keyword">struct</span> &#123;<br>		Root <span class="hljs-type">string</span><br>		InitArgs []<span class="hljs-type">string</span><br>		<span class="hljs-comment">// 设置init 命令</span><br>		CriuPath <span class="hljs-type">string</span><br><br>		Validator validate.Validator<br>	<br>		NewCgroupsManager <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(config *configs.Cgroup, paths <span class="hljs-keyword">map</span>[<span class="hljs-type">string</span>]<span class="hljs-type">string</span>)</span></span><br>		cgroups.Manager<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">loadFactory</span><span class="hljs-params">(context *cli.Context)</span></span> (libcontainer.Factory, <span class="hljs-type">error</span>)&#123;<br>		root := context.GlobalString(<span class="hljs-string">&quot;root&quot;</span>)<br>		abs , err := filepath.Abs(root)<br>		<span class="hljs-keyword">if</span>  err != <span class="hljs-literal">nil</span> &#123;<br>				<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span> , err <br>		&#125;	<br>		cgroupManager := libcontainer.Cgroupfs<br>		<span class="hljs-keyword">if</span> context.GlobalBool(<span class="hljs-string">&quot;systemd-cgroup&quot;</span>)&#123;<br>				<span class="hljs-keyword">if</span> systemd.UseSystemd() &#123;<br>						cgroupManager = libcontainer.SystemdCgroups<br>				&#125;<span class="hljs-keyword">else</span> &#123;<br>						<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span> , fmt.Errorf(<span class="hljs-string">&quot;systemd cgroup flag passed, but systemd support for</span><br><span class="hljs-string">						managing cgroups is not available&quot;</span>)<br>				&#125;<br>		&#125;<br>		<span class="hljs-keyword">return</span> libcontainer.New(abs, cgroupManager , libcontainer.CriuPath(context.GlobalString(<span class="hljs-string">&quot;criu&quot;</span>)))<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(l *LinuxFactory)</span></span> Create(id <span class="hljs-type">string</span> , config *configs.config) (Container, <span class="hljs-type">error</span>)&#123;<br>		<span class="hljs-keyword">if</span> l.Root == <span class="hljs-string">&quot;&quot;</span> &#123;<br>				<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>, newGenericError(fmt.Errorf(<span class="hljs-string">&quot;invalid root&quot;</span>), ConfigInvalid)<br>		&#125;<br>		<span class="hljs-keyword">if</span> err := l.validateID(id); err != <span class="hljs-literal">nil</span> &#123;<br>				<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span> , err <br>		&#125;<br>		<span class="hljs-keyword">if</span> err := l.validator.Validate(config); err != <span class="hljs-literal">nil</span> &#123;<br>				<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>, newGenericError(err, ConfigInvalid)<br>		&#125;<br>		uid, err := config.HostUID()<br>		<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>				<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span> , newGenericError(err, SystemError)<br>		&#125;<br>		gid , err := config.HostGID()<br>		<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>				<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span> , newGenericError(err , SystemError)<br>		&#125;<br>		containerRoot := filepath.Join(l.Root, id)<br>		<span class="hljs-keyword">if</span> _, err : os.Stat(containerRoot) ; err == <span class="hljs-literal">nil</span> &#123;<br>				<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>, newGenericError(fmt.Errofr(<span class="hljs-string">&quot;container with id exists : %v&quot;</span>, id), IdInUse)	<br>		&#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> !os.IsNotExist(err)&#123;<br>				<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span> , newGenericError(err, SystemError)<br>		&#125; <br>		<span class="hljs-keyword">if</span> <span class="hljs-type">error</span> := os.MkdirAll(containerRoot, <span class="hljs-number">0711</span>); err != <span class="hljs-literal">nil</span>&#123;<br>				<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span> , newGenericError(err, SystemError)<br>		&#125;<br>		<span class="hljs-keyword">if</span> <span class="hljs-type">error</span> := os.Chown(containerRoot, uid, gid); err != <span class="hljs-literal">nil</span> &#123;<br>				<span class="hljs-keyword">return</span> nili , newGenericError(err , SystemError)<br>		&#125;<br>	<br>		fifoName := filepath.Join(containerRoot, execFifoFilename)<br>		oldMask := syscall.Umask(<span class="hljs-number">0000</span>)<br>		<span class="hljs-keyword">if</span> err := syscall.Mkfifo(fifoName , <span class="hljs-number">0622</span>); err != <span class="hljs-literal">nil</span> &#123;<br>				syscall.Umask(oldMask)<br>				<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span> , newGenericError(err ,SystemError)<br>		&#125;<br>		syscall.Umask(oldMask)<br>		<span class="hljs-keyword">if</span> err := os.Chown(fifoName , uid , gid); err != <span class="hljs-literal">nil</span> &#123;<br>				<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span> , newGenericError(err , SystemError)<br>		&#125;<br>	<br>		c := &amp;linuxContainer&#123;<br>				id:               id,<br>				root:             containerRoot,<br>				config:           config,<br>				initArgs:         l.InitArgs,<br>				criuPath:         l.CriuPath,<br>				cgroupManager:    l.NewCgroupsManager(config.Cgroups,<span class="hljs-literal">nil</span>),<br>		&#125;<br>	<br>		c.state = &amp;stoppedState&#123;c: c&#125;<br>		<span class="hljs-keyword">return</span> c,<span class="hljs-literal">nil</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="runner-struct"><a href="#runner-struct" class="headerlink" title="runner struct"></a>runner struct</h3><ol>
+<li>根据config.json 来设置将要在容器中执行的process</li>
+<li>runc create 调用container.Start(process) &#x3D;⇒ func(c *linuxContainer) Start(process * Process)</li>
+<li>runc start 调用container.Run(process) &#x3D;⇒ func(c *linuxContainer) Run(process *Process)</li>
+</ol>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">type</span> runner <span class="hljs-keyword">struct</span> &#123;<br>		enableSubreaper <span class="hljs-type">bool</span><br>		shouldDestroy   <span class="hljs-type">bool</span><br>		detach          <span class="hljs-type">bool</span><br>		listenFDs       []*os.File<br>		pidFile         <span class="hljs-type">string</span><br>		console         <span class="hljs-type">string</span><br>		container       libcontainer.Container<br>		create          <span class="hljs-type">bool</span><br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(r *runner)</span></span>  run(config *specs.Process) (<span class="hljs-type">int</span> , <span class="hljs-type">error</span> )&#123;<br>		process , err := newProcess(*config)<br>		<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>				r.destory()<br>				<span class="hljs-keyword">return</span> <span class="hljs-number">-1</span> , err	<br>		&#125;<br>		<span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(r.listenFDs) &gt; <span class="hljs-number">0</span> &#123;<br>				process.Env = <span class="hljs-built_in">append</span>(process.Env , fmt.Sprintf(<span class="hljs-string">&quot;LISTEN_FDS=%d&quot;</span>, <span class="hljs-built_in">len</span>(r.listenFDs)),<br>				<span class="hljs-string">&quot;LISTEN_PID=1&quot;</span>)<br>				process.ExtraFiles = <span class="hljs-built_in">append</span>(process.ExtraFiles, r.listenFDs ...)<br>		&#125;<br>		rootuid , err := r.container.Config().HostUID()<br>		<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span>&#123;<br>				r.destroy()<br>				<span class="hljs-keyword">return</span> <span class="hljs-number">-1</span> ,err	<br>		&#125;<br>		rootgid , err := r.container.Config().HostGID()<br>		<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span>&#123;<br>				r.destroy()<br>				<span class="hljs-keyword">return</span> <span class="hljs-number">-1</span> , err<br>		&#125;<br>		tty , err := setupIO(process, rootuid , rootgid , r.console , config.Terminal, r.detach<br>		 || r. create)<br>		<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span>&#123;<br>				r.destroy()<br>				<span class="hljs-keyword">return</span> <span class="hljs-number">-1</span> , err		<br>		&#125;<br>		handler := newSingalHandler(tty, r.enableSubreaper)<br>		startFn := r.container.Start<br>		<span class="hljs-keyword">if</span> !r.create &#123;<br>				startFn = r.container.Run<br>		&#125;<br>		<span class="hljs-keyword">defer</span> tty.Close()<br>		<span class="hljs-keyword">if</span> err := startFn(process); err != <span class="hljs-literal">nil</span> &#123;<br>				r.destroy()<br>				<span class="hljs-keyword">return</span> <span class="hljs-number">-1</span> , err 	<br>		&#125;<br>		<span class="hljs-keyword">if</span> err := tty.ClosePostStart(); err != <span class="hljs-literal">nil</span> &#123;<br>				r.terminate(process)<br>				r.destroy()<br>				<span class="hljs-keyword">return</span> <span class="hljs-number">-1</span> , err	<br>		&#125;<br>		<span class="hljs-keyword">if</span> r.pidFile != <span class="hljs-string">&quot;&quot;</span> &#123;<br>				<span class="hljs-keyword">if</span> err := createPidFile(r.pidFile , process); err != <span class="hljs-literal">nil</span>&#123;<br>						r.terminate(process)<br>						r.destroy()<br>						<span class="hljs-keyword">return</span> <span class="hljs-number">-1</span> , err<br>				&#125;<br>		&#125;<br>		<span class="hljs-keyword">if</span> r.detach || r.create &#123;<br>				<span class="hljs-keyword">return</span> <span class="hljs-number">0</span> ,<span class="hljs-literal">nil</span><br>		&#125;<br>		status , err := handler.forward(process)<br>		<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span>&#123;<br>				r.terminate(process)<br>		&#125;<br>		r.destroy()<br>		<span class="hljs-keyword">return</span> status , err<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="Start"><a href="#Start" class="headerlink" title="Start"></a>Start</h3><ol>
+<li>linuxContainer.newParentProcess 组装将要执行的命令</li>
+<li>parent.start()会根据parent的类型来选择对应的start()， 自此之后，将进入&#x2F;proc&#x2F;self&#x2F;exe init</li>
+<li>容器的状态是created</li>
+</ol>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(c *linuxContainer)</span></span> Start(process *Porcess) <span class="hljs-type">error</span> &#123;<br>		c.m.Lock()<br>		<span class="hljs-keyword">defer</span> c.m.Unlock()<br>		status , err := c.currentStatus()<br>		<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span>&#123;<br>				<span class="hljs-keyword">return</span> err<br>		&#125;<br>		<span class="hljs-keyword">return</span> c.start(process, status == Stopped)<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(c *linuxContainer)</span></span>  start(process *Process , isInit <span class="hljs-type">bool</span>) <span class="hljs-type">error</span> &#123;<br>		parent , err := c.newParentProcess(process , isInit)<br>		<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>				<span class="hljs-keyword">return</span> newSystemErrorWithCause(err, <span class="hljs-string">&quot;creating new parent process&quot;</span>)<br>		&#125;<br>		<span class="hljs-comment">/* </span><br><span class="hljs-comment">				异步启动parent进程，</span><br><span class="hljs-comment">				如果是Init进程，将创建一个新的进程再进行init 过程</span><br><span class="hljs-comment">				==&gt; / runc-1.0.0-rc2/main_unix.go</span><br><span class="hljs-comment">						==&gt;var initCommand = cli.Command</span><br><span class="hljs-comment">				parent.start() 会根据parent的类型来执行对应的start()</span><br><span class="hljs-comment">				==&gt; /libcontainer/process_linux.go</span><br><span class="hljs-comment">						==&gt;func (p *initProcess) start()</span><br><span class="hljs-comment">						==&gt;func (p *setnsProcess) start()</span><br><span class="hljs-comment">		*/</span><br>		<span class="hljs-keyword">if</span> err := parent.start() ; err != <span class="hljs-literal">nil</span> &#123;<br>				<span class="hljs-keyword">if</span> err := parent.terminate(); err != <span class="hljs-literal">nil</span> &#123;<br>						logrus.Warn(err)<br>				&#125;<br>				<span class="hljs-keyword">return</span> newSystemErrorWithCause(err, <span class="hljs-string">&quot;starting container process&quot;</span>)<br>		&#125;<br>		c.created = time.Now().UTC()<br>		c.state = &amp;runningState&#123;<br>				c: c,<br>		&#125;<br>		<span class="hljs-keyword">if</span> isInit&#123;<br>				c.state = &amp;createdState&#123;<br>						c: c,<br>				&#125;<br>				state, err := c.updateState(parent)<br>				<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>						<span class="hljs-keyword">return</span> err<br>				&#125;<br>				c.initProcessStartTime = state.InitProcessStartTime<br>				<span class="hljs-keyword">if</span> c.config.Hooks != <span class="hljs-literal">nil</span> &#123;<br>						s := configs.HookState &#123;<br>								Version:    c.config.Version,<br>								ID:         c.id,<br>								Pid:        parent.pid(),<br>								Root:       c.config.Rootfs,<br>								BundlePath: utils.SearchLabels(c.config.Labels, <span class="hljs-string">&quot;bundle&quot;</span>),<br>						&#125;<br>						<span class="hljs-keyword">for</span> i , hook := <span class="hljs-keyword">range</span> c.config.Hooks.Poststart &#123;<br>								<span class="hljs-keyword">if</span> err := hook.Run(s); err != <span class="hljs-literal">nil</span> &#123;<br>										<span class="hljs-keyword">if</span> err := parent.terminate(); err != <span class="hljs-literal">nil</span>&#123;<br>												logrus.Warn(err)<br>										&#125;<br>										<span class="hljs-keyword">return</span> newSystemErrorWitchCausef(err, <span class="hljs-string">&quot;running poststart hook %d&quot;</span>,i)<br>								&#125;					<br>						&#125;<br>				&#125;<br>		&#125;<br>		retun <span class="hljs-literal">nil</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>newParentProcess</p>
+<p>通过匿名管道 parentPipe， childPipe ， err :&#x3D;  newPipe() 来在runc create和 runc init间进行通信</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(c *linuxContainer)</span></span> newParentProcess(p *Process, doInit <span class="hljs-type">bool</span>) (parentProcess, <span class="hljs-type">error</span>)<br>&#123;<br>		parentPipe, childPipe, err := newPipe()<br>		<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>				<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>, newSystemErrorWitchCause(err, <span class="hljs-string">&quot;creating new init pipe&quot;</span>)<br>		&#125;<br>		rootDir, err := os.Open(c.root)<br>		<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>				<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>, err <br>		&#125;<br>		cmd , err := c.commandTemplate(p, childPipe, rootDir)<br>		<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>				<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span> , newSystemErrorWithCause(err, <span class="hljs-string">&quot;creating new command template&quot;</span>)<br>		&#125;<br>		<span class="hljs-keyword">if</span> !doInit&#123;<br>				<span class="hljs-keyword">return</span> c.newSetnsProcess(p, cmd, parentPipe, childPipe, rootDir)<br>		&#125;<br>		<span class="hljs-keyword">return</span> c.newInitProcess(p, cmd , parentPipe, childPipe , rootDir)<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(c *linuxContainer)</span></span> commandTemplate(p *Process , childPipe, rootDir *os.File)<br>(*exec.Cmd , <span class="hljs-type">error</span>)&#123;<br>		cmd := exec.Command(c.initArgs[<span class="hljs-number">0</span>] , c.initArgs[<span class="hljs-number">1</span>:] ...)<br>		cmd.Stdin = p.Stdin<br>		cmd.Stdout = p.Stdout<br>		cmd.Stderr = p.Stderr<br>		cmd.Dir = c.config.Rootfs<br>		<span class="hljs-keyword">if</span> cmd.SysProcAttr == <span class="hljs-literal">nil</span> &#123;<br>				cmd.SysProcAttr = &amp;syscall.SysProcAttr&#123;&#125;<br>		&#125;<br>		cmd.ExtraFiles = <span class="hljs-built_in">append</span>(p.ExtraFiles, childPipe , rootDir)<br>		cmd.Env = <span class="hljs-built_in">append</span>(cmd.Env , <br>				fmt.Springf(<span class="hljs-string">&quot;_LIBCONTAINER_INITPIPE=%d&quot;</span>, stdioFdCount+ <span class="hljs-built_in">len</span>(cmd.ExtraFiles)<span class="hljs-number">-2</span>),<br>				fmt.Sprintf(<span class="hljs-string">&quot;_LIBCONTAINER_STATEDIR=%d&quot;</span>, stdioFdCount+ <span class="hljs-built_in">len</span>(cmd.ExtraFiles)<span class="hljs-number">-1</span>))<br>		<span class="hljs-keyword">if</span> c.config.ParentDeathSignal &gt; <span class="hljs-number">0</span> &#123;<br>				cmd.SysProcAttr.Pdeathsig = syscall.Signal(c.config.ParentDeathSignal)<br>		&#125;<br>		<span class="hljs-keyword">return</span> cmd , <span class="hljs-literal">nil</span><br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(c *linuxContainer)</span></span> newInitProcess(p *Process, cmd *exec.cmd , parentPipe , childPipe, rootDir *os.File)<br>		(*initProcess , <span class="hljs-type">error</span>)&#123;<br>			cmd.Env = <span class="hljs-built_in">append</span>(cmd.Env , <span class="hljs-string">&quot;_LIBCONTAINER_INITTYPE=&quot;</span>+ <span class="hljs-type">string</span>(initStandard))<br>			nsMaps := <span class="hljs-built_in">make</span>(<span class="hljs-keyword">map</span>[configs.Namespace]<span class="hljs-type">string</span>)<br>			<span class="hljs-keyword">for</span> _, ns := <span class="hljs-keyword">range</span> c.config.Namespaces &#123;<br>					<span class="hljs-keyword">if</span> ns.Path != <span class="hljs-string">&quot;&quot;</span> &#123;<br>								nsMaps[ns.Type] = ns.Path<br>					&#125;		<br>			&#125;<br>			_, sharePidns := nsMaps[configs.NEWPID]<br>		<br>			data, err := c.boostrapData(c.config.Namespaces.CloneFlags(), nsMaps, <span class="hljs-string">&quot;&quot;</span>)<br>			<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>					<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>, err<br>			&#125;<br>			<span class="hljs-keyword">return</span> &amp;initProcess&#123;<br>					cmd:               cmd,<br>					childPipe:         childPipe,<br>					parentPipe:        parentPipe,<br>					manager:           c.cgroupManager,<br>					config:            c.newInitConfig(p),<br>					container:         c,<br>					process:           p,<br>					boostrapData:      data,<br>					sharePidns:        sharePidns,<br>					rootDir:           rootDir,<br>			&#125;, <span class="hljs-literal">nil</span><br>		&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="init"><a href="#init" class="headerlink" title="init"></a>init</h2><p>在runc create 中会clone 出一个子进程，在子进程中调用&#x2F;proc&#x2F;self&#x2F;exe init</p>
+<h3 id="initCommand"><a href="#initCommand" class="headerlink" title="initCommand"></a>initCommand</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">var</span> initCommand = cli.Command&#123;<br>		Name: <span class="hljs-string">&quot;init&quot;</span>,<br>		Usage: <span class="hljs-string">`initalize the namespaces and launch the process (do not call it outside of runc)`</span><br>		Action: <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(context *cli.Context)</span></span> <span class="hljs-type">error</span> &#123;<br>				factory , _ := libcontainer.New(<span class="hljs-string">&quot;&quot;</span>)<br>				<span class="hljs-comment">/*</span><br><span class="hljs-comment">						runc create 的时候会调用</span><br><span class="hljs-comment">						=&gt;func(l *LinuxFactory) StartInitialization()</span><br><span class="hljs-comment">				*/</span><br>				<span class="hljs-keyword">if</span> err := factory.StartInitialization() ; err != <span class="hljs-literal">nil</span> &#123;<br>						os.Exit(<span class="hljs-number">1</span>)<br>				&#125;<br>				<span class="hljs-built_in">panic</span>(<span class="hljs-string">&quot;libcontainer: container init failed to exec&quot;</span>)<br>		&#125;,<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="factory-StartInitialization"><a href="#factory-StartInitialization" class="headerlink" title="factory.StartInitialization"></a>factory.StartInitialization</h3><ul>
+<li>Init进程通过管道pipe来读取父进程传过来的信息</li>
+<li>调用func newContainerInit(), 生成一个type linuxStandardInit struct对象</li>
+<li>执行linuxStandardInit.Init()</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(l *LinuxFactory)</span></span> StartInitialization() (err <span class="hljs-type">error</span>)&#123;<br>		<span class="hljs-keyword">var</span> pipefd , rootfd <span class="hljs-type">int</span><br>		<span class="hljs-keyword">for</span> _, pair := <span class="hljs-keyword">range</span> []<span class="hljs-keyword">struct</span>&#123;<br>				k <span class="hljs-type">string</span><br>				v *<span class="hljs-type">int</span><br>		&#125;&#123;<br>				&#123;<span class="hljs-string">&quot;_LIBCONTAINER_INITPIPE&quot;</span>, &amp;pipefd&#125;,<br>				&#123;<span class="hljs-string">&quot;_LIBCONTAINER_STATEDIR&quot;</span>, &amp;rootfd&#125;,<br>		&#125;&#123;<br>				s := os.Getenv(pair.k)<br>				i , err := strconv.Atoi(s)<br>				<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>						<span class="hljs-keyword">return</span> fmt.Errorf(<span class="hljs-string">&quot;unable to convert %s=%s to int&quot;</span>, pair.k, s)<br>				&#125;<br>				* pair.v = i<br>		&#125;<br>		<span class="hljs-keyword">var</span> (<br>				pipe = os.NewFile(<span class="hljs-type">uintptr</span>(pipefd), <span class="hljs-string">&quot;pipe&quot;</span>)<br>				it = initType(os.Getenv(<span class="hljs-string">&quot;_LIBCONTAINER_INITTYPE&quot;</span>))<br>		)<br>		os.Clearenv()<br>		<span class="hljs-keyword">var</span> i initer<br>		<span class="hljs-keyword">defer</span> <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span> &#123;<br>				<span class="hljs-keyword">if</span> _, ok := i.(*linuxStandardInit); ok&#123;<br>						<span class="hljs-keyword">if</span> werr := utils.WriteJSON(pipe, syncT&#123;procError&#125;); werr != <span class="hljs-literal">nil</span>&#123;<br>								<span class="hljs-built_in">panic</span>(err)<br>						&#125;			<br>				&#125;<br>				pipe.Close()<br>		&#125;()<br>		<span class="hljs-keyword">defer</span> <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span> &#123;<br>				<span class="hljs-keyword">if</span> e := revoer(); e!=<span class="hljs-literal">nil</span> &#123;<br>						err = fmt.Errorf(<span class="hljs-string">&quot;panic from initialization: %v, %v&quot;</span>, e, <span class="hljs-type">string</span>(debug.Stack()))<br>				&#125;<br>		&#125;()<br>		i, err = newContainerInit(it , pipe, rootfd)<br>		<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>				<span class="hljs-keyword">return</span> err<br>		&#125;<br>		<span class="hljs-keyword">return</span> i.Init()<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="linuxStandardInit-Init"><a href="#linuxStandardInit-Init" class="headerlink" title="linuxStandardInit.Init"></a>linuxStandardInit.Init</h3><ul>
+<li>参数设置，状态检查</li>
+<li>exec.LookPath(l.config.Args[0])在当前系统的PATH中寻址cmd的绝对路径</li>
+<li>以“只写” 方式打开fifo管道，形成阻塞，等待另一端有进程以“读“的方式打开管道</li>
+<li>如果单独执行runc create命令 ，到这里就会发送阻塞，后面将是等待runc start以只读的方式打开FIFO管道，阻塞才会消除，本进程才会继续后面的流程</li>
+<li>阻塞清除后，Init进程会根据config配置初始化seccomp ，并调用syscall.Exe执行cmd。系统调用syscall.Exec() ，执行用户真正希望执行的命令，用来覆盖掉PID为1 的Init进程。至此，在容器内部PID为1的进程才是用户希望一致在前台执行的进程</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(l *linuxStandardInit)</span></span> Init() <span class="hljs-type">error</span> &#123;<br>		<span class="hljs-keyword">if</span> !l.config.Config.NoNewKeyring &#123;<br>				ringname , keepperms , newperms := l.getSessionRingParams()<br>				sessKeyId , err := keys.JoinSessionKeyring(ringname)<br>				<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>						<span class="hljs-keyword">return</span> err <br>				&#125;<br>		&#125;<br>		<span class="hljs-keyword">var</span> console *linuxConsole<br>		<span class="hljs-keyword">if</span> l.config.Console != <span class="hljs-string">&quot;&quot;</span> &#123;<br>				console = newConsoleFromPath(l.config.Console)<br>				<span class="hljs-keyword">if</span> err := console.dupStdio(); err != <span class="hljs-literal">nil</span> &#123;<br>						<span class="hljs-keyword">return</span> err<br>				&#125;<br>		&#125;<br>		<span class="hljs-keyword">if</span> console != <span class="hljs-literal">nil</span> &#123;<br>				<span class="hljs-keyword">if</span> err := system.Setctty(); err != <span class="hljs-literal">nil</span> &#123;<br>						<span class="hljs-keyword">return</span> err<br>				&#125;<br>		&#125;<br>		<span class="hljs-keyword">if</span> err := setupNetwork(l.config); err != <span class="hljs-literal">nil</span> &#123;<br>				<span class="hljs-keyword">return</span> err <br>		&#125;<br>		<span class="hljs-keyword">if</span> err := setupRoute(l.config.Config); err != <span class="hljs-literal">nil</span>&#123;<br>				<span class="hljs-keyword">return</span> err<br>		&#125;<br>		label.Init()<br>		<span class="hljs-keyword">if</span> l.config.Config.Namespaces.Containers(configs.NEWNS)&#123;<br>				<span class="hljs-keyword">if</span> err := setupRootfs(l.config.Config, console, l.pipe); err != <span class="hljs-literal">nil</span>&#123;<br>						<span class="hljs-keyword">return</span> err<br>				&#125;<br>		&#125;<br>		<span class="hljs-keyword">if</span> hostname := l.config.Config.Hostname; hostname != <span class="hljs-string">&quot;&quot;</span> &#123;<br>				<span class="hljs-keyword">if</span> err := syscall.Sethostname([]<span class="hljs-type">byte</span>(hostname)) ; err != <span class="hljs-literal">nil</span>&#123;<br>						<span class="hljs-keyword">return</span> err<br>				&#125;<br>		&#125;<br>		<span class="hljs-keyword">if</span> err := apparmor.ApplyProfile(l.config.AppArmorProfile); err != <span class="hljs-literal">nil</span>&#123;<br>				<span class="hljs-keyword">return</span> err<br>		&#125;<br>		<span class="hljs-keyword">if</span> err := label.SetProcessLabel(l.config.ProcessLabel); err != <span class="hljs-literal">nil</span> &#123;<br>				<span class="hljs-keyword">return</span> err<br>		&#125;<br>		<span class="hljs-keyword">for</span> key, value := rage l.config.Config.Sysctl &#123;<br>				<span class="hljs-keyword">if</span> err := writeSystemProperty(key , value); err != <span class="hljs-literal">nil</span> &#123;<br>						<span class="hljs-keyword">return</span> err<br>				&#125;<br>		&#125;<br>		<span class="hljs-keyword">for</span> _, path := <span class="hljs-keyword">range</span> l.config.Config.ReadonlyPaths &#123;<br>				<span class="hljs-keyword">if</span> err := remountReadonly(path); err != <span class="hljs-literal">nil</span> &#123;<br>						<span class="hljs-keyword">return</span> err<br>				&#125;<br>		&#125;<br>		<span class="hljs-keyword">for</span> _, path := <span class="hljs-keyword">range</span> l.config.Config.MaskPaths &#123;<br>				<span class="hljs-keyword">if</span> err :=maskPath(path); err != <span class="hljs-literal">nil</span>&#123;<br>						<span class="hljs-keyword">return</span> err<br>				&#125;<br>		&#125;<br>		pdeath, err := system.GetParentDeathSignal()<br>		<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>				<span class="hljs-keyword">return</span> err<br>		&#125;<br>		<span class="hljs-keyword">if</span> l.config.NoNewPrivileges&#123;<br>				<span class="hljs-keyword">if</span> err := System.Prctl(PR_SET_NO_NEW_PRIVS, <span class="hljs-number">1</span>,<span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">0</span>); err != <span class="hljs-literal">nil</span> &#123;<br>						<span class="hljs-keyword">return</span> err<br>				&#125;<br>		&#125;<br>		<span class="hljs-keyword">if</span> err := syncParentReady(l.pipe); err != <span class="hljs-literal">nil</span>&#123;<br>				<span class="hljs-keyword">return</span> err<br>		&#125;<br>	<br>		<span class="hljs-keyword">if</span> err := syncParentReady(l.pipe) ; err != <span class="hljs-literal">nil</span> &#123;<br>				<span class="hljs-keyword">return</span> err<br>		&#125;<br>		<span class="hljs-keyword">if</span> l.config.Config.Seccomp != <span class="hljs-literal">nil</span> &amp;&amp; !l.config.NoNewPrivileges&#123;<br>				<span class="hljs-keyword">if</span> err := seccomp.InitSeccomp(l.config.Config.Seccomp); err != <span class="hljs-literal">nil</span>&#123;<br>						<span class="hljs-keyword">return</span> err<br>				&#125;<br>		&#125;<br>		<span class="hljs-keyword">if</span> err := finalizeNamespace(l.config); err != <span class="hljs-literal">nil</span> &#123;<br>				<span class="hljs-keyword">return</span> err <br>		&#125;<br>	<br>		<span class="hljs-keyword">if</span> err := pdeath.Restore(); err != <span class="hljs-literal">nil</span> &#123;<br>				<span class="hljs-keyword">return</span> err<br>		&#125;<br>		<span class="hljs-keyword">if</span> syscall.Getppid() != l.parentPid&#123;<br>				<span class="hljs-keyword">return</span> syscall.kill(syscall.Getpid(), syscall.SIGKILL)<br>		&#125;	<br>		name, err := exec.LookPath(l.config.Args[<span class="hljs-number">0</span>])<br>		<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span>&#123;<br>				<span class="hljs-keyword">return</span> err<br>		&#125;<br>		l.pipe.<span class="hljs-built_in">close</span>()<br>	<br>		fd , err := syscall.Openat(l.stateDirFD, execFifoFilename, os.O_WRONLY|syscall.O_CLOEXEC,<span class="hljs-number">0</span>)<br>		<span class="hljs-keyword">if</span>  err != <span class="hljs-literal">nil</span> &#123;<br>				<span class="hljs-keyword">return</span> newSystemErrorWithCause(err, <span class="hljs-string">&quot;openat exec fif&quot;</span>)<br>		&#125;<br>		<span class="hljs-keyword">if</span> _, err := syscall.Write(fd, []<span class="hljs-type">byte</span>(<span class="hljs-string">&quot;0&quot;</span>)); err != <span class="hljs-literal">nil</span> &#123;<br>				<span class="hljs-keyword">return</span> newSystemErrorWithCause(err , <span class="hljs-string">&quot;write 0 exec fif0&quot;</span>)<br>		&#125;<br>		<span class="hljs-keyword">if</span> l.config.Config.Seccomp != <span class="hljs-literal">nil</span> &amp;&amp; l.config.NoNewPrivileges &#123;<br>				<span class="hljs-keyword">if</span> err := seccomp.InitSeccomp(l.config.Config.Seccomp); err != <span class="hljs-literal">nil</span> &#123;<br>						<span class="hljs-keyword">return</span> newSystemErrorWithCause(err ,<span class="hljs-string">&quot;init seccomp&quot;</span>)<br>				&#125;<br>		&#125;<br>	<br>		<span class="hljs-keyword">if</span> err := syscall.Exec(name, l.config.Args[<span class="hljs-number">0</span>:], os.Environ()); err != <span class="hljs-literal">nil</span>&#123;<br>				<span class="hljs-keyword">return</span> newSystemErrorWithCause(err , <span class="hljs-string">&quot;exec user process&quot;</span>)<br>		&#125;<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span> <br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="start"><a href="#start" class="headerlink" title="start"></a>start</h2><p>从context中 获取id, 再获取指定的容器</p>
+<p>启动处于Created 中的容器</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">var</span> startCommand = cli.Command&#123;<br>		Name: <span class="hljs-string">&quot;start&quot;</span>,<br>		Usage: <span class="hljs-string">&quot;executes the user defined process in a created container&quot;</span>,<br>		ArgsUsage: <span class="hljs-string">`&lt;container-id&gt;`</span>,<br>		Description:  <span class="hljs-string">`The start command executes the user defined process in a created container`</span>,<br>		Action: <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(context *cli.Context)</span></span> <span class="hljs-type">error</span> &#123;<br>				container, err := getContainer(context)<br>				<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span>&#123;<br>						<span class="hljs-keyword">return</span> err<br>				&#125;<br>				status, err := container.Status()<br>				<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>						<span class="hljs-keyword">return</span> err<br>				&#125;<br>				<span class="hljs-keyword">switch</span> status &#123;<br>				<span class="hljs-keyword">case</span> libcontainer.Creadted:<br>						<span class="hljs-keyword">return</span> container.Exec()<br>				<span class="hljs-keyword">case</span> libcontainer.Stopped:<br>						<span class="hljs-keyword">return</span> fmt.Errorf(<span class="hljs-string">&quot;cannot start a container that has run and stopped&quot;</span>)<br>				<span class="hljs-keyword">case</span> libcontainer.Running:<br>						<span class="hljs-keyword">return</span> fmt.Errorf(<span class="hljs-string">&quot;cannot start an already running container&quot;</span>)<br>				<span class="hljs-keyword">default</span>:<br>						<span class="hljs-keyword">return</span> fmt.Errorf(<span class="hljs-string">&quot;cannot start a container in the %s state&quot;</span>, status)<br>				&#125;<br>		&#125;,<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>获取指定container</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">getContainer</span><span class="hljs-params">(context *cli.Context)</span></span> (libcontainer.Container, <span class="hljs-type">error</span>)&#123;<br>		id := context.Args().First()<br>		<span class="hljs-keyword">if</span> id == <span class="hljs-string">&quot;&quot;</span>&#123;<br>				<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>, errEmptyID<br>		&#125;<br>		factory , err := loadFactory(context)<br>		<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span>&#123;<br>				<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span> , err<br>		&#125;<br>		<span class="hljs-keyword">return</span> factory.Load(id)<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>container.Exec()</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(c *linuxContainer)</span></span> Exec() <span class="hljs-type">error</span>&#123;<br>		c.m.Lock()<br>		<span class="hljs-keyword">defer</span> c.m.Unlock()<br>		<span class="hljs-keyword">return</span> c.exec()<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(c *linuxContainer)</span></span>  exec() <span class="hljs-type">error</span>&#123;<br>		path := filepath.Join(c.root, execFifoFilename)<br>		f, err := os.OpenFile(path, os.O_RDONLY,<span class="hljs-number">0</span>)<br>		<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>				<span class="hljs-keyword">return</span> newSystemErrorWithCause(err, <span class="hljs-string">&quot;open exec fifo for reading&quot;</span>)<br>		&#125;<br>		<span class="hljs-keyword">defer</span> f.<span class="hljs-built_in">close</span>()<br>		data, err := ioutil.ReadAll(f)<br>		<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span>&#123;<br>				<span class="hljs-keyword">return</span> err<br>		&#125;<br>		<span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(data) &gt; <span class="hljs-number">0</span>&#123;<br>				os.Remove(path)<br>				<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span><br>		&#125;<br>		<span class="hljs-keyword">return</span> fmt.Errorf(<span class="hljs-string">&quot;cannot start an already running container&quot;</span>)<br>&#125;<br></code></pre></td></tr></table></figure>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%99%9A%E6%8B%9F%E5%8C%96/" class="category-chain-item">虚拟化</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E8%99%9A%E6%8B%9F%E5%8C%96/" class="print-no-link">#虚拟化</a>
+      
+        <a href="/tags/%E5%AE%B9%E5%99%A8/" class="print-no-link">#容器</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Docker启动过程</div>
+      <div>http://gadoid.io/2025/08/21/Docker启动过程/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Codfish</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年8月21日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/08/15/%E5%85%B1%E8%AF%86%E7%AE%97%E6%B3%95Raft/" title="分布式系统 共识算法Raft">
+                        <span class="hidden-mobile">分布式系统 共识算法Raft</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"lQzCvqmOtewLtpMfvfxKLomU-MdYXbMMI","appKey":"daMNlw5XcjN8TelT6GCHh8RF","path":"window.location.pathname","placeholder":"让灵感在这里发生","avatar":"monsterid","meta":["nick","mail"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":true,"recordIP":true,"serverURLs":"https://lQzCvqmO.api.lncldglobal.com","emojiCDN":null,"emojiMaps":null,"enableQQ":false,"enable":true,"visitor":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      &copy; 2025 - 2025 <a target="_blank" rel="noopener" href="https://github.com/username">CODFISH</a>
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+<!-- hexo injector body_end start --><script src="/js/chatbot-loader.js" defer></script><!-- hexo injector body_end end --></body>
+</html>
