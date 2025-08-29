@@ -1,0 +1,1002 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/bg/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Codfish">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="输入与输出在计算机系统中，由输入设备，网络输入设备，存储设备向内存中加载数据是计算机的输入过程， 而由内存向输出设备，网络设备，存储设备中写入数据是计算机的输出过程。 存储在Linux系统中，读写过程是通过文件描述符（fd）来实现的。在内核中将标准输入&#x2F;socket&#x2F;文件都统一为文件结构 123456struct file &#123;    struct path f_pat">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从IO到IO多路复用">
+<meta property="og:url" content="http://gadoid.io/2025/08/30/%E4%BB%8EIO%E5%88%B0IO%E5%A4%9A%E8%B7%AF%E5%A4%8D%E7%94%A8/index.html">
+<meta property="og:site_name" content="西北有高楼">
+<meta property="og:description" content="输入与输出在计算机系统中，由输入设备，网络输入设备，存储设备向内存中加载数据是计算机的输入过程， 而由内存向输出设备，网络设备，存储设备中写入数据是计算机的输出过程。 存储在Linux系统中，读写过程是通过文件描述符（fd）来实现的。在内核中将标准输入&#x2F;socket&#x2F;文件都统一为文件结构 123456struct file &#123;    struct path f_pat">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://i.111666.best/image/UbYNG4wqlLqTy1I4w31upx.png">
+<meta property="og:image" content="https://i.111666.best/image/zo9z0BqvuO2KzB0quHnQZ6.png">
+<meta property="og:image" content="https://i.111666.best/image/YCdTXvyVnGbAJmzAF8GY1Q.png">
+<meta property="article:published_time" content="2025-08-29T16:25:19.000Z">
+<meta property="article:modified_time" content="2025-08-29T16:32:05.160Z">
+<meta property="article:author" content="Codfish">
+<meta property="article:tag" content="计算机网络">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://i.111666.best/image/UbYNG4wqlLqTy1I4w31upx.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>从IO到IO多路复用 - 西北有高楼</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"gadoid.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>西北有高楼</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/downloads/" target="_self">
+                <i class="iconfont icon-books-fill"></i>
+                <span>资源下载</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/bg/img/ice.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="从IO到IO多路复用"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-08-30 00:25" pubdate>
+          2025年8月30日 凌晨
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          7.2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          60 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">从IO到IO多路复用</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="输入与输出"><a href="#输入与输出" class="headerlink" title="输入与输出"></a>输入与输出</h1><p>在计算机系统中，由输入设备，网络输入设备，存储设备向内存中加载数据是计算机的输入过程，</p>
+<p>而由内存向输出设备，网络设备，存储设备中写入数据是计算机的输出过程。</p>
+<h1 id="存储"><a href="#存储" class="headerlink" title="存储"></a>存储</h1><p>在Linux系统中，读写过程是通过文件描述符（fd）来实现的。在内核中将标准输入&#x2F;socket&#x2F;文件都统一为文件结构</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">file</span> &#123;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">path</span> <span class="hljs-title">f_path</span>;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">inode</span> *<span class="hljs-title">f_inode</span>;</span><br>    <span class="hljs-type">const</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">file_operations</span> *<span class="hljs-title">f_op</span>;</span>  <span class="hljs-comment">// 关键差异点</span><br>    <span class="hljs-comment">// ... 其他共同字段</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>再根据具体的结构不同，绑定不同的底层对象，以及操作方法。而向用户态返回的整型数值，是由内核态进程管理的 ftable 中，该文件对象对应的索引。每次申请文件描述符时，内核都会提供最小的可用描述符索引。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">// 从文件描述符到file结构的完整路径</span><br>current                          <span class="hljs-comment">// 当前进程的task_struct</span><br>  →files                        <span class="hljs-comment">// struct files_struct *files</span><br>    →fdt                        <span class="hljs-comment">// struct fdtable *fdt</span><br>      →fd[文件描述符数值]        <span class="hljs-comment">// struct file *fd[]</span><br>        →具体的file结构<br></code></pre></td></tr></table></figure>
+
+<h1 id="阻塞与非阻塞"><a href="#阻塞与非阻塞" class="headerlink" title="阻塞与非阻塞"></a>阻塞与非阻塞</h1><p>当进行输入&#x2F;输出过程时。可以分为两种策略：</p>
+<p>因为设备间的读写速率存在差异，导致读取过程，并不能同步且高效的执行。</p>
+<ol>
+<li>输入&#x2F;输出 作为必须的执行过程。需要执行完毕后，再执行后续操作。这时如果数据的写入速度较慢， 会导致CPU消耗较多的时间等待数据写入，造成“阻塞”</li>
+<li>输入&#x2F;输出 作为非必须的执行过程。当所需读取的数据不必等待数据的读写，而可以直接进行后续工作时，这时可以通过轮询的方式检测对应的数据是否加载完毕，而不一定要持续等待数据的加载过程，实现“非阻塞”</li>
+</ol>
+<h1 id="阻塞I-O的实现"><a href="#阻塞I-O的实现" class="headerlink" title="阻塞I&#x2F;O的实现"></a>阻塞I&#x2F;O的实现</h1><p>阻塞I&#x2F;O的实现 是 最基础的I&#x2F;O实现。当用户尝试 使用read() 读取内核缓冲区中的数据时，如果数据没有准备好，则将线程阻塞，等待数据拷贝完成后返回，再进行数据解析</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">if</span>((sockfd = socket(PF_INET, SOCK_STREAM,<span class="hljs-number">0</span>)) == <span class="hljs-number">-1</span>)&#123;<br>    perror(<span class="hljs-string">&quot;创建 server socket 失败&quot;</span>);<br>    <span class="hljs-built_in">exit</span>(EXIT_FAILURE);<br>&#125;<br><span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;socket success! , sockfd = %d\\n&quot;</span>, sockfd);<br><br>server_sockaddr.sin_family = AF_INET;<br>server_sockaddr.sin_port = htons(SERVPORT);<br>server_sockaddr.sin_addr.s_addr = INADDR_ANY;<br><br><span class="hljs-keyword">if</span>((bind(sockfd, (<span class="hljs-keyword">struct</span> sockaddr *)&amp;server_sockaddr,<span class="hljs-keyword">sizeof</span>(<span class="hljs-keyword">struct</span> sockaddr))) == <span class="hljs-number">-1</span>)&#123;<br>    perror(<span class="hljs-string">&quot;bind&quot;</span>);<br>    <span class="hljs-built_in">exit</span>(EXIT_FAILURE);<br>&#125;<br><br><span class="hljs-keyword">if</span>(listen(sockfd, SOMAXCONN) == <span class="hljs-number">-1</span>)&#123;<br>    perror(<span class="hljs-string">&quot;listen&quot;</span>);<br>    <span class="hljs-built_in">exit</span>(EXIT_FAILURE);<br>&#125;<br><br><span class="hljs-type">socklen_t</span> len = <span class="hljs-keyword">sizeof</span>(client_sockaddr);<br>client_fd = accept(sockfd, (<span class="hljs-keyword">struct</span> sockaddr *)&amp;client_sockaddr, &amp;len);<br><span class="hljs-keyword">if</span>(client_fd == <span class="hljs-number">-1</span>)&#123;<br>    perror(<span class="hljs-string">&quot;accept&quot;</span>);<br>    <span class="hljs-built_in">exit</span>(EXIT_FAILURE);<br>&#125;<br><span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;accept success!\\n&quot;</span>);<br><br>recvbytes = read(client_fd , buf , MAXDATASIZE<span class="hljs-number">-1</span>);<br><span class="hljs-keyword">if</span>(recvbytes == <span class="hljs-number">-1</span>)&#123;<br>    perror(<span class="hljs-string">&quot;recv&quot;</span>);<br>    <span class="hljs-built_in">exit</span>(EXIT_FAILURE);<br>&#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (recvbytes == <span class="hljs-number">0</span>)&#123;<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;client closed connection\\n&quot;</span>);<br>&#125; <span class="hljs-keyword">else</span> &#123;<br>    buf[recvbytes] = <span class="hljs-string">&#x27;\\0&#x27;</span>;<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;received a connection : %s\\n&quot;</span> , buf);<br>&#125;<br><br>close(client_fd);<br>close(sockfd);<br></code></pre></td></tr></table></figure>
+
+<h1 id="非阻塞I-O的实现"><a href="#非阻塞I-O的实现" class="headerlink" title="非阻塞I&#x2F;O的实现"></a>非阻塞I&#x2F;O的实现</h1><p>通过设置fcntl(client_fd, F_SETFL, O_NONBLOCK); 将socket设置为非阻塞IO。当尝试读取时，获得的响应是 数据的准备状态。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">if</span>((sockfd = socket(PF_INET, SOCK_STREAM,<span class="hljs-number">0</span>)) == <span class="hljs-number">-1</span>)&#123;<br>		perror(<span class="hljs-string">&quot;创建 server socket 失败&quot;</span>);<br>		<span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>&#125;<br><br><span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;socket success! , sockfd = %d\\n&quot;</span>, sockfd);<br>server_sockaddr.sin_family = AF_INET;<br>server_sockaddr.sin_port = htons(SERVPORT);<br>server_sockaddr.sin_addr.s_addr = INADDR_ANY;<br><br><span class="hljs-keyword">if</span>((bind(sockfd, (<span class="hljs-keyword">struct</span> sockaddr *)&amp;server_sockaddr,<span class="hljs-keyword">sizeof</span>(<span class="hljs-keyword">struct</span> sockaddr))) == <span class="hljs-number">-1</span>)&#123;<br>	   perror(<span class="hljs-string">&quot;bind&quot;</span>);<br>	   <span class="hljs-built_in">exit</span>(<span class="hljs-number">-1</span>);<br>&#125;<br><span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;accept success!\\n&quot;</span>);<br>fcntl(client_fd, F_SETFL, O_NONBLOCK);<br> <br>recvbytes = read(client_fd , buf , MAXDATASIZE);<br><br><span class="hljs-keyword">if</span>(recvbytes == <span class="hljs-number">-1</span>)&#123;<br>		<span class="hljs-keyword">if</span> (errno == EAGAIN)&#123;<br>				<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;no data read !!! \\n&quot;</span>);<br>		&#125;<br>		perror(<span class="hljs-string">&quot;recv&quot;</span>);<br>		<span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>&#125;<br><br><span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;received a connection : %s\\n&quot;</span> , buf);<br>close(sockfd);<br></code></pre></td></tr></table></figure>
+
+<h2 id="轮询"><a href="#轮询" class="headerlink" title="轮询"></a>轮询</h2><p>轮询就是在用户态持续发起系统调用，检查数据的准备状态，当最终准备就绪后，完成数据的读取</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">for</span> (;;) &#123; <span class="hljs-comment">// 轮询等待数据加载完毕</span><br>		recvbytes = read(client_fd, buf, MAXDATASIZE);<br>	<br>		<span class="hljs-keyword">if</span>(recvbytes == <span class="hljs-number">-1</span>)&#123;<br>				<span class="hljs-keyword">if</span>(errno == EAGAIN) <span class="hljs-keyword">continue</span>; <br>				perror(<span class="hljs-string">&quot;recv&quot;</span>);<br>				<span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>		&#125;<br>		<span class="hljs-keyword">if</span>(recvbytes == <span class="hljs-number">0</span>)&#123;<br>				<span class="hljs-keyword">break</span>;<br>		&#125;<br>		<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;received a connection: %s\\n&quot;</span>,buf);	<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="通知"><a href="#通知" class="headerlink" title="通知"></a>通知</h2><p>通知实现本质上就是将处于用户态的轮询过程委托给内核态中的结构，在内核态持续检查数据资源的读写状态，当存在状态就绪的资源描述符后，将结果返回给用户态程序，再由用户态程序遍历资源描述符，完成I&#x2F;O过程。</p>
+<h3 id="多路复用"><a href="#多路复用" class="headerlink" title="多路复用"></a>多路复用</h3><p>在通知模式下，因为同一个进程一次可以将多个I&#x2F;O事件交付给底层结构，而不需要考虑用户态轮询检查某个I&#x2F;O ，如果某个I&#x2F;O就绪，就会阻塞其他I&#x2F;O的 读取或连接过程的问题。通过使用底层结构检测就绪状态并通知用户态处理，这样当某一路IO 就绪，可以直接完成对该路IO的处理，其他时间则可以处理其他工作。而这种实现机制被称为“多路复用”</p>
+<h3 id="多路复用的实现"><a href="#多路复用的实现" class="headerlink" title="多路复用的实现"></a>多路复用的实现</h3><p>多路复用存在多种实现，其核心原理是通过特定的数据结构，将文件描述符的就绪状态交由内核态中的结构管理，当某个描述符就绪时，返回给用户态进程进行处理。主要实现有 select,poll和 epoll</p>
+<h3 id="select"><a href="#select" class="headerlink" title="select"></a><strong>select</strong></h3><p>select 是一种较早实现的多路复用机制。它定义了以下参数</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> <span class="hljs-title function_">select</span><span class="hljs-params">(<span class="hljs-type">int</span> nfds , fd_set *readfds, fd_set * writefds, fd_set *exceptfds, <span class="hljs-keyword">struct</span> timeval *timeout)</span>;<br></code></pre></td></tr></table></figure>
+
+<p><strong>readfds</strong> :  受关注的可读事件文件描述符</p>
+<p><strong>writefds</strong> : 受关注的可写事件文件描述符</p>
+<p><strong>exceptfds</strong> : 受关注的产生异常的事件文件描述符</p>
+<p><strong>fd_set</strong></p>
+<p>fd_set 是一种用于描述文件描述符的比特数组。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-keyword">define</span> __FD_SETSIZE  1024</span><br><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> &#123;</span><br>		<span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> fds_bits[__FD_SETSIZE/ (<span class="hljs-number">8</span> * <span class="hljs-keyword">sizeof</span>(<span class="hljs-type">long</span>))];<br>&#125;  __kernel_fd_set ; <span class="hljs-comment">// 长度为1024的比特数组,数组索引表示文件描述符</span><br></code></pre></td></tr></table></figure>
+
+<p>void FD_CLR(int fd, fd_set *set) ： 设置元素值为0</p>
+<p>int FD_ISSET(int fd, fd_set *set) ：检查对应位置的设置</p>
+<p>void FD_SET(int fd,, fd_set *set) ： 设置元素值为1</p>
+<p>void FD_ZERO(fd_set *set) : 设置所有元素为0</p>
+<p><strong>timeval</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">timeval</span> &#123;</span><br>		<span class="hljs-type">long</span> tv_sec ;<br>		<span class="hljs-type">long</span> tv_usec ;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<ol>
+<li>设置成空 ： 表示如果没有I&#x2F;O事件发生，则select 一直等下去</li>
+<li>设置非零值 ： 等待一段时间后，从select阻塞调用中返回</li>
+<li>设置为0 ： 表示根本不等待</li>
+</ol>
+<p>示例</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>&#123;<br>		fd_set rfds ; <span class="hljs-comment">// 创建比特数组</span><br>		<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">timeval</span> <span class="hljs-title">tv</span> ;</span><br>		<span class="hljs-type">int</span> retval ;<br>	<br>		FD_ZERO(&amp;rfds);  <span class="hljs-comment">// 将比特数组初始化</span><br>		FD_SET(<span class="hljs-number">0</span>,&amp;rfds);  <span class="hljs-comment">// 设置标准输入 </span><br>	<br>		tv.tv_sec = <span class="hljs-number">5</span>;<br>		tv.tv_usec = <span class="hljs-number">0</span>;<br>	<br>		retval = select(<span class="hljs-number">1</span>,&amp;rfds , <span class="hljs-literal">NULL</span>,<span class="hljs-literal">NULL</span>, &amp;tv); <span class="hljs-comment">//调用select,传入 最大的fd大小,描述符数组</span><br>		<span class="hljs-comment">// 和 计时器</span><br>		<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;come from select().\\n&quot;</span>);<br>		<span class="hljs-comment">// 等到通知后获取结构</span><br>		<span class="hljs-keyword">if</span>(retval == <span class="hljs-number">-1</span>)<br>				perror(<span class="hljs-string">&quot;select()&quot;</span>);<br>		<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (FD_ISSET(<span class="hljs-number">0</span>,&amp;rfds <span class="hljs-comment">// 查询0位置内容是否准备就绪))&#123;</span><br>				<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Data is availiable now.\\n&quot;</span>);<br>		&#125; <span class="hljs-keyword">else</span><br>				<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;No data with in five seconds.\\n&quot;</span>);<br>		<span class="hljs-built_in">exit</span>(EXIT_SUCCESS);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="select-应用场景实现"><a href="#select-应用场景实现" class="headerlink" title="select 应用场景实现"></a>select 应用场景实现</h3><p><strong>单客户端</strong></p>
+<p>基于socket的io过程，只需要创建socket ，将对应的文件描述符设置到比特数中，持续轮询检查数组中的置位情况，当数据就绪时，对数据进行读取</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">int</span> argc, <span class="hljs-type">char</span> *argv[])</span>&#123;<br>		<span class="hljs-type">int</span> sockfd, sendbytes;<br>		<span class="hljs-type">char</span> buf[MAXDATASIZE];<br>		<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">hostent</span>* <span class="hljs-title">host</span>;</span><br>		<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">sockaddr_in</span> <span class="hljs-title">serv_addr</span>;</span><br>		<span class="hljs-type">char</span> send_line[MAXDATASIZE], recv_line[MAXDATASIZE];<br>	<br>		fd_set rfds ;<br>		fd_set readmask ;<br>		<span class="hljs-type">int</span> retval ;<br>		<span class="hljs-keyword">if</span>(argc &lt; <span class="hljs-number">2</span>)&#123;<br>				<span class="hljs-built_in">fprintf</span>(<span class="hljs-built_in">stderr</span> , <span class="hljs-string">&quot;Please enter the server‘s hostname&quot;</span>);<br>				<span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>		&#125;<br>	<br>		<span class="hljs-keyword">if</span>((host = gethostbyname(argv[<span class="hljs-number">1</span>])) == <span class="hljs-literal">NULL</span>) &#123;<br>				perror(<span class="hljs-string">&quot;gethostbyname&quot;</span>);<br>				<span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>		&#125;<br>	<br>		<span class="hljs-keyword">if</span>((sockfd = socket(PF_INET, SOCK_STREAM,<span class="hljs-number">0</span>)) == <span class="hljs-number">-1</span> )&#123;<br>				perror(<span class="hljs-string">&quot;创建 client socket失败&quot;</span>);<br>				<span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>		&#125;<br>		serv_addr.sin_family = AF_INET;<br>		serv_addr.sin_port = htons(SERVPORT);<br>		serv_addr.sin_addr = *((<span class="hljs-keyword">struct</span> in_addr *)host-&gt;h_addr);<br>	<br>		<span class="hljs-keyword">if</span>((connect(sockfd,(<span class="hljs-keyword">struct</span> sockaddr *)&amp;serv_addr, <span class="hljs-keyword">sizeof</span>(<span class="hljs-keyword">struct</span> sockaddr))) == <span class="hljs-number">-1</span>)&#123;<br>				perror(<span class="hljs-string">&quot;connect error&quot;</span>);<br>				<span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);	<br>		&#125;<br>		<span class="hljs-comment">// 将可读文件描述符集合中所有比特位设置为0</span><br>		FD_ZERO(&amp;rfds);<br>		<span class="hljs-comment">// 设置需要检测文件描述符为0 是否有数据可读</span><br>		FD_SET(<span class="hljs-number">0</span>, &amp;rfds);<br>		<span class="hljs-comment">// 设置需要检测文件描述符为sockfd是否有数据可读 </span><br>		FD_SET(sockfd, &amp;rfds);<br>		<span class="hljs-keyword">for</span>(;;)&#123;<br>				<span class="hljs-comment">// select 调用每次完成测试之后，内核都会修改描述符集合</span><br>				<span class="hljs-comment">// 所以需要重新设置读文件描述符集合</span><br>				readmask = rfds ;<br>				<span class="hljs-comment">// 检测是否有关心的I/O事件发生，如果没有，则一直阻塞</span><br>				retval = select(sockfd + <span class="hljs-number">1</span> , &amp;readmask, <span class="hljs-literal">NULL</span>,<span class="hljs-literal">NULL</span>,<span class="hljs-literal">NULL</span>);<br>				<span class="hljs-keyword">if</span>(retval == <span class="hljs-number">-1</span>)<br>						perror(<span class="hljs-string">&quot;select()&quot;</span>);<br>				<span class="hljs-keyword">if</span>(FD_ISSET(STDIN_FILENO, &amp;readmask))&#123;<br>						<span class="hljs-keyword">if</span>(fgets(send_line, MAXDATASIZE ,<span class="hljs-built_in">stdin</span>) != <span class="hljs-literal">NULL</span>)&#123;<br>								<span class="hljs-keyword">if</span>(!<span class="hljs-built_in">strcmp</span>(send_line, <span class="hljs-string">&quot;quit\\n&quot;</span>))&#123;<br>										<span class="hljs-keyword">break</span>;<br>								&#125;<br>								<span class="hljs-type">int</span> i = <span class="hljs-built_in">strlen</span>(send_line);<br>								<span class="hljs-keyword">if</span> (send_line[i - <span class="hljs-number">1</span>] == <span class="hljs-string">&#x27;\\n&#x27;</span>)&#123;<br>										send_line[i - <span class="hljs-number">1</span>] = <span class="hljs-number">0</span>;<br>								&#125;<br>								<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;sending &#x27;%s&#x27;\\n&quot;</span>, send_line);<br>								<span class="hljs-type">size_t</span> rt = write(sockfd, send_line, <span class="hljs-built_in">strlen</span>(send_line));<br>								<span class="hljs-keyword">if</span>(rt &lt; <span class="hljs-number">0</span> )&#123;<br>										perror(<span class="hljs-string">&quot;write failed&quot;</span>);<br>								&#125;<br>								<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;sended bytes: %zu \\n&quot;</span>, rt);<br>						&#125;<br>				&#125;<br>				<span class="hljs-keyword">if</span>(FD_ISSET(sockfd,&amp;readmask))&#123;<br>						<span class="hljs-type">int</span> n = read(sockfd, recv_line, MAXDATASIZE);<br>						<span class="hljs-keyword">if</span>(n &lt; <span class="hljs-number">0</span>)&#123;<br>								perror(<span class="hljs-string">&quot;read failed&quot;</span>);<br>						&#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (n == <span class="hljs-number">0</span>)&#123;<br>								perror(<span class="hljs-string">&quot;server terminated \\n&quot;</span>);<br>						&#125;<br>						recv_line[n] = <span class="hljs-number">0</span>;<br>						<span class="hljs-built_in">fputs</span>(recv_line, <span class="hljs-built_in">stdout</span>);<br>						<span class="hljs-built_in">fputs</span>(<span class="hljs-string">&quot;\\n&quot;</span>, <span class="hljs-built_in">stdout</span>);<br>				&#125;<br>		&#125;<br>		close(sockfd); <br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>多客户端实现</strong></p>
+<p>对于多客户端，需要将监听socket 放入文件描述符数组中，当有新的连接请求发生时，监听socket，创建新的连接socket，并将其加入到数组中，设置读事件。再之后轮询文件描述符，如果某个描述符就绪，那么就进行读过程。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">()</span> &#123;<br>		<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">sockaddr_in</span> <span class="hljs-title">cs</span>;</span><br>		<span class="hljs-type">int</span> c_size , recvbytes , listen_socket_fd , client_fd , i ;<br>		<span class="hljs-type">char</span> buf[MAXDATASIZE];<br>	<br>		listen_socket_fd = tcp_listen_socket(SERVERPORT);<br>	<br>		fd_set rfds , readmask;<br>		<span class="hljs-type">int</span> retval , maxfd;<br>	<br>		FD_ZERO(&amp;rfds);<br>		FD_SET(listen_socket_fd, &amp;rfds);<br>		maxfd = listen_socket_fd;<br>	<br>		<span class="hljs-keyword">for</span>(;;) &#123;<br>				readmask = rfds;<br>				retval = select(maxfd+<span class="hljs-number">1</span>, &amp;readmask, <span class="hljs-literal">NULL</span>, <span class="hljs-literal">NULL</span>, <span class="hljs-literal">NULL</span>);<br>			<br>				<span class="hljs-keyword">if</span> (FD_ISSET(listen_socket_fd, &amp;readmask))&#123;<br>						<span class="hljs-keyword">if</span>((client_fd = accept(listen_socket_fd, (<span class="hljs-keyword">struct</span> sockaddr *) &amp;cs,&amp;c_size) == <span class="hljs-number">-1</span>) &#123;<br>								perror(<span class="hljs-string">&quot;accept&quot;</span>);<br>								<span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>						&#125;<br>						<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;accept success!  fd=%d\\n&quot;</span>, client_fd);<br>						FD_SET(client_fd, &amp;rfds);<br>						<span class="hljs-keyword">if</span>(client_fd &gt; maxfd) maxfd = client_fd;<br>				&#125;<br>				<span class="hljs-type">int</span> fd ;<br>				<span class="hljs-keyword">for</span> (fd = <span class="hljs-number">0</span> ; fd &lt; maxfd; fd++)&#123;<br>						<span class="hljs-keyword">if</span>(fd == listen_socket_fd) <span class="hljs-keyword">continue</span>;<br>						<span class="hljs-keyword">if</span>(FD_ISSET(fd, &amp;readmask))&#123;<br>								<span class="hljs-keyword">if</span>((recvbytes = read(fd,buf,MAXDATASIZE)) == <span class="hljs-number">-1</span>)&#123;<br>										perror(<span class="hljs-string">&quot;read error&quot;</span>);<br>										<span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);							<br>								&#125;<br>								<span class="hljs-keyword">if</span> (recvbytes == <span class="hljs-number">0</span>)&#123;<br>										close(fd) ;<br>										FD_CLR(fd, &amp;rfds); <br>										<span class="hljs-keyword">continue</span> ;<br>								&#125;<br>								<span class="hljs-keyword">for</span>(i=<span class="hljs-number">0</span>; i&lt; recvbytes; i++)&#123;<br>										buf[i] = process_char(buf[i]);<br>								&#125;<br>								write(fd, buf, recvbytes);<br>							<br>								<span class="hljs-built_in">memset</span>(buf, <span class="hljs-number">0x00</span>, <span class="hljs-keyword">sizeof</span>(buf));<br>				&#125;	<br>		&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="非阻塞的select-的读写过程"><a href="#非阻塞的select-的读写过程" class="headerlink" title="非阻塞的select 的读写过程"></a>非阻塞的select 的读写过程</h3><p>对于 非阻塞情况下， 需要考虑的每次读写并不等待到读写过程执行完毕。这样就导致需要在用户态，对读写数据，实现有状态的结构来保证读写的安全性</p>
+<p><strong>非阻塞IO+多路复用情况下的系统调用行为</strong></p>
+<p>操作                        内核缓冲区状态                                 阻塞模式                                非阻塞模式</p>
+<p>read()                      接收缓冲区有数据                             立即返回                               立即返回</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs routeros">接收缓冲区无数据                      等待数据到来                    立即返回(-1)<span class="hljs-attribute">errno</span>=EAGAIN<br></code></pre></td></tr></table></figure>
+
+<p>write()                     发送缓冲区空闲       全部数据写入发送缓冲区后返回              能写多少写多少</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs routeros">发送缓冲区不空闲               等待发送缓冲区空闲              立即返回(-1)<span class="hljs-attribute">errno</span>=EAGAIN<br></code></pre></td></tr></table></figure>
+
+<p>accept()                  接收缓冲区有数据                             立即返回                               立即返回</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs routeros">接收缓冲区无数据                      等待数据到来                    立即返回(-1)<span class="hljs-attribute">errno</span>=EAGAIN<br></code></pre></td></tr></table></figure>
+
+<p>如果不设置状态，每次的读写 都会根据 缓冲区的大小读写对应大小的数据。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">()</span> &#123;<br>		<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">sockaddr_in</span> <span class="hljs-title">cs</span>;</span><br>		<span class="hljs-type">int</span> c_size, recvbytes, listen_socket_fd, client_fd, i;<br>		<span class="hljs-type">char</span> buf[MAXDATASIZE];<br>	<br>		listen_socket_fd = tcp_listen_socket(SERVERPORT);<br>		fcntl(listen_socket_fd, F_SETFL, O_NONBLOCK);<br>	<br>		fd_set rfds , readmask;<br>		<span class="hljs-type">int</span> retval, maxfd;<br>		<br>		FD_ZERO(&amp;rfds);<br>		FD_SET(listen_socket_fd, &amp;rfds);<br>		maxfd = listen_socket_fd;<br>	<br>		<span class="hljs-keyword">for</span>(;;)&#123;<br>				readmask = rfds;<br>				retval = select(maxfd+<span class="hljs-number">1</span>, &amp;readmask, <span class="hljs-literal">NULL</span> , <span class="hljs-literal">NULL</span>, <span class="hljs-literal">NULL</span>);<br>				<span class="hljs-keyword">if</span>(FD_ISSET(listen_socket_fd, &amp;readmask))&#123;<br>						<span class="hljs-keyword">if</span>((client_fd = accept(listen_socket_fd,(<span class="hljs-keyword">struct</span> sockaddr*)&amp;cs ,&amp;c_size)) ==<br>						<span class="hljs-number">-1</span>) &#123;<br>											<span class="hljs-keyword">if</span>(error == EAGAIN) <span class="hljs-keyword">continue</span>;<br>											perror(<span class="hljs-string">&quot;accept&quot;</span>);<br>											<span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);					<br>						&#125;<br>						<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;accept success ! fd= %d\\n&quot;</span>,client_fd);<br>						fcntl(client_fd, F_SETFL,O_NONBLOCK);<br>						FD_SET(client_fd, &amp;rfds);<br>						<span class="hljs-keyword">if</span>(client_fd &gt; maxfd) maxfd = client_fd;<br>				&#125;<br>				<span class="hljs-type">int</span> fd ;<br>				<span class="hljs-keyword">for</span> (fd = <span class="hljs-number">0</span> ; fd&lt;=maxfd; fd++)&#123;<br>						<span class="hljs-keyword">if</span>(fd == listen_socket_fd) <span class="hljs-keyword">continue</span> ;<br>						<span class="hljs-keyword">if</span>(FD_ISSET(fd, &amp;readmask))&#123;<br>								<span class="hljs-keyword">if</span>((recvbytes = read(fd, buf, MAXDATASIZE)) == <span class="hljs-number">-1</span> &#123;<br>										perror(<span class="hljs-string">&quot;read error&quot;</span>);<br>										<span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>								&#125;<br>								<span class="hljs-keyword">if</span>(recvbytes == <span class="hljs-number">0</span>)&#123;<br>										close(fd);<br>										<span class="hljs-keyword">continue</span>;<br>								&#125;<br>								<span class="hljs-keyword">for</span> (i = <span class="hljs-number">0</span> ; i &lt; recvbytest; i++)&#123;<br>										buf[i] = process_char(buf[i]);<br>								&#125;<br>								write(fd, buf, recvbytes);<br>							<br>								<span class="hljs-built_in">memset</span>(buf, <span class="hljs-number">0x00</span> , <span class="hljs-keyword">sizeof</span>(buf));<br>						&#125;<br>				&#125;	<br>		&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>设置用户态缓冲区数据</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-meta"># <span class="hljs-keyword">define</span> MAX_LINE 1024</span><br><span class="hljs-meta"># <span class="hljs-keyword">define</span> FD_INIT_SIZE 128</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Buffer</span> &#123;</span>   <span class="hljs-comment">// 缓冲区结构</span><br>		<span class="hljs-type">int</span> connect_fd ;  <span class="hljs-comment">// 文件描述符信息</span><br>		<span class="hljs-type">char</span> buffer[MAX_LINE];  <span class="hljs-comment">// buffer数组</span><br>	<br>		<span class="hljs-type">size_t</span> writeIndex;  <span class="hljs-comment">// 设置写位置索引</span><br>		<span class="hljs-type">size_t</span> readIndex;  <span class="hljs-comment">// 设置读位置索引</span><br>		<span class="hljs-type">int</span> readable ;  <span class="hljs-comment">// 是否可读标记， 当写入数据就绪后，设置标记为可读</span><br>&#125;; <br><br><span class="hljs-keyword">struct</span> Buffer *<span class="hljs-title function_">alloc_Buffer</span><span class="hljs-params">()</span>&#123;<br>		<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Buffer</span> *<span class="hljs-title">buffer</span> =</span> <span class="hljs-built_in">malloc</span>(<span class="hljs-keyword">sizeof</span>(<span class="hljs-keyword">struct</span> Buffer));<br>		<span class="hljs-keyword">if</span>(! buffer)<br>				<span class="hljs-keyword">return</span> <span class="hljs-literal">NULL</span>;<br>		buffer -&gt; connect_fd = <span class="hljs-number">0</span> ;<br>		buffer -&gt; writeIndex = <span class="hljs-number">0</span>;<br>		buffer -&gt; readIndex = <span class="hljs-number">0</span>;<br>		buffer -&gt; readable = <span class="hljs-number">0</span>;<br>		<span class="hljs-keyword">return</span> buffer;<br>&#125;<br><span class="hljs-type">void</span> <span class="hljs-title function_">free_Buffer</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> Buffer *buffer)</span>&#123;<br>		<span class="hljs-built_in">free</span>(buffer);<br>&#125;<br><span class="hljs-type">char</span> <span class="hljs-title function_">process_char</span><span class="hljs-params">(<span class="hljs-type">char</span> c)</span>&#123;<br>		<span class="hljs-keyword">if</span>(c &gt;= <span class="hljs-string">&#x27;a&#x27;</span> &amp;&amp; c &lt;= <span class="hljs-string">&#x27;z&#x27;</span>)&#123;<br>				<span class="hljs-keyword">return</span> c - <span class="hljs-number">32</span>;<br>		&#125; esle <span class="hljs-title function_">if</span> <span class="hljs-params">(c &gt;= <span class="hljs-string">&#x27;A&#x27;</span> &amp;&amp; c &lt;= <span class="hljs-string">&#x27;Z&#x27;</span>)</span>&#123;<br>				<span class="hljs-keyword">return</span> c + <span class="hljs-number">32</span>;<br>		&#125;<br>		<span class="hljs-keyword">return</span> c ;<br>&#125;<br><br><span class="hljs-type">int</span> <span class="hljs-title function_">onSocketRead</span><span class="hljs-params">(<span class="hljs-type">int</span> fd , <span class="hljs-keyword">struct</span> Buffer *buffer)</span>&#123;<br>		<span class="hljs-type">char</span> buf[<span class="hljs-number">1024</span>];<br>		<span class="hljs-type">int</span> i ;<br>		<span class="hljs-type">ssize_t</span> result ;<br>		<span class="hljs-keyword">while</span>(<span class="hljs-number">1</span>) &#123;<br>				result = read(fd, buf, <span class="hljs-keyword">sizeof</span>(buf));<br>				<span class="hljs-keyword">if</span>(result &lt;= <span class="hljs-number">0</span>)<br>						<span class="hljs-keyword">break</span>;<br>				<span class="hljs-keyword">for</span>(i = <span class="hljs-number">0</span> ; i &lt; result ; ++i)&#123;<br>						<span class="hljs-keyword">if</span>(buffer-&gt;writeIndex &lt; <span class="hljs-keyword">sizeof</span>(buffer-&gt;buffer))<br>							 buffer-&gt;buffer[buffer-&gt;writeIndex++] = process_char(buf[i]);<br>						<span class="hljs-keyword">if</span>(buf[i] == <span class="hljs-string">&#x27;\\n&#x27;</span>)&#123;<br>							 buffer-&gt;readable = <span class="hljs-number">1</span>;<br>						&#125;<br>				&#125;<br>		&#125;<br>		<span class="hljs-keyword">if</span> (result == <span class="hljs-number">0</span>)&#123;<br>				<span class="hljs-keyword">return</span> <span class="hljs-number">1</span> ;<br>		&#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (result &lt; <span class="hljs-number">0</span>)&#123;<br>				<span class="hljs-keyword">if</span> (errno == EAGAIN)<br>						<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>				<span class="hljs-keyword">return</span> <span class="hljs-number">-1</span> ;<br>		&#125;<br>		<span class="hljs-keyword">return</span> <span class="hljs-number">0</span> <br>&#125;<br><br><span class="hljs-type">int</span> onSocketWrite(<span class="hljs-type">int</span> fd, <span class="hljs-keyword">struct</span> Buffer *buffer)&#123;<br>		<span class="hljs-keyword">while</span>(buffer-&gt;readIndex &lt; buffer-&gt; WriteIndex)&#123;<br>				<span class="hljs-type">ssize_t</span> result = write(fd,<br>								buffer-&gt;buffer + buffer-&gt;readIndex,<br>								buffer-&gt;writeIndex - buffer-&gt;readIndex);<br>				<span class="hljs-keyword">if</span>(result&lt;<span class="hljs-number">0</span>)&#123;<br>							<span class="hljs-keyword">if</span>(errno === EAGAIN) <br>									<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>							<span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br>				&#125;<br>				buffer-&gt;readIndex += result ;		<br>		&#125;<br>		<span class="hljs-keyword">if</span> (buffer-&gt;readIndex == buffer-&gt;writeIndex)<br>				buffer-&gt;readIndex = buffer-&gt;writeIndex = <span class="hljs-number">0</span>;<br>		buffer -&gt; readable = <span class="hljs-number">0</span> ;<br>		<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br><br><span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">()</span>&#123;<br>		<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">sockaddr_in</span> <span class="hljs-title">cs</span>;</span><br>		<span class="hljs-type">int</span> a_size, i ;<br>		<span class="hljs-type">int</span> listen_socket_fd;<br>	<br>		listen_socket_fd = tcp_listen_socket(SERVERPORT);<br>		fcntl(listen_socket_fd, F_SETFL, O_NONBLOCK);<br>	<br>		<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Buffer</span> *<span class="hljs-title">buffer</span>[<span class="hljs-title">FD_INIT_SIZE</span>];</span><br>		<span class="hljs-keyword">for</span>(i = <span class="hljs-number">0</span> ; i&lt; FD_INIT_SIZE; ++i)&#123;<br>				buffer[i] = alloc_Buffer();<br>		&#125;<br>		fd_set readfds , writefds, exfds;<br>		<span class="hljs-type">int</span> retval ;<br>		<span class="hljs-type">int</span> maxfd = listen_socket_fd ;<br>		<span class="hljs-keyword">for</span> (;;)&#123;<br>				FD_ZERO(&amp;readfds);<br>				FD_ZERO(&amp;writefds);<br>				FD_ZERO(&amp;exfds);<br>			<br>				FD_SET(listen_socket_fd, &amp;readfds);<br>			<br>				<span class="hljs-keyword">for</span>(i=<span class="hljs-number">0</span>; i &lt; FD_INIT_SIZE ; ++i)&#123;<br>						<span class="hljs-keyword">if</span>(buffer[i]-&gt;connect_fd &gt; <span class="hljs-number">0</span>)&#123;<br>								<span class="hljs-keyword">if</span>(buffer[i] -&gt; connect_fd &gt;maxfd)<br>										maxfd = buffer[i]-&gt;connect_fd;<br>								FD_SET(buffer[i]-&gt;connect_fd, &amp;readfds);<br>								<span class="hljs-keyword">if</span>(buffer[i] -&gt; readable)&#123;<br>										FD_SET(buffer[i]-&gt;connect_fd,&amp;writefds);<br>								&#125;<br>						&#125;	<br>				&#125;<br>				retval = select(maxfd + <span class="hljs-number">1</span> ,&amp;readfds,&amp;writefds,&amp;exfds,<span class="hljs-literal">NULL</span>);<br>				<span class="hljs-keyword">if</span>(retval &lt; <span class="hljs-number">0</span>)&#123;<br>						perror(<span class="hljs-string">&quot;select error&quot;</span>); <br>				&#125;<br>				<span class="hljs-keyword">if</span>(FD_ISSET(listen_socket_fd, &amp;readfds))&#123;<br>						<span class="hljs-type">int</span> fd = accept(listen_socket_fd,(<span class="hljs-keyword">struct</span> sockaddr*)&amp;cs,&amp;a_size);<br>						<span class="hljs-keyword">if</span>(fd == <span class="hljs-number">-1</span>)&#123;<br>								perror(<span class="hljs-string">&quot;accept&quot;</span>);<br>								<span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>						&#125;<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span>(fd &gt; FD_INIT_SIZE)&#123;<br>								perror(<span class="hljs-string">&quot;too many connections&quot;</span>);<br>								close(fd);<br>						&#125;<span class="hljs-keyword">else</span>&#123;<br>								<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;accept success! fd = %d\\n&quot;</span>, fd);<br>								fcntl(fd, F_SETFL, O_NONBLOCK);<br>								<span class="hljs-keyword">if</span>(buffer[fd]-&gt;connect_fd == <span class="hljs-number">0</span>)&#123;<br>										buffer[fd]-&gt;connect_fd = fd;<br>								&#125; <span class="hljs-keyword">else</span> &#123;<br>										perror(<span class="hljs-string">&quot;connection already exists&quot;</span>);							<br>								&#125;<br>						&#125;<br>						<span class="hljs-keyword">for</span>(i = <span class="hljs-number">0</span> ; i &lt; maxfd + <span class="hljs-number">1</span> ; ++i)&#123;<br>								<span class="hljs-type">int</span> r = <span class="hljs-number">0</span>;<br>								<span class="hljs-keyword">if</span> (i == listen_socket_fd)<br>										<span class="hljs-keyword">continue</span>;<br>								<span class="hljs-keyword">if</span>(FD_ISSET(i, &amp;readfds))&#123;<br>										r = onSocketRead(i, buffer[i]);<br>								&#125;<br>								<span class="hljs-keyword">if</span>(r==<span class="hljs-number">0</span> &amp;&amp; FD_ISSET(i, &amp;writefds))&#123;<br>										r = onSocketWrite(i,buffer[i]);<br>								&#125;<br>								<span class="hljs-keyword">if</span>(r) &#123;<br>										buffer[i] -&gt; connect_fd = <span class="hljs-number">0</span>;<br>										close(i);<br>								&#125;<br>						&#125;<br>				&#125;<br>		&#125; <br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="select的实现原理"><a href="#select的实现原理" class="headerlink" title="select的实现原理"></a>select的实现原理</h3><p>select的实现原理是通过将用户态定义的，读&#x2F;写&#x2F;异常数组拷贝到内核中的fd_set_bits中，在该结构中存储了用户关心通知的 in，out，ex数组。以及res_in,res_out,res_ex状态数组。在内核态中，遍历所有的文件描述符，在初次遍历中，将进程放入对应描述符的等待队列中，当有事件发生时，比较 res_* 与 *  数组索引的状态，如果该fd的关注状态（通过FD_SET设置）与 事件就绪状态一致，就在事件计数器中加1，最终返回本次执行的就绪事件数，再有用户态轮询查询就绪的fd进行处理。</p>
+<p><img src="https://i.111666.best/image/UbYNG4wqlLqTy1I4w31upx.png" srcset="/img/loading.gif" lazyload alt="select 模型"></p>
+<h3 id="poll"><a href="#poll" class="headerlink" title="poll"></a>poll</h3><p>poll的原理与select 类似，在poll中，它接收一个pollfd数组。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;poll.h&gt;</span></span><br><span class="hljs-type">int</span> <span class="hljs-title function_">poll</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> pollfd *fds, <span class="hljs-type">nfds_t</span> nfds, <span class="hljs-type">int</span> timeout)</span>;<br><span class="hljs-comment">//fds:  pollfd 数组, 存放应用进程所有感兴趣的fd及其相应的IO事件</span><br><span class="hljs-comment">//nfds: pollfd 数组的大小， 可以大于1024，突破文件描述符个数限制</span><br><span class="hljs-comment">//timeout: 超时时间</span><br>&lt;<span class="hljs-number">0</span>  表示在有事件发生之前永远等待<br>=<span class="hljs-number">0</span>  表示不阻塞进程，立即返回<br>&gt;<span class="hljs-number">0</span>  表示poll调用方等待指定的毫秒数后返回<br><br></code></pre></td></tr></table></figure>
+
+<p>在每个pollfd元素中，定义了两个结构 events ： 用于描述事件类型，revents ：用于描述就绪的事件类型。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">pollfd</span>&#123;</span><br>		<span class="hljs-type">int</span>    fd;<br>		<span class="hljs-type">short</span>  events;<br>		<span class="hljs-type">short</span>  revents;<br>&#125;;<br><span class="hljs-comment">/*</span><br><span class="hljs-comment">事件类型 ：</span><br><span class="hljs-comment">POLLIN  0X0001       读事件</span><br><span class="hljs-comment">POLLPRI 0X0002      紧急读事件</span><br><span class="hljs-comment">POLLOUT 0X0004       写事件</span><br><span class="hljs-comment">POLLERR 0X0008      错误发送</span><br><span class="hljs-comment">POLLHUP 0X0010      描述符挂起</span><br><span class="hljs-comment">POLLNVAL 0X0020     请求事件无效 </span><br><span class="hljs-comment">*/</span><br></code></pre></td></tr></table></figure>
+
+<p>使用poll调用，其实现过程是，将 描述符添加到 events 结构中，设置 描述符和期望的事件类型。</p>
+<p>当资源准备就绪后，poll会将对应的事件类型写入到revents中，再在用户态中比较 revents中的状态与期望状态，然后执行对应的操作。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">char</span> buf[MAXDATASIZE];<br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">hostent</span>* <span class="hljs-title">host</span>;</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">sockaddr_in</span> <span class="hljs-title">serv_addr</span>;</span><br><span class="hljs-type">char</span> send_line[MAXDATASIZE], recv_line[MAXDATASIZE]<br><span class="hljs-keyword">if</span>(argc &lt; <span class="hljs-number">2</span>)&#123;<br>		<span class="hljs-built_in">fprintf</span>(<span class="hljs-built_in">stderr</span>, <span class="hljs-string">&quot;Please enter the server&#x27;s hostname&quot;</span>);<br>		<span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>&#125;<br><span class="hljs-keyword">if</span>((host = gethostbyname(argv[<span class="hljs-number">1</span>])) == <span class="hljs-literal">NULL</span>)&#123;<br>		perror(<span class="hljs-string">&quot;gethostbyname&quot;</span>);<br>		<span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>&#125;<br><span class="hljs-keyword">if</span>((sockfd = socket(PF_INET, SOCK_STREAM, <span class="hljs-number">0</span>)) == <span class="hljs-number">-1</span>&#123;<br>		perror(<span class="hljs-string">&quot;创建client socekt 失败&quot;</span>);<br>		<span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>&#125;<br>serv_addr.sin_family = AF_INET;<br>serv_addr.sin_port = htons(SERVPORT);<br>serv_addr.sin_addr = *((<span class="hljs-keyword">struct</span> in_addr *)host-&gt;h_addr);<br><br><span class="hljs-keyword">if</span>((connect(sockfd, (<span class="hljs-keyword">struct</span> sockaddr *)&amp;serv_addr, <span class="hljs-keyword">sizeof</span>(<span class="hljs-keyword">struct</span> sockaddr))) == <span class="hljs-number">-1</span>)&#123;<br>		perror(<span class="hljs-string">&quot;connect error&quot;</span>);<br>		<span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>&#125;<br><br><span class="hljs-keyword">struct</span> pollfd event_set[<span class="hljs-number">2</span>];<br>event_set[<span class="hljs-number">0</span>].fd = STDIN_FILENO;<br>event_set[<span class="hljs-number">0</span>].events = POLLIN;<br>event_set[<span class="hljs-number">1</span>].fd = sockfd;<br>event_set[<span class="hljs-number">1</span>].events = POLLIN;<br><br><span class="hljs-type">int</span> retval;<br><span class="hljs-keyword">for</span>(;;) &#123;<br>		retval = poll(event_set, <span class="hljs-number">2</span>, <span class="hljs-number">-1</span>);<br>	<br>		<span class="hljs-keyword">if</span>(retval &lt; <span class="hljs-number">0</span>)<br>				perror(<span class="hljs-string">&quot;poll()&quot;</span>);<br>		<span class="hljs-keyword">if</span>(event_set[<span class="hljs-number">0</span>],revents &amp; POLLIN)&#123;<br>				<span class="hljs-keyword">if</span>(fgets(send_line, MAXDATASIZE, <span class="hljs-built_in">stdin</span>) != <span class="hljs-literal">NULL</span>)&#123;<br>						<span class="hljs-keyword">if</span>(!<span class="hljs-built_in">strcmp</span>(send_line, <span class="hljs-string">&quot;quit\\n&quot;</span>))&#123;<br>								<span class="hljs-keyword">break</span>;<br>						&#125;<br>						<span class="hljs-type">int</span> i = <span class="hljs-built_in">strlen</span>(send_line);<br>						<span class="hljs-keyword">if</span>(send_line[i - <span class="hljs-number">1</span>] == <span class="hljs-string">&#x27;\\n&#x27;</span>)&#123;<br>								send_line[i - <span class="hljs-number">1</span>] = <span class="hljs-number">0</span> ;<br>						&#125;<br>						<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;sending &#x27;%s&#x27;\\n&quot;</span>, send_line);<br>						<span class="hljs-type">size_t</span> rt =write(sockfd , send_line, <span class="hljs-built_in">strlen</span>(send_line));<br>						<span class="hljs-keyword">if</span>(rt &lt; <span class="hljs-number">0</span>)&#123;<br>								perror(<span class="hljs-string">&quot;write failed&quot;</span>);<br>						&#125;<br>						<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;sended bytes: %zu \\n&quot;</span>, rt);<br>				&#125;<br>		&#125;<br>		<span class="hljs-keyword">if</span>(event_set[<span class="hljs-number">1</span>].revents &amp; POLLIN)&#123;<br>				<span class="hljs-type">int</span> n = read(sockfd, recv_line, MAXDATASIZE);<br>				<span class="hljs-keyword">if</span>(n &lt; <span class="hljs-number">0</span>)&#123;<br>						perror(<span class="hljs-string">&quot;read failed&quot;</span>);			<br>				&#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (n == <span class="hljs-number">0</span>) &#123;<br>						perror(<span class="hljs-string">&quot;server terminated \\n&quot;</span>);<br>				&#125;<br>				recv_line[n] = <span class="hljs-number">0</span> ;<br>				<span class="hljs-built_in">fputs</span>(recv_line, <span class="hljs-built_in">stdout</span>);<br>				<span class="hljs-built_in">fputs</span>(<span class="hljs-string">&quot;\\n&quot;</span>, <span class="hljs-built_in">stdout</span>);<br>		&#125;	<br>&#125;<br>close(sockfd);<br></code></pre></td></tr></table></figure>
+
+<p>在poll的服务端实现中，需要在接收新的文件描述符后，将其添加到event_set中。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">()</span> &#123;<br>		<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">sockaddr_in</span> <span class="hljs-title">cs</span>;</span> <br>		<span class="hljs-type">int</span> a_size , i ;<br>		<span class="hljs-type">int</span> listen_socket_fd ;<br>		listen_socket_fd = tcp_listen_socket(SERVERPORT);<br>	<br>		fcntl(listen_socket_fd , F_SETFL, <span class="hljs-number">0</span>_NONBLOCK);<br>	<br>		<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Buffer</span> *<span class="hljs-title">buffer</span>[<span class="hljs-title">FD_INIT_SIZE</span>];</span><br>		<span class="hljs-keyword">for</span>(i = <span class="hljs-number">0</span> ; i &lt; FD_INIT_SIZE; ++i)&#123;<br>				buffer[i] = alloc_Buffer();<br>		&#125;<br>		<span class="hljs-type">int</span> retval ;<br>		<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">pollfd</span> <span class="hljs-title">event_set</span>[<span class="hljs-title">FD_INIT_SIZE</span>];</span><br>		event_set[<span class="hljs-number">0</span>].fd = listen_socket_fd;<br>		event_set[<span class="hljs-number">0</span>].events = POLLIN;<br>	<br>		<span class="hljs-keyword">for</span>(i=<span class="hljs-number">1</span>; i&lt; FD_INIT_SIZE;i++)&#123;<br>				event_set[i].fd = <span class="hljs-number">-1</span>;<br>		&#125;<br>		<span class="hljs-keyword">for</span>(;;)&#123;<br>				<span class="hljs-keyword">for</span>(i = <span class="hljs-number">1</span>; i &lt; FD_INIT_SIZE; i++) &#123;<br>						<span class="hljs-keyword">if</span>(buffer[i]-&gt;connect_fd &gt; <span class="hljs-number">0</span>)&#123;<br>								event_set[i].events |= POLLOUT;<br>						&#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (event_set[i].revents &amp; POLLOUT)&#123;<br>								event_set[i].events ^= POLLOUT;				<br>						&#125;<br>				&#125;<br>		&#125;<br>		retval = poll(event_set, FD_INIT_SIZE, <span class="hljs-number">-1</span>);<br>		<span class="hljs-keyword">if</span>(retval &lt; <span class="hljs-number">0</span>)&#123;<br>				perror(<span class="hljs-string">&quot;select error&quot;</span>);<br>		&#125;<br>		<span class="hljs-keyword">if</span>(event_set[<span class="hljs-number">0</span>].revents &amp; POLLIN)&#123;<br>				<span class="hljs-type">int</span> fd = accept(listen_sockeN_fd, (<span class="hljs-keyword">struct</span> sockaddr*)&amp;cs, &amp;a_size);<br>				<span class="hljs-keyword">if</span>(fd == <span class="hljs-number">-1</span>)&#123;<br>						perror(<span class="hljs-string">&quot;accept&quot;</span>);<br>						<span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>				&#125;<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (fd &gt; FD_INIT_SIZE)&#123;<br>						perror(<span class="hljs-string">&quot;too many connections&quot;</span>);<br>						close(fd);<br>				&#125; <span class="hljs-keyword">else</span> &#123;<br>						<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;accept success! fd =%d\\n&quot;</span>, d);<br>						fcntl(fd , F_SETFL, O_NONBLOCK);<br>						<span class="hljs-keyword">for</span>(i = <span class="hljs-number">1</span> ; i &lt; FD_INIT_SIZE ; i++)&#123;<br>								<span class="hljs-keyword">if</span>(event_set[i].fd &lt; <span class="hljs-number">0</span>)&#123;<br>										event_set[i].fd = fd;<br>										event_set[i].events = POLLIN;<br>										buffer[i] -&gt;connect_fd =fd ;<br>										<span class="hljs-keyword">break</span>;<br>								&#125; <br>						&#125;			<br>				&#125;<br>		&#125;<br>		<span class="hljs-keyword">for</span>(i=<span class="hljs-number">0</span> ; i &lt; FD_INIT_SIZE; ++i)&#123;<br>				<span class="hljs-type">int</span> r = <span class="hljs-number">0</span> ;<br>				<span class="hljs-type">int</span> currfd = event_set[i].fd;<br>				<span class="hljs-keyword">if</span> (currfd == listen_socket_fd || currfd &lt; <span class="hljs-number">0</span>)<br>						<span class="hljs-keyword">continue</span>;<br>				<span class="hljs-keyword">if</span> (event_set[i].revents &amp; POLLIN)&#123;<br>						r = onSocketRead(currfd, buffer[i]);<br>				&#125;<br>				<span class="hljs-keyword">if</span> (r == <span class="hljs-number">0</span> &amp;&amp; event_set[i].revents &amp; POLLOUT)&#123;<br>						r = onSocketWrite(currfd, buffer[i]);<br>				&#125;<br>				<span class="hljs-keyword">if</span> (r) &#123;<br>						close(currfd); <br>				&#125;<br>		&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="poll的实现原理"><a href="#poll的实现原理" class="headerlink" title="poll的实现原理"></a>poll的实现原理</h3><p>poll的内核层面实现原理与select的原理类似。</p>
+<p>在发起poll调用后，将传入poll中的event_set结构传入内核，内核中遍历fd_set中的event，如果有数据准备就绪，则将对应的就绪事件写入revent中，继续查询下一个event结构。之后通过查询event_set中的revent中的就绪状态来完成读写过程。</p>
+<p><img src="https://i.111666.best/image/zo9z0BqvuO2KzB0quHnQZ6.png" srcset="/img/loading.gif" lazyload alt="poll模型"></p>
+<h3 id="select-和-poll的局限"><a href="#select-和-poll的局限" class="headerlink" title="select 和 poll的局限"></a>select 和 poll的局限</h3><p>在select的实现中，每一次的检测过程都需要遍历所有的文件描述符，同时用户态的比特数组被复了，导致数组会被select更新状态。另一方面，每一次调用，都要进行全新的拷贝过程，当数据量过大时，仍然会产生较高的运行成本。另外，select中还对文件描述符的最大长度存在限制。</p>
+<p>在poll中，poll通过event_set结构将event结构组织为event数组结构，解决了最大长度的限制，但是在事件触发时，仍然需要通过轮询查询具体哪个事件发生了变更，同时，虽然减少了拷贝信息，以及不用遍历每一个文件描述符，但是仍然存在较大的 由用户态向内核态拷贝结构的过程。</p>
+<h3 id="epoll"><a href="#epoll" class="headerlink" title="epoll"></a>epoll</h3><p>在epoll 的实现中，多路复用被分为了三个阶段</p>
+<ol>
+<li>epoll_create()   调用epoll_create() 在内核中创建对应的epoll实例。epoll 中可以动态调整epoll_event的数量</li>
+<li>epoll_ctl()  实现了一个控制方法，将事件与描述符的关系通过方法调用的形式将更改注册到内核结构中</li>
+<li>epoll_wait()  最终的通知等待，在调用epoll_wait后，查询 epoll_wait的文件描述符，从中获取到每个描述符的事件信息，进行处理</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;sys/epoll.h&gt;</span></span><br><span class="hljs-type">int</span> <span class="hljs-title function_">epoll_create</span><span class="hljs-params">(<span class="hljs-type">int</span> size)</span>;<br><span class="hljs-comment">/*</span><br><span class="hljs-comment">创建一个epoll实例，返回一个文件描述符</span><br><span class="hljs-comment">*/</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;sys/epoll.h&gt;</span></span><br><span class="hljs-type">int</span> <span class="hljs-title function_">epoll_ctl</span><span class="hljs-params">(<span class="hljs-type">int</span> epfd, <span class="hljs-type">int</span> op, <span class="hljs-type">int</span> fd, <span class="hljs-keyword">struct</span> epoll_event *event)</span>;<br><span class="hljs-comment">/*</span><br><span class="hljs-comment">操作epoll实例中的IO事件</span><br><span class="hljs-comment">epfd : epoll_create创建的epoll实例对应的文件描述符</span><br><span class="hljs-comment">op: 对IO事件的操作类型</span><br><span class="hljs-comment">		EPOLL_CTL_ADD ： 向epoll实例添加fd对应的事件</span><br><span class="hljs-comment">		EPOLL_CTL_DEL ： 向epoll实例删除fd对应的事件</span><br><span class="hljs-comment">		EPOLL_CTL_MOD ： 修改fd对应的事件</span><br><span class="hljs-comment">fd: 注册的事件的文件描述符</span><br><span class="hljs-comment">event: 表示注册的事件类型</span><br><span class="hljs-comment">*/</span><br><span class="hljs-meta">#inlcude <span class="hljs-string">&lt;sys/epoll.h&gt;</span></span><br><span class="hljs-type">int</span> <span class="hljs-title function_">epoll_wait</span><span class="hljs-params">(<span class="hljs-type">int</span> epfd, <span class="hljs-keyword">struct</span> epoll_event * events, <span class="hljs-type">int</span> maxevents, <span class="hljs-type">int</span> timeout)</span>;<br><span class="hljs-comment">/*</span><br><span class="hljs-comment">等待内核I/O事件的分发</span><br><span class="hljs-comment">epfd : epoll_create创建的epoll实例对应的文件描述符</span><br><span class="hljs-comment">events : 返回给用户态应用进程所有需要处理的I/O事件</span><br><span class="hljs-comment">maxevents : 表示epoll_wait可以返回的最大事件值。</span><br><span class="hljs-comment">timeout : -1 : 表示不超时， 0表示立即返回, &gt;0 表示一度按时间没事件发生，则超时</span><br><span class="hljs-comment"></span><br><span class="hljs-comment">*/</span><br><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">union</span> <span class="hljs-title">epoll_data</span>&#123;</span><br>		<span class="hljs-type">void</span>       *ptr;<br>		<span class="hljs-type">int</span>        fd;<br>		<span class="hljs-type">uint32_t</span>   u32;<br>		<span class="hljs-type">uint64_t</span>   u64;<br>&#125; <span class="hljs-type">epoll_data_t</span>;<br><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">epoll_event</span> &#123;</span><br>		<span class="hljs-type">uint32_t</span>          events ;  <span class="hljs-comment">// Epoll events</span><br>		<span class="hljs-type">epoll_data_t</span>      data ;  <span class="hljs-comment">//user data variable</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>epoll的多路复用实现</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">int</span> argc , <span class="hljs-type">char</span> *argv[])</span>&#123;<br>		<span class="hljs-type">int</span> sockfd , sendbytes;<br>		<span class="hljs-type">char</span> buf[MAXDATASIZE];<br>		<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">hostent</span>* <span class="hljs-title">host</span>;</span><br>		<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">sockaddr_in</span> <span class="hljs-title">serv_addr</span>;</span><br>		<span class="hljs-type">char</span> send_line[MAXDATASIZE], recv_line[MAXDATASIZE];<br>		<span class="hljs-type">int</span> i , n ;<br>		<span class="hljs-keyword">if</span>(argc &lt; <span class="hljs-number">2</span>)&#123;<br>				<span class="hljs-built_in">fprintf</span>(<span class="hljs-built_in">stderr</span>, <span class="hljs-string">&quot;please enter the server&#x27;s hostname&quot;</span>);<br>				<span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>		&#125;<br>		<span class="hljs-keyword">if</span>((host gethostbyname(argv[<span class="hljs-number">1</span>])) == <span class="hljs-literal">NULL</span>)&#123;<br>				perror(<span class="hljs-string">&quot;gethostbyname&quot;</span>);<br>				<span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>		&#125;<br>		<span class="hljs-keyword">if</span>((sockfd = socket(PF_INET,SOCK_STREAM,<span class="hljs-number">0</span>)) == <span class="hljs-number">-1</span>)&#123;<br>				perror(<span class="hljs-string">&quot;创建client socekt 失败&quot;</span>);<br>				<span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>		&#125;<br>		serv_addr.sin_family = AF_INET;<br>		serv_addr.sin_port = htons(SERVPORT);<br>		serv_addr.sin_addr = *((<span class="hljs-keyword">struct</span> in_addr *)host-&gt;h_addr);<br>	<br>		<span class="hljs-keyword">if</span>((connect(sockfd, (<span class="hljs-keyword">struct</span> sockaddr *)&amp;serv_addr, <span class="hljs-keyword">sizeof</span>(<span class="hljs-keyword">struct</span> sockaddr))) == <span class="hljs-number">-1</span>)<br>		&#123;<br>				perror(<span class="hljs-string">&quot;connect error&quot;</span>);<br>				<span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>		&#125;<br>	<br>		<span class="hljs-type">int</span> efd ;<br>		<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">epoll_event</span> <span class="hljs-title">event</span>;</span>            <span class="hljs-comment">// 创建事件结构</span><br>		<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">epoll_events</span> *<span class="hljs-title">events</span>;</span><br>		efd = epoll_create(<span class="hljs-number">10</span>);              <span class="hljs-comment">//调用epoll_create , 返回该结构的文件描述符</span><br>		<span class="hljs-keyword">if</span>(efd == <span class="hljs-number">-1</span>)&#123;<br>				perror(<span class="hljs-string">&quot;epoll create failed&quot;</span>);<br>		&#125;<br>		event.data.fd = sockfd;  	<span class="hljs-comment">// 注册socket文件描述符</span><br>		event.events = EPOLLIN;  <span class="hljs-comment">// 监听可读事件</span><br>		<span class="hljs-keyword">if</span>(epoll_ctl(efd, EPOLL_CTL_ADD, sockfd, &amp;event) == <span class="hljs-number">-1</span>)&#123;<br>		    perror(<span class="hljs-string">&quot;epoll_ctl socket failed&quot;</span>);<br>		    <span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>		&#125;<br>		event.data.fd = STDIN_FILENO;           <span class="hljs-comment">// 设置描述符</span><br>		event.events = EPOLLIN;                 <span class="hljs-comment">// 设置事件类型</span><br>		<span class="hljs-keyword">if</span>(epoll_ctl(efd, EPOLL_CTL_ADD, STDIN_FILENO, &amp;event) == <span class="hljs-number">-1</span>)&#123;<br>				perror(<span class="hljs-string">&quot;epoll_ctl and listen fd failed&quot;</span>);<br>		&#125;<br>		events = <span class="hljs-built_in">calloc</span>(<span class="hljs-number">2</span>, <span class="hljs-keyword">sizeof</span>(event));<br>	<br>		<span class="hljs-keyword">for</span> (;;)&#123;<br>				n = epoll_wait(efd, events,<span class="hljs-number">2</span>,<span class="hljs-number">-1</span>);    <span class="hljs-comment">//调用epoll_wait检查 通知数量</span><br>				<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;epoll_wait_wakeup\\n&quot;</span>);<br>				<span class="hljs-keyword">for</span>(i = <span class="hljs-number">0</span> ; i &lt; n; i++ )&#123;          <span class="hljs-comment">// 遍历</span><br>						<span class="hljs-keyword">if</span>(STDIN_FILENO == events[i].data.fd)&#123;   <span class="hljs-comment">//如果获取的通知来源标准输入</span><br>								<span class="hljs-keyword">if</span>(fgets(send_line,MAXDATASIZE, <span class="hljs-built_in">stdin</span>) != <span class="hljs-literal">NULL</span>)&#123;<br>										<span class="hljs-keyword">if</span>(!<span class="hljs-built_in">strcmp</span>(send_line, <span class="hljs-string">&quot;quit\\n&quot;</span>))&#123;<br>												<span class="hljs-keyword">goto</span> quit;<br>										&#125;<br>										<span class="hljs-type">int</span> i = <span class="hljs-built_in">strlen</span>(send_line);<br>										<span class="hljs-keyword">if</span>(send_line[i - <span class="hljs-number">1</span>] == <span class="hljs-string">&#x27;\\n&#x27;</span>)&#123;<br>												send_line[i - <span class="hljs-number">1</span>] = <span class="hljs-number">0</span>;<br>										&#125;<br>										<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;sending &#x27;%s&#x27;\\n&quot;</span>, send_line);<br>										<span class="hljs-type">size_t</span> rt = write(sockfd, send_line, <span class="hljs-built_in">strlen</span>(send_line));<br>										<span class="hljs-keyword">if</span>(rt &lt; <span class="hljs-number">0</span>)&#123;<br>												 perror(<span class="hljs-string">&quot;write failed&quot;</span>);<br>										&#125;<br>										<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;sended bytes: %zu \\n&quot;</span>, rt);<br>								&#125;<br>						&#125;<br>						<span class="hljs-keyword">if</span>(sockfd == events[i].data.fd)&#123;   <span class="hljs-comment">//如果通知来源与socket,输出内容到标准输出</span><br>								<span class="hljs-type">int</span> n = read(sockfd, recv_line, MAXDATASIZE);<br>								<span class="hljs-keyword">if</span> (n &lt; <span class="hljs-number">0</span>)&#123;<br>										perror(<span class="hljs-string">&quot;read failed&quot;</span>);<br>								&#125;<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (n == <span class="hljs-number">0</span>)&#123;<br>										perror(<span class="hljs-string">&quot;server terminated \\n&quot;</span>);<br>								&#125;<br>								recv_line[n] = <span class="hljs-number">0</span>;<br>								<span class="hljs-built_in">fputs</span>(recv_line, <span class="hljs-built_in">stdout</span>);<br>								<span class="hljs-built_in">fputs</span>(<span class="hljs-string">&quot;\\n&quot;</span>, <span class="hljs-built_in">stdout</span>);							<br>						&#125;<br>				&#125;<br>		&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>而在服务端，则需要 注册 监听socket, 创建efd，当监听socket 获得事件通知时，将新的socket注册到efd中，这样通过epoll同时管理监听socket和连接socket</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">()</span> &#123;<br>		<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">sockaddr_in</span> <span class="hljs-title">cs</span>;</span> <br>		<span class="hljs-type">int</span> a_size, i ;<br>		<span class="hljs-type">int</span> listen_socket_fd ;<br>		listen_socket_fd = tcp_listen_socket(SEVERPORT);<br>		fcntl(listen_socket_fd, F_sETFL, O_NONBLOCK);<br>	<br>		<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Buffer</span> *<span class="hljs-title">buffer</span>[<span class="hljs-title">FD_INIT_SIZE</span>];</span><br>		<span class="hljs-keyword">for</span>(i = <span class="hljs-number">0</span> ; i &lt; FD_INIT_SIZE ; ++i)&#123;<br>				buffer[i] = alloc_Buffer();<br>		&#125;<br>		<span class="hljs-type">int</span> retval ;<br>		<span class="hljs-type">int</span> efd;<br>		<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">epoll_event</span> <span class="hljs-title">event</span>;</span><br>		efd = epoll_create(<span class="hljs-number">10</span>);<br>		<span class="hljs-keyword">if</span>(efd == <span class="hljs-number">-1</span>)&#123;<br>				perror(<span class="hljs-string">&quot;epoll create failed&quot;</span>);<br>		&#125;<br>	<br>		event.data.fd = listen_socket_fd;<br>		event.events = EPOLLIN;<br>		<span class="hljs-keyword">if</span> (epoll_ctl(efd, EPOLL_CTL_ADD, listen_socket_fd, &amp;event) == <span class="hljs-number">-1</span>)&#123;<br>				perror(<span class="hljs-string">&quot;epoll_ctl and listen fd failed&quot;</span>);<br>		&#125;<br>	<br>		events = <span class="hljs-built_in">calloc</span>(FD_INIT_SIZE , <span class="hljs-keyword">sizeof</span>(evnet));<br>		<span class="hljs-keyword">for</span> (;;)&#123;<br>				retval = epoll_wait(efd, events, FD_INIT_SIZE, <span class="hljs-number">-1</span>);<br>				<span class="hljs-keyword">if</span> (retval &lt; <span class="hljs-number">0</span>)&#123;<br>						perror(<span class="hljs-string">&quot;select error&quot;</span>);<br>				&#125;<br>				<span class="hljs-keyword">for</span> (i = <span class="hljs-number">0</span> ; i &lt; retval ; i++)&#123;<br>						<span class="hljs-keyword">if</span>(events[i].data.fd == listen_socket_fd)&#123;<br>								<span class="hljs-type">int</span> fd = accept(listen_socket_fd , (<span class="hljs-keyword">struct</span> sockaddr*)&amp;cs, &amp;a_size);<br>								<span class="hljs-keyword">if</span>(fd == <span class="hljs-number">-1</span>)&#123;<br>										perror(<span class="hljs-string">&quot;accept&quot;</span>);<br>										<span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>								&#125;<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (fd &gt; FD_INIT_SIZE)&#123;<br>										perror(<span class="hljs-string">&quot;too many connections&quot;</span>);<br>										close(fd);<br>								&#125; <span class="hljs-keyword">else</span> &#123;<br>										<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;accept success! fd= %d\\n&quot;</span>, fd);<br>										fcntl(fd, F_SETFL, O_NONBLOCK);<br>										event.data.fd = fd ;<br>										event.events = EPOLLIN ;<br>										<span class="hljs-keyword">if</span>(epoll_ctl(efd, EPOLL_CTL_ADD, fd, &amp;event) == <span class="hljs-number">-1</span>)&#123;<br>												perror(<span class="hljs-string">&quot;epoll_ctl_add_listen_fd_failed&quot;</span>);<br>										&#125;<br>								&#125;	<br>						&#125; <span class="hljs-keyword">else</span> &#123;<br>								<span class="hljs-type">int</span> r = <span class="hljs-number">0</span> ;<br>								<span class="hljs-type">int</span> currfd = events[i].data.fd ;<br>								<span class="hljs-keyword">if</span> (events[i].events &amp; EPOLLIN)&#123;<br>										print(<span class="hljs-string">&quot;get EPOLLIN event on socket fd== %d\\n&quot;</span>, currfd);<br>										r = onSocketRead(currfd,buffer[currfd]);<br>										<span class="hljs-keyword">if</span>(buffer[currfd]-&gt;readable)&#123;<br>												event.data.fd = currfd;<br>												event.events |= EPOLLOUT;<br>												<span class="hljs-keyword">if</span>(epoll_ctl(efd,EPOLL_CTL_MODE, currfd, &amp;event) == <span class="hljs-number">-1</span>)&#123;<br>														perror(<span class="hljs-string">&quot;epoll_ctl mod curr fd failed&quot;</span>);<br>												&#125;<br>										&#125;<br>								&#125;<br>								<span class="hljs-keyword">if</span> (r == <span class="hljs-number">0</span> &amp;&amp; events[i].events &amp; EPOLLOUT)&#123;<br>										r = onSocketWrite(currfd, buffer[currfd]);<br>										<span class="hljs-keyword">if</span> (!buffer[currfd]-&gt;readable)&#123;<br>												event.data.fd = currfd;<br>												event.events = EPOLLIN;<br>												<span class="hljs-keyword">if</span>(epoll_ctl(efd,EPOLL_CTL_MOD, currfd, &amp;event) == <span class="hljs-number">-1</span>)&#123;<br>														perror(<span class="hljs-string">&quot;epoll_ctl mod curr fd failed&quot;</span>);<br>												&#125;									<br>										&#125;<br>								&#125;<br>								<span class="hljs-keyword">if</span> (r) &#123;<br>										<span class="hljs-keyword">if</span>(epoll_ctl(efd, EPOLL_CTL_DEL, currfd, &amp;event) == <span class="hljs-number">-1</span>)&#123;<br>												perror(<span class="hljs-string">&quot;epoll_ctl mov curr fd failed&quot;</span>);<br>										&#125;<br>										close(currfd);							<br>								&#125; 					<br>						&#125;<br>				&#125;	<br>		&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="条件触发与边缘触发"><a href="#条件触发与边缘触发" class="headerlink" title="条件触发与边缘触发"></a>条件触发与边缘触发</h3><p>epoll 还提供了 不同的通知方式来提高整体的处理效率</p>
+<p>条件触发是epoll的默认工作模式，其行为类似于select和poll。只要文件描述符上存在可处理的数据，每次调用epoll_wait都会返回该文件描述符的就绪状态。</p>
+<p>边缘触发模式只在文件描述符状态发生变化时才通知。一旦epoll_wait返回某个文件描述符就绪，如果不处理完所有数据，该文件描述符不会再次被通知。</p>
+<h3 id="epoll的实现原理"><a href="#epoll的实现原理" class="headerlink" title="epoll的实现原理"></a>epoll的实现原理</h3><p>与 select 和 poll的实现不同，epoll直接将 查询结构维护在了内核中，通过创建-注册-查询的方式， 直接向内核中注册与文件描述符关联的事件，当对应的事件发生时，再通过查询事件中的描述符，向用户态响应事件状态，这样最大程度的减少了用户态和内核态间的数据拷贝过程。提高了整体的处理效率。</p>
+<p>在实现上，epoll 在内核中实现了一个红黑树结构，将每一个event 结构存储在红黑树中的节点中，提高了整体通知的查询效率，当检查到某个描述符中的事件就绪后，将对应的节点加入到rdllist中，当使用epoll_wait查询时，可以通过查询rdllist中的事件信息，直接从队列中获取事件，提高了事件的查询处理效率。</p>
+<p><img src="https://i.111666.best/image/YCdTXvyVnGbAJmzAF8GY1Q.png" srcset="/img/loading.gif" lazyload alt="epoll 模型"></p>
+<h1 id="同步I-O与异步I-O"><a href="#同步I-O与异步I-O" class="headerlink" title="同步I&#x2F;O与异步I&#x2F;O"></a>同步I&#x2F;O与异步I&#x2F;O</h1><p>同步I&#x2F;O与异步I&#x2F;O的根本区别在于数据拷贝阶段用户线程是否需要等待。在同步I&#x2F;O模型中，当用户线程发起I&#x2F;O请求后，无论是在等待数据准备还是数据拷贝阶段，用户线程都必须参与并等待操作完成。即使是非阻塞I&#x2F;O，虽然可以通过轮询避免在数据准备阶段阻塞，但在最终进行read&#x2F;write系统调用时，用户线程仍然需要同步等待数据从内核空间拷贝到用户空间。<br>前文讨论的select、poll、epoll等多路复用机制，虽然能够高效地监控多个文件描述符的状态变化，避免了传统阻塞I&#x2F;O中”一个连接一个线程”的资源浪费问题，但它们本质上仍然属于同步I&#x2F;O模型。这些机制只是在”等待数据准备”阶段提供了更好的并发处理能力，当epoll_wait返回就绪的文件描述符后，用户线程调用read或write进行实际数据传输时，依然需要同步等待数据拷贝过程的完成。<br>真正的异步I&#x2F;O模型则完全不同。用户线程向内核提交I&#x2F;O请求后立即返回，继续执行其他任务，整个数据准备和数据拷贝过程都由内核独立完成。当I&#x2F;O操作完全结束后，内核通过回调函数、信号或事件通知等机制告知用户线程结果。在这个过程中，用户线程从不需要主动等待或参与数据传输，实现了真正意义上的异步处理。<br>因此，虽然多路复用技术大大提高了服务器处理并发连接的能力，使单个线程能够管理数千甚至数万个连接，但由于用户线程在数据拷贝阶段仍需等待，所以它们仍然被归类为同步I&#x2F;O。这种分类基于I&#x2F;O操作的完整生命周期来判断，而不仅仅是数据准备阶段的行为特征。</p>
+<h1 id="三种多路复用模型对比"><a href="#三种多路复用模型对比" class="headerlink" title="三种多路复用模型对比"></a>三种多路复用模型对比</h1><table>
+<thead>
+<tr>
+<th>模型</th>
+<th>select</th>
+<th>poll</th>
+<th>epoll</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>特征</td>
+<td>使用fd_set位图结构，通过bit位标记文件描述符状态</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>每次调用需要重新设置fd_set，系统调用开销大</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>内核通过线性扫描检查所有fd状态，返回后用户态再次线性扫描找到就绪fd</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>硬编码限制最大1024个文件描述符（FD_SETSIZE）</td>
+<td>使用pollfd结构体数组，每个元素包含fd、events和revents字段</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>解决了select的fd数量限制，支持任意数量的文件描述符</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>避免了每次重新设置描述符集合的开销</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>但仍需要内核遍历所有pollfd，用户态遍历检查revents</td>
+<td>内核维护红黑树存储监听的fd，使用就绪链表维护活跃事件</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>分离控制操作（epoll_ctl）和等待操作（epoll_wait）</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>基于回调机制，fd就绪时直接加入就绪队列</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>支持条件触发和边缘触发两种通知模式</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>性能</td>
+<td>连接数小于100的小型应用</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>需要跨平台支持的场景</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>对性能要求不高，追求代码简洁的情况</td>
+<td>中等规模应用（100-1000个连接）</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>需要突破select的fd限制但不需要最高性能</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>希望接口比select更清晰的场景</td>
+<td>高并发服务器（1000+连接）</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>对性能有严格要求的Linux服务</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>需要精细控制事件通知行为的应用</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>场景</td>
+<td>连接数小于100的小型应用</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>需要跨平台支持的场景</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>对性能要求不高，追求代码简洁的情况</td>
+<td>使用pollfd结构体数组，每个元素包含fd、events和revents字段</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>解决了select的fd数量限制，支持任意数量的文件描述符</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>避免了每次重新设置描述符集合的开销</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>但仍需要内核遍历所有pollfd，用户态遍历检查revents</td>
+<td>内核维护红黑树存储监听的fd，使用就绪链表维护活跃事件</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>分离控制操作（epoll_ctl）和等待操作（epoll_wait）</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>基于回调机制，fd就绪时直接加入就绪队列</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>支持水平触发（LT）和边缘触发（ET）两种通知模式</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/" class="category-chain-item">计算机网络</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/" class="print-no-link">#计算机网络</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>从IO到IO多路复用</div>
+      <div>http://gadoid.io/2025/08/30/从IO到IO多路复用/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Codfish</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年8月30日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/08/30/Socket/" title="Socket">
+                        <span class="hidden-mobile">Socket</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"lQzCvqmOtewLtpMfvfxKLomU-MdYXbMMI","appKey":"daMNlw5XcjN8TelT6GCHh8RF","path":"window.location.pathname","placeholder":"让灵感在这里发生","avatar":"monsterid","meta":["nick","mail"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":true,"recordIP":true,"serverURLs":"https://lQzCvqmO.api.lncldglobal.com","emojiCDN":null,"emojiMaps":null,"enableQQ":false,"enable":true,"visitor":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      &copy; 2025 - 2025 <a target="_blank" rel="noopener" href="https://github.com/username">CODFISH</a>
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+<!-- hexo injector body_end start --><script src="/js/chatbot-loader.js" defer></script><!-- hexo injector body_end end --></body>
+</html>
