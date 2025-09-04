@@ -1,0 +1,1271 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/bg/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Codfish">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="存储引擎用于组织表中的数据，为Server层提供读写数据的接口 需要考虑的问题 数据存储介质 ： 硬盘，内存 数据组织结构 ： B-树，B+树，哈希表 支持的数据库功能  ：  事务，行锁，外键，缓存 存储使用的数据结构数据库分类关系型数据库 ： 数据以表的方式组织，表与表之间通过外键关联 非关系型数据库 ：以文档方式，KV方式等组织数据 数据的组织通过数据库所需实现的功能 来进行数据结构选型 线">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySQL InnoDB存储引擎">
+<meta property="og:url" content="http://gadoid.io/2025/09/05/MySQL-InnoDB%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/index.html">
+<meta property="og:site_name" content="西北有高楼">
+<meta property="og:description" content="存储引擎用于组织表中的数据，为Server层提供读写数据的接口 需要考虑的问题 数据存储介质 ： 硬盘，内存 数据组织结构 ： B-树，B+树，哈希表 支持的数据库功能  ：  事务，行锁，外键，缓存 存储使用的数据结构数据库分类关系型数据库 ： 数据以表的方式组织，表与表之间通过外键关联 非关系型数据库 ：以文档方式，KV方式等组织数据 数据的组织通过数据库所需实现的功能 来进行数据结构选型 线">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://i.111666.best/image/WPUwx4lp4FsvIrWs6bhVhx.png">
+<meta property="og:image" content="https://i.111666.best/image/gPjed0o2g97lPjWSbAJjjL.png">
+<meta property="article:published_time" content="2025-09-04T18:25:00.000Z">
+<meta property="article:modified_time" content="2025-09-04T18:32:56.490Z">
+<meta property="article:author" content="Codfish">
+<meta property="article:tag" content="存储">
+<meta property="article:tag" content="数据库">
+<meta property="article:tag" content="中间件">
+<meta property="article:tag" content="MySQL">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://i.111666.best/image/WPUwx4lp4FsvIrWs6bhVhx.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>MySQL InnoDB存储引擎 - 西北有高楼</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"gadoid.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>西北有高楼</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/downloads/" target="_self">
+                <i class="iconfont icon-books-fill"></i>
+                <span>资源下载</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/bg/img/ice.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="MySQL InnoDB存储引擎"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-09-05 02:25" pubdate>
+          2025年9月5日 凌晨
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          5k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          43 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">MySQL InnoDB存储引擎</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>存储引擎用于组织表中的数据，为Server层提供读写数据的接口</p>
+<p>需要考虑的问题</p>
+<p>数据存储介质 ： 硬盘，内存</p>
+<p>数据组织结构 ： B-树，B+树，哈希表</p>
+<p>支持的数据库功能  ：  事务，行锁，外键，缓存</p>
+<h1 id="存储使用的数据结构"><a href="#存储使用的数据结构" class="headerlink" title="存储使用的数据结构"></a>存储使用的数据结构</h1><h2 id="数据库分类"><a href="#数据库分类" class="headerlink" title="数据库分类"></a>数据库分类</h2><p>关系型数据库 ： 数据以表的方式组织，表与表之间通过外键关联</p>
+<p>非关系型数据库 ：以文档方式，KV方式等组织数据</p>
+<h2 id="数据的组织"><a href="#数据的组织" class="headerlink" title="数据的组织"></a>数据的组织</h2><p>通过数据库所需实现的功能 来进行数据结构选型</p>
+<h3 id="线性表"><a href="#线性表" class="headerlink" title="线性表"></a>线性表</h3><p><strong>数组</strong></p>
+<p>数组的查询&#x2F;修改都是 O（1）复杂度的数据操作，但是在新增&#x2F;删除时，需要进行大量的数据迁移工作。</p>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>时间复杂度</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>单条查询</td>
+<td>O（1）</td>
+<td>随机访问</td>
+</tr>
+<tr>
+<td>范围查询</td>
+<td>O（1）</td>
+<td>随机访问</td>
+</tr>
+<tr>
+<td>新增</td>
+<td>O（n）</td>
+<td>涉及到数据插入后的后续数据迁移</td>
+</tr>
+<tr>
+<td>删除</td>
+<td>O（n）</td>
+<td>涉及到数据插入后的后续数据迁移</td>
+</tr>
+<tr>
+<td>修改</td>
+<td>O（1）</td>
+<td>…</td>
+</tr>
+</tbody></table>
+<p><strong>链表</strong></p>
+<p>链表的特点是在新增&#x2F;删除&#x2F;修改时，只需要修改被修改节点的前后元素指针，但是查询过程需要依次查询所有元素</p>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>时间复杂度</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>单条查询</td>
+<td>O（n）</td>
+<td>链表需要从头部或者尾部依次查询</td>
+</tr>
+<tr>
+<td>范围查询</td>
+<td>O（n）</td>
+<td>…</td>
+</tr>
+<tr>
+<td>新增</td>
+<td>O（n）</td>
+<td>直接向目标位置插入修改前后node的指针</td>
+</tr>
+<tr>
+<td>删除</td>
+<td>O（n）</td>
+<td>需要执行查询过程</td>
+</tr>
+<tr>
+<td>修改</td>
+<td>O（n）</td>
+<td>需要执行查询过程</td>
+</tr>
+</tbody></table>
+<h3 id="散列表"><a href="#散列表" class="headerlink" title="散列表"></a>散列表</h3><p>hash表</p>
+<p>hash表通过模运算，将数据散列排布到结构中，这让它的新增，删除，修改以及单条查询性能优秀，但是条目间的关系较难处理。</p>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>时间复杂度</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>单条查询</td>
+<td>O（1）</td>
+<td>通过模运算直接查询到对应的槽位</td>
+</tr>
+<tr>
+<td>范围查询</td>
+<td>O（n）</td>
+<td></td>
+</tr>
+<tr>
+<td>新增</td>
+<td>O（1）</td>
+<td>…</td>
+</tr>
+<tr>
+<td>删除</td>
+<td>O（1）</td>
+<td>…</td>
+</tr>
+<tr>
+<td>修改</td>
+<td>O（1）</td>
+<td>…</td>
+</tr>
+</tbody></table>
+<h3 id="树结构"><a href="#树结构" class="headerlink" title="树结构"></a>树结构</h3><p><strong>二叉树</strong></p>
+<p>实现简单，代码量少，中序遍历天然支持范围查询，内存占用相对较小，但是最坏情况下退化成链表，性能急剧下降，不适合频繁插入删除的场景，无法保证稳定的查询性能</p>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>时间复杂度</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>单条查询</td>
+<td>O(log n) ~ O(n)</td>
+<td>平衡时O(log n)，退化成链表时O(n)</td>
+</tr>
+<tr>
+<td>范围查询</td>
+<td>O(log n + k)</td>
+<td>k为结果集大小，中序遍历天然有序</td>
+</tr>
+<tr>
+<td>新增</td>
+<td>O(log n) ~ O(n)</td>
+<td>需要先查找插入位置</td>
+</tr>
+<tr>
+<td>删除</td>
+<td>O(log n) ~ O(n)</td>
+<td>需要查找节点并处理子树重组</td>
+</tr>
+<tr>
+<td>修改</td>
+<td>O(log n) ~ O(n)</td>
+<td>先查找再修改</td>
+</tr>
+</tbody></table>
+<p><strong>AVL树</strong></p>
+<p>AVL树查询性能最稳定，严格的O(log n)，范围查询效率很高，适合读密集型工作负载，插入删除时旋转操作较多，写入性能相对较差，实现复杂度高，维护成本大，对于频繁更新的场景不够友好</p>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>时间复杂度</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>单条查询</td>
+<td>O(log n)</td>
+<td>严格平衡，高度差不超过1</td>
+</tr>
+<tr>
+<td>范围查询</td>
+<td>O(log n + k)</td>
+<td>k为结果集大小，有序遍历效率高</td>
+</tr>
+<tr>
+<td>新增</td>
+<td>O(log n)</td>
+<td>可能需要最多2次旋转来重平衡</td>
+</tr>
+<tr>
+<td>删除</td>
+<td>O(log n)</td>
+<td>可能需要O(log n)次旋转</td>
+</tr>
+<tr>
+<td>修改</td>
+<td>O(log n)</td>
+<td>先查找再修改</td>
+</tr>
+</tbody></table>
+<p><strong>红黑树</strong></p>
+<p>红黑树读写性能均衡，插入删除时旋转次数少，实现复杂度适中，被广泛应用（如Linux内核、Java TreeMap），适合读写混合的工作负载，相对AVL树，写入性能更好，但是查询性能略逊于AVL树（但差距很小），相比BST实现复杂度较高，内存开销略大（需要存储颜色信息）</p>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>时间复杂度</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>单条查询</td>
+<td>O(log n)</td>
+<td>近似平衡，最坏情况下高度为2log(n+1)</td>
+</tr>
+<tr>
+<td>范围查询</td>
+<td>O(log n + k)</td>
+<td>k为结果集大小</td>
+</tr>
+<tr>
+<td>新增</td>
+<td>O(log n)</td>
+<td>最多3次旋转完成重平衡</td>
+</tr>
+<tr>
+<td>删除</td>
+<td>O(log n)</td>
+<td>最多3次旋转完成重平衡</td>
+</tr>
+<tr>
+<td>修改</td>
+<td>O(log n)</td>
+<td>先查找再修改</td>
+</tr>
+</tbody></table>
+<p><strong>B树</strong></p>
+<p>相比于二叉树，B树通过在每一层增加更多的节点，减少了结构的整体层高，进而减少了查询时整体的I&#x2F;O次数，提高了查询效率。但是由于在节点上进行数据存储，导致节点的大小较大，同时查询效率不稳定。</p>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>时间复杂度</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>单条查询</td>
+<td>O(log_m n)</td>
+<td>m为树的阶数，相比二叉树减少了树高</td>
+</tr>
+<tr>
+<td>范围查询</td>
+<td>O(log_m n + k)</td>
+<td>k为结果集大小，但需要回溯父节点</td>
+</tr>
+<tr>
+<td>新增</td>
+<td>O(log_m n)</td>
+<td>可能涉及节点分裂，影响多个层级</td>
+</tr>
+<tr>
+<td>删除</td>
+<td>O(log_m n)</td>
+<td>可能涉及节点合并或重新分布</td>
+</tr>
+<tr>
+<td>修改</td>
+<td>O(log_m n)</td>
+<td>先查找再修改</td>
+</tr>
+</tbody></table>
+<p><strong>B+树</strong></p>
+<p>B+树在B树的基础上，选择将素有数据存储在叶子节点提供了更好的一致性。</p>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>时间复杂度</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>单条查询</td>
+<td>O(log_m n)</td>
+<td>必须查找到叶子节点</td>
+</tr>
+<tr>
+<td>范围查询</td>
+<td>O(log_m n + k)</td>
+<td>k为结果集大小，叶子节点链表遍历效率极高</td>
+</tr>
+<tr>
+<td>新增</td>
+<td>O(log_m n)</td>
+<td>只在叶子节点存储数据，分裂影响相对较小</td>
+</tr>
+<tr>
+<td>删除</td>
+<td>O(log_m n)</td>
+<td>只需要在叶子节点删除数据</td>
+</tr>
+<tr>
+<td>修改</td>
+<td>O(log_m n)</td>
+<td>只需要修改叶子节点的数据</td>
+</tr>
+</tbody></table>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>对于存储设计来说需要考虑以下问题</p>
+<ol>
+<li>数据的组织形式：  有结构的数据存储&#x2F;文档&#x2F;日志</li>
+<li>数据的存储位置：  内存&#x2F;磁盘</li>
+<li>数据的存储结构：  线性表&#x2F;哈希表&#x2F;查找树</li>
+</ol>
+<p>以MySQL 为例，MySQL的目标是提供高性能海量数据的结构化查询，那么就意味着</p>
+<ol>
+<li>以结构化的存储方式， 对插入的条目进行存储</li>
+<li>以磁盘为主，缓存为辅的方式，进行数据存储</li>
+<li>使用B+树，中间层只存储索引信息，而在叶子节点中存储行数据，同时保证了查询效率和查询一一致性。</li>
+</ol>
+<h2 id="B树的组织过程"><a href="#B树的组织过程" class="headerlink" title="B树的组织过程"></a>B树的组织过程</h2><p>10, 20, 30, 40, 50, 60, 70, 80, 90<br>假设B树的度数(degree) &#x3D; 3，即：</p>
+<ul>
+<li>每个节点最多有 <strong>2个关键字</strong> (degree-1)</li>
+<li>每个节点最多有 <strong>3个子节点</strong> (degree)</li>
+<li>非根节点至少有 <strong>1个关键字</strong></li>
+</ul>
+<h3 id="步骤1-插入-10"><a href="#步骤1-插入-10" class="headerlink" title="步骤1: 插入 10"></a>步骤1: 插入 10</h3><figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs angelscript"><span class="hljs-string">[10]</span><br><br></code></pre></td></tr></table></figure>
+
+<p>根节点，直接插入。</p>
+<h3 id="步骤2-插入-20"><a href="#步骤2-插入-20" class="headerlink" title="步骤2: 插入 20"></a>步骤2: 插入 20</h3><figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs angelscript"><span class="hljs-string">[10,20]</span><br><br></code></pre></td></tr></table></figure>
+
+<p>节点未满，直接插入。</p>
+<h3 id="步骤3-插入-30"><a href="#步骤3-插入-30" class="headerlink" title="步骤3: 插入 30"></a>步骤3: 插入 30</h3><figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs angelscript"><span class="hljs-string">[10,20,30]</span>  ← 节点已满，需要分裂！<br><br></code></pre></td></tr></table></figure>
+
+<p><strong>分裂过程：</strong></p>
+<ul>
+<li>选择中间元素 20 作为分裂点</li>
+<li>20 上升为新的根节点</li>
+<li>10 和 30 分别成为左右子节点</li>
+</ul>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs css">   <span class="hljs-selector-attr">[20]</span><br>  /    \<br><span class="hljs-selector-attr">[10]</span>   <span class="hljs-selector-attr">[30]</span><br><br></code></pre></td></tr></table></figure>
+
+<h3 id="步骤4-插入-40"><a href="#步骤4-插入-40" class="headerlink" title="步骤4: 插入 40"></a>步骤4: 插入 40</h3><figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs css">   <span class="hljs-selector-attr">[20]</span><br>  /    \<br><span class="hljs-selector-attr">[10]</span>   <span class="hljs-selector-attr">[30,40]</span><br><br></code></pre></td></tr></table></figure>
+
+<p>40插入到30的右边，节点未满。</p>
+<h3 id="步骤5-插入-50"><a href="#步骤5-插入-50" class="headerlink" title="步骤5: 插入 50"></a>步骤5: 插入 50</h3><figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs css">   <span class="hljs-selector-attr">[20]</span><br>  /    \<br><span class="hljs-selector-attr">[10]</span>   <span class="hljs-selector-attr">[30,40,50]</span>  ← 右子节点满了，需要分裂！<br><br></code></pre></td></tr></table></figure>
+
+<p><strong>分裂过程：</strong></p>
+<ul>
+<li>中间元素 40 上升到父节点</li>
+<li>30 和 50 分别成为新的左右子节点</li>
+</ul>
+<figure class="highlight inform7"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs inform7">   <span class="hljs-comment">[20,40]</span><br>  /   |   \<br><span class="hljs-comment">[10]</span> <span class="hljs-comment">[30]</span> <span class="hljs-comment">[50]</span><br><br></code></pre></td></tr></table></figure>
+
+<h3 id="步骤6-插入-60"><a href="#步骤6-插入-60" class="headerlink" title="步骤6: 插入 60"></a>步骤6: 插入 60</h3><figure class="highlight inform7"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs inform7">   <span class="hljs-comment">[20,40]</span><br>  /   |   \<br><span class="hljs-comment">[10]</span> <span class="hljs-comment">[30]</span> <span class="hljs-comment">[50,60]</span><br><br></code></pre></td></tr></table></figure>
+
+<h3 id="步骤7-插入-70"><a href="#步骤7-插入-70" class="headerlink" title="步骤7: 插入 70"></a>步骤7: 插入 70</h3><figure class="highlight inform7"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs inform7">   <span class="hljs-comment">[20,40]</span><br>  /   |   \<br><span class="hljs-comment">[10]</span> <span class="hljs-comment">[30]</span> <span class="hljs-comment">[50,60,70]</span>  ← 最右节点满了，需要分裂！<br><br></code></pre></td></tr></table></figure>
+
+<p><strong>分裂过程：</strong></p>
+<ul>
+<li>中间元素 60 要上升到父节点</li>
+<li>但父节点 [20,40] 已经满了！</li>
+</ul>
+<figure class="highlight inform7"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs inform7">    <span class="hljs-comment">[20,40,60]</span>  ← 根节点也满了，需要分裂！<br>   /   |   |   \<br><span class="hljs-comment">[10]</span> <span class="hljs-comment">[30]</span> <span class="hljs-comment">[50]</span> <span class="hljs-comment">[70]</span><br><br></code></pre></td></tr></table></figure>
+
+<p><strong>根节点分裂：</strong></p>
+<ul>
+<li>中间元素 40 成为新根</li>
+<li>[20] 和 [60] 成为左右子节点</li>
+</ul>
+<figure class="highlight inform7"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs inform7">      <span class="hljs-comment">[40]</span><br>     /    \<br>   <span class="hljs-comment">[20]</span>   <span class="hljs-comment">[60]</span><br>  /  |    |   \<br><span class="hljs-comment">[10]</span><span class="hljs-comment">[30]</span> <span class="hljs-comment">[50]</span> <span class="hljs-comment">[70]</span><br><br></code></pre></td></tr></table></figure>
+
+<h3 id="步骤8-插入-80"><a href="#步骤8-插入-80" class="headerlink" title="步骤8: 插入 80"></a>步骤8: 插入 80</h3><figure class="highlight inform7"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs inform7">      <span class="hljs-comment">[40]</span><br>     /    \<br>   <span class="hljs-comment">[20]</span>   <span class="hljs-comment">[60]</span><br>  /  |    |   \<br><span class="hljs-comment">[10]</span><span class="hljs-comment">[30]</span> <span class="hljs-comment">[50]</span> <span class="hljs-comment">[70,80]</span><br><br></code></pre></td></tr></table></figure>
+
+<h3 id="步骤9-插入-90"><a href="#步骤9-插入-90" class="headerlink" title="步骤9: 插入 90"></a>步骤9: 插入 90</h3><figure class="highlight inform7"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs inform7">      <span class="hljs-comment">[40]</span><br>     /    \<br>   <span class="hljs-comment">[20]</span>   <span class="hljs-comment">[60]</span><br>  /  |    |   \<br><span class="hljs-comment">[10]</span><span class="hljs-comment">[30]</span> <span class="hljs-comment">[50]</span> <span class="hljs-comment">[70,80,90]</span>  ← 又满了！<br><br></code></pre></td></tr></table></figure>
+
+<p><strong>最后一次分裂：</strong></p>
+<figure class="highlight inform7"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs inform7">      <span class="hljs-comment">[40]</span><br>     /    \<br>   <span class="hljs-comment">[20]</span>   <span class="hljs-comment">[60,80]</span><br>  /  |    |  |  \<br><span class="hljs-comment">[10]</span><span class="hljs-comment">[30]</span> <span class="hljs-comment">[50]</span><span class="hljs-comment">[70]</span><span class="hljs-comment">[90]</span><br><br></code></pre></td></tr></table></figure>
+
+<h3 id="最终B树结构"><a href="#最终B树结构" class="headerlink" title="最终B树结构"></a>最终B树结构</h3><figure class="highlight inform7"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs inform7">        <span class="hljs-comment">[40]</span>                    ← 根节点<br>       /    \<br>    <span class="hljs-comment">[20]</span>    <span class="hljs-comment">[60,80]</span>            ← 内部节点<br>   /  |     |  |  \<br><span class="hljs-comment">[10]</span><span class="hljs-comment">[30]</span>  <span class="hljs-comment">[50]</span><span class="hljs-comment">[70]</span><span class="hljs-comment">[90]</span>         ← 叶子节点<br><br></code></pre></td></tr></table></figure>
+
+<p><strong>平衡性</strong>: 所有叶子节点在同一层</p>
+<p><strong>有序性</strong>: 每个节点内关键字有序，子树间也保持大小关系</p>
+<p><strong>度数限制</strong>: 每个节点最多2个关键字，最多3个子节点</p>
+<p><strong>最小填充</strong>: 除根节点外，每个节点至少1个关键字</p>
+<h2 id="B-树的增删过程"><a href="#B-树的增删过程" class="headerlink" title="B+树的增删过程"></a>B+树的增删过程</h2><p>相对于B树 ， B+树的非叶子节点不保存具体的数据，而只保存key(索引)，而所有的数据最终都会保存到叶子节点，因为所有数据必须要到叶子节点才能获取到，所以每次数据查询的次数都一样，这样一来B+树的查询速度也就会比较稳定</p>
+<p>B+树所有的叶子节点数据构成了一个有序链表，在查询大小区间的数据时更方便</p>
+<p>B+树全节点遍历更快：B++树遍历整棵树只需要扫描所有的叶子节点即可</p>
+<h3 id="初始B-树状态"><a href="#初始B-树状态" class="headerlink" title="初始B+树状态"></a>初始B+树状态</h3><p>假设已有一棵B+树（阶数&#x3D;3）：</p>
+<figure class="highlight inform7"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs inform7">          <span class="hljs-comment">[30]</span><br>         /    \<br>      <span class="hljs-comment">[20]</span>    <span class="hljs-comment">[40]</span><br>     /  |      |  \<br><span class="hljs-comment">[10:张三]</span> <span class="hljs-comment">[20:李四]</span> <span class="hljs-comment">[30:王五]</span> <span class="hljs-comment">[40:赵六, 50:钱七]</span><br>    ↔     ↔      ↔       → NULL<br><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="插入-25-”新员工”"><a href="#插入-25-”新员工”" class="headerlink" title="插入 (25,”新员工”)"></a>插入 (25,”新员工”)</h3><p><strong>1. 定位插入位置</strong></p>
+<figure class="highlight basic"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs basic"><span class="hljs-symbol">25 </span>&gt; <span class="hljs-number">30</span>? NO → 走左子树<br><span class="hljs-symbol">25 </span>&gt; <span class="hljs-number">20</span>? YES → 走右分支 → 到达 [<span class="hljs-number">20</span>:李四] 叶子节点<br><br></code></pre></td></tr></table></figure>
+
+<p><strong>2. 插入到叶子节点</strong></p>
+<figure class="highlight inform7"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs inform7">插入前: <span class="hljs-comment">[20:李四]</span><br>插入后: <span class="hljs-comment">[20:李四, 25:新员工]</span><br><br></code></pre></td></tr></table></figure>
+
+<p><strong>3. 最终结果</strong></p>
+<figure class="highlight inform7"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs inform7">          <span class="hljs-comment">[30]</span><br>         /    \<br>      <span class="hljs-comment">[20]</span>    <span class="hljs-comment">[40]</span><br>     /  |      |  \<br><span class="hljs-comment">[10:张三]</span> <span class="hljs-comment">[20:李四,25:新员工]</span> <span class="hljs-comment">[30:王五]</span> <span class="hljs-comment">[40:赵六, 50:钱七]</span><br>    ↔         ↔           ↔       → NULL<br><br></code></pre></td></tr></table></figure>
+
+<p><strong>插入成功</strong> - 节点未满，无需分裂</p>
+<h3 id="删除场景：删除-50-”钱七”"><a href="#删除场景：删除-50-”钱七”" class="headerlink" title="删除场景：删除 (50,”钱七”)"></a>删除场景：删除 (50,”钱七”)</h3><p><strong>1. 定位删除位置</strong></p>
+<figure class="highlight basic"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs basic"><span class="hljs-symbol">50 </span>&gt; <span class="hljs-number">30</span>? YES → 走右子树<br><span class="hljs-symbol">50 </span>&gt; <span class="hljs-number">40</span>? YES → 走右分支 → 到达 [<span class="hljs-number">40</span>:赵六, <span class="hljs-number">50</span>:钱七] 叶子节点<br><br></code></pre></td></tr></table></figure>
+
+<p><strong>2. 从叶子节点删除</strong></p>
+<figure class="highlight inform7"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs inform7">删除前: <span class="hljs-comment">[40:赵六, 50:钱七]</span><br>删除后: <span class="hljs-comment">[40:赵六]</span><br><br></code></pre></td></tr></table></figure>
+
+<p><strong>3. 最终结果</strong></p>
+<figure class="highlight inform7"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs inform7">          <span class="hljs-comment">[30]</span><br>         /    \<br>      <span class="hljs-comment">[20]</span>    <span class="hljs-comment">[40]</span><br>     /  |      |  \<br><span class="hljs-comment">[10:张三]</span> <span class="hljs-comment">[20:李四,25:新员工]</span> <span class="hljs-comment">[30:王五]</span> <span class="hljs-comment">[40:赵六]</span><br>    ↔         ↔           ↔       → NULL<br><br></code></pre></td></tr></table></figure>
+
+<p> <strong>删除成功</strong> - 节点仍满足最小关键字要求</p>
+<hr>
+<h3 id="复杂删除场景：删除-40-”赵六”"><a href="#复杂删除场景：删除-40-”赵六”" class="headerlink" title="复杂删除场景：删除 (40,”赵六”)"></a>复杂删除场景：删除 (40,”赵六”)</h3><p><strong>1. 删除后节点变空</strong></p>
+<figure class="highlight inform7"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs inform7">删除前: <span class="hljs-comment">[40:赵六]</span><br>删除后: <span class="hljs-comment">[空]</span>  ← 触发合并操作！<br><br></code></pre></td></tr></table></figure>
+
+<p><strong>2. 与左兄弟合并</strong></p>
+<figure class="highlight inform7"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs inform7">左兄弟: <span class="hljs-comment">[30:王五]</span><br>合并后: <span class="hljs-comment">[30:王五]</span>  （原本的40节点消失）<br><br></code></pre></td></tr></table></figure>
+
+<p><strong>3. 更新内部节点索引</strong></p>
+<figure class="highlight inform7"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs inform7">内部节点 <span class="hljs-comment">[40]</span> 需要删除，与 <span class="hljs-comment">[20]</span> 合并：<br><br>修改前:<br>          <span class="hljs-comment">[20]</span>    <span class="hljs-comment">[40]</span><br>         /  |      |  \<br><br>修改后:<br>          <span class="hljs-comment">[20, 30]</span><br>         /   |   \<br><br></code></pre></td></tr></table></figure>
+
+<p><strong>4. 最终结果</strong></p>
+<figure class="highlight inform7"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs inform7">      <span class="hljs-comment">[20, 30]</span><br>     /   |   \<br><span class="hljs-comment">[10:张三]</span> <span class="hljs-comment">[20:李四,25:新员工]</span> <span class="hljs-comment">[30:王五]</span><br>    ↔         ↔           → NULL<br><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="InnoDB"><a href="#InnoDB" class="headerlink" title="InnoDB"></a>InnoDB</h1><p>innodb中 主要存在两块存储区域</p>
+<p>内存存储 ：将一些热点数据加载到内存中，提高整体的查询和响应速度</p>
+<p>硬盘存储 ：将数据持久化存储到硬盘中 </p>
+<p><img src="https://i.111666.best/image/WPUwx4lp4FsvIrWs6bhVhx.png" srcset="/img/loading.gif" lazyload alt="引擎处理流程"></p>
+<h2 id="磁盘结构"><a href="#磁盘结构" class="headerlink" title="磁盘结构"></a>磁盘结构</h2><h3 id="表"><a href="#表" class="headerlink" title="表"></a>表</h3><p><strong>表空间</strong></p>
+<p>独立表空间与共享表空间</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-keyword">SET</span> <span class="hljs-keyword">GLOBAL</span> innodb_file_per_table  <span class="hljs-comment">-- 通过命令设置 创建表的表空间策略</span><br></code></pre></td></tr></table></figure>
+
+<p>独立表空间： 每张表有一个独立的表空间，file_per_table表空间属于独立表空间</p>
+<p>共享表空间：多张表共用一个表空间，其中系统表空间属于共享表空间</p>
+<p>在Mysql 中创建的表结构默认情况下会以”.idb”文件存储到 &#x2F;mysql&#x2F;datadir&#x2F; 文件下</p>
+<p>在一个Mysql进程中可以管理多个表空间</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-keyword">CREATE</span> TABLESPACE ts Engine <span class="hljs-operator">=</span> InnoDB ;<br><span class="hljs-comment">-- 设置表空间</span><br><span class="hljs-keyword">CREATE</span> TABLESPACE ts <span class="hljs-keyword">ADD</span> DATAFILE <span class="hljs-string">&#x27;ts.idb&#x27;</span> Engine <span class="hljs-operator">=</span> InnoDB ;<br><span class="hljs-comment">-- 指定表空间名称创建</span><br>CRAETE <span class="hljs-keyword">TABLE</span> new_table (c <span class="hljs-type">INT</span> <span class="hljs-keyword">PRIMARY KEY</span>) TABLESPACE ts ;<br><span class="hljs-comment">-- 为创建的数据表指定表空间</span><br><br></code></pre></td></tr></table></figure>
+
+<p><strong>其他表空间结构</strong></p>
+<p>System Tablespace : 共享表空间，并允许存放多个表数据</p>
+<p>File-Per-Table Tablespaces : 独立表空间</p>
+<p>General Tablespaces : 共享表空间</p>
+<p>Undo Tablespaces : 用于事务处理</p>
+<p>Temporary Tablespaces : 临时表空间</p>
+<p>Redo log : 用于数据恢复</p>
+<h3 id="页"><a href="#页" class="headerlink" title="页"></a>页</h3><p>在InnoDB中 页扮演了两种角色</p>
+<ol>
+<li>在B+ 树中，作为最终的叶子节点</li>
+<li>在链表中，作为链表结构有序的组织了行数据</li>
+</ol>
+<p><img src="https://i.111666.best/image/gPjed0o2g97lPjWSbAJjjL.png" srcset="/img/loading.gif" lazyload alt="页处理.png"></p>
+<p><strong>数据的插入过程与表分裂</strong></p>
+<p><strong>1. 索引导航与位置定位</strong><br>当数据插入表时，InnoDB通过B+树索引进行层级导航：从根索引页开始，根据键值比较逐层向下查找，最终定位到应当存储该数据的目标数据页（叶子节点）。</p>
+<p><strong>2. 页容量检测与分裂机制</strong></p>
+<p>在目标数据页中检测剩余容量。当页空间不足以容纳新插入的完整行记录时，触发页分裂操作：</p>
+<ul>
+<li>从表空间分配器申请新的数据页</li>
+<li>选择适当的分裂点，将原页中的部分数据和新插入数据重新分布到新页中</li>
+<li>更新页间的双向链表指针，维护叶子层的逻辑有序性</li>
+<li>同步更新父级索引页，添加新的键值边界以反映分裂后的数据范围</li>
+</ul>
+<p><strong>3. 多层有序性保障</strong><br>B+树的设计通过两个层面确保数据有序性：</p>
+<ul>
+<li><strong>索引层面</strong>：每个索引页的键值严格对应其子树的数据范围边界</li>
+<li><strong>叶子层面</strong>：所有数据页通过双向指针形成有序链表，支持高效的范围查询和顺序扫描</li>
+</ul>
+<h3 id="页结构"><a href="#页结构" class="headerlink" title="页结构"></a>页结构</h3><p><strong>File Header</strong>（38字节）<br><strong>PAGE_OFFSET：</strong>表空间中页的偏移值，如果某表空间的大小是1GB，且页的大小是16KB，那么一共有65536个页，那么PAGE_OFFSET表示该页在所有页中的位置，如果PAGE_OFFSET&#x3D;1，说明该页为 表空间的第二个页。<br><strong>PAGE_PREV和PAGE_NEXT：</strong>当前页的上一个页和下一个页，用于将页组织成双向链表<br><strong>PAGE_TYPE：</strong> 表示页的类型，根据页存储的数据不同，将页分成不同的类型<br><strong>SPACE_ID：</strong> 表示该页属于哪个表空间<br><strong>PageHader</strong> (56字节)<br>用于记录页的状态信息<br><strong>PAGE_N_RECS：</strong> 表示该页中包含多少记录<br><strong>PAGE_LEVEL：</strong> 当前页在B+树中的层级，0表示叶子节点<br>最大最小记录 ： 用于限定记录的边界，用于B+树确定数据边界<br><strong>User Record：</strong> 实际存储行记录的部分<br><strong>Free Space:</strong> 空闲结构，当某条记录被删除时，将其空间加入到空闲链表<br><strong>Page Directory：</strong> 用于高效查找一个页中的某行记录<br><strong>File Trailer:</strong> 存储校验和，用于检查数据是否完整</p>
+<h3 id="行结构"><a href="#行结构" class="headerlink" title="行结构"></a>行结构</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs sql">[[变长字段的长度列表][<span class="hljs-keyword">NULL</span>值标志位][记录头信息][列<span class="hljs-number">1</span>数据][列<span class="hljs-number">2</span>数据]...]<br></code></pre></td></tr></table></figure>
+
+<p>变长字段的长度列表 ： 记录VARCHAR结构的 长度信息</p>
+<p>NULL值标记位 ： 用于标记哪些值为NULL使用一个bitmap，如果所有字段均不允许为NULL，则取消该字段</p>
+<p>记录头信息</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs sql">[预留位<span class="hljs-number">1</span>][预留位<span class="hljs-number">2</span>][delete_mask][min_rec_mask][n_owned][heap_no][heap_no][record_type][next_record]<br></code></pre></td></tr></table></figure>
+
+<p>delete_mask ： 当前记录被删除的标志位</p>
+<p>n_owened ： 当前记录的所在组</p>
+<p>record_type ： 记录类型00： 普通 ，01： B+树节点指针  10：最小记录 11：最大记录</p>
+<p>next_record ： 下一条记录的相对位置</p>
+<p><strong>隐藏列</strong></p>
+<p>DB_ROW_ID（6Bytes） ： 用于标识一条记录 → 存储主键的值。未指定时选择非空唯一值为主键值，如果没有，则会添加DB_ROW_ID字段作为主键。（用于构建B+树）</p>
+<p>DB_TRX_ID（6Bytes）：事务ID</p>
+<p>DB_ROLL_ID （7Bytes）：存储回滚指针</p>
+<p>查询使用的行格式</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> <span class="hljs-operator">*</span> <span class="hljs-keyword">FROM</span> information_schema.innodb_tables <span class="hljs-keyword">WHERE</span> name <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;engine/t1&#x27;</span>\G;<br><span class="hljs-comment">-- 查询使用的行格式</span><br><span class="hljs-keyword">CREATE TABLE</span> test(c <span class="hljs-type">INT</span>) row_format<span class="hljs-operator">=</span>compact;<br><span class="hljs-comment">-- 指定行格式</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="数据查询过程"><a href="#数据查询过程" class="headerlink" title="数据查询过程"></a>数据查询过程</h2><h3 id="B-树阶段"><a href="#B-树阶段" class="headerlink" title="B+树阶段"></a>B+树阶段</h3><p>将KEY与每一层的KEY进行比较。</p>
+<p>当小于索引KEY 则向左子树进行查询，如果大于索引KEY则向右子树进行查询。</p>
+<p>最终查询到符合查询范围的页的偏移信息</p>
+<h3 id="页阶段"><a href="#页阶段" class="headerlink" title="页阶段"></a>页阶段</h3><p>Page Directory存储的是槽位指针，每个槽位对应一个记录组</p>
+<p>记录按主键顺序存储，每组4-8条记录</p>
+<p>使用二分查找定位到目标槽位，槽位指向的是该组内主键值最大的记录</p>
+<h3 id="行阶段"><a href="#行阶段" class="headerlink" title="行阶段"></a>行阶段</h3><p>在确定的记录组内，通过记录头的next_record指针逐条遍历</p>
+<p>比较每条记录的主键值</p>
+<p>找到匹配记录或确定记录不存在</p>
+<h2 id="数据组织"><a href="#数据组织" class="headerlink" title="数据组织"></a>数据组织</h2><ul>
+<li><strong>系统表空间 (ibdata1)</strong> &#x2F; <strong>独立表空间 (*.ibd文件)</strong></li>
+</ul>
+<h3 id="表段-Table-Segment"><a href="#表段-Table-Segment" class="headerlink" title="表段 (Table Segment)"></a>表段 (Table Segment)</h3><ul>
+<li>**区 (Extent)**：1MB连续存储 (64个16KB页面)，当页面使用超过1MB后启用区分配<ul>
+<li>**页 (Page)**：16KB数据组织单元<ul>
+<li>**页头 (38字节)**：页面元数据、校验信息</li>
+<li><strong>Page Directory</strong>：记录槽位指针数组，二分查找定位</li>
+<li><strong>用户记录区</strong>：实际数据存储区域</li>
+<li><strong>自由空间</strong>：未使用的页面空间</li>
+<li>**行 (Row)**：<ul>
+<li><strong>变长字段长度列表</strong>：逆序存储字段长度</li>
+<li><strong>NULL值标记位</strong>：位图标识NULL字段</li>
+<li>**记录头信息 (5字节)**：deleted_flag&#x2F;next_record等控制信息</li>
+<li><strong>隐藏字段</strong>：row_id(6字节)&#x2F;trx_id(6字节)&#x2F;roll_ptr(7字节)</li>
+<li><strong>列字段数据</strong>：实际用户数据</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="索引段-Index-Segment"><a href="#索引段-Index-Segment" class="headerlink" title="索引段 (Index Segment)"></a>索引段 (Index Segment)</h3><ul>
+<li><strong>非叶子节点段</strong>：B+树内部节点</li>
+<li><strong>叶子节点段</strong>：B+树叶子节点</li>
+<li><strong>区</strong>：同表段结构<ul>
+<li><strong>页</strong>：索引页面，存储键值+指针&#x2F;记录</li>
+</ul>
+</li>
+</ul>
+<h3 id="回滚段-Rollback-Segment"><a href="#回滚段-Rollback-Segment" class="headerlink" title="回滚段 (Rollback Segment)"></a>回滚段 (Rollback Segment)</h3><ul>
+<li><strong>区</strong>：撤销日志存储<ul>
+<li><strong>页</strong>：Undo页面，记录事务回滚信息</li>
+</ul>
+</li>
+</ul>
+<h3 id="临时段-Temporary-Segment"><a href="#临时段-Temporary-Segment" class="headerlink" title="临时段 (Temporary Segment)"></a>临时段 (Temporary Segment)</h3><ul>
+<li><strong>区</strong>：临时数据存储<ul>
+<li><strong>页</strong>：排序、分组等操作的临时数据</li>
+</ul>
+</li>
+</ul>
+<h1 id="缓存"><a href="#缓存" class="headerlink" title="缓存"></a>缓存</h1><p>InnoDB 使用Buffer Pool 来完成缓存处理</p>
+<h2 id="Free-链表-："><a href="#Free-链表-：" class="headerlink" title="Free 链表 ："></a>Free 链表 ：</h2><p>维护空闲缓存页，快速的找到空闲缓存页</p>
+<p>每当需要从磁盘中加载一个页到Buffer Pool中时，就从Free链表中取出一个空闲缓存页，并将该缓存页从Free链表中删除。</p>
+<h2 id="LRU链表："><a href="#LRU链表：" class="headerlink" title="LRU链表："></a>LRU链表：</h2><p>维护已经在使用的缓存页，提高缓存命中率。</p>
+<p>Buffer Poll的大小是有限的。对于一些频繁访问的数据我们希望可以一直留在Buffer Pool中，而很少访问的数据可以在某些时机淘汰掉，从而保证Buffer Pool不会因为满了而导致无法再缓存新的数据</p>
+<h2 id="Flush链表："><a href="#Flush链表：" class="headerlink" title="Flush链表："></a>Flush链表：</h2><p>维护被修改过的缓存页，快速知道哪些缓存页是赃的</p>
+<p>表示此页已被使用且已被修改，其数据和磁盘中的数据已经不一致，当脏页上的数据写入磁盘后，内存数据和磁盘数据一致，那么该页就变成了干净页，脏页同时存在于LRU链表和Flush链表</p>
+<h2 id="预读导致的处理问题以及Buffer-Pool-污染问题"><a href="#预读导致的处理问题以及Buffer-Pool-污染问题" class="headerlink" title="预读导致的处理问题以及Buffer Pool 污染问题"></a>预读导致的处理问题以及Buffer Pool 污染问题</h2><h3 id="预读问题"><a href="#预读问题" class="headerlink" title="预读问题"></a>预读问题</h3><p>由于局部性，原理InnoDB 会将相邻的页预读到缓存池中，这样一方面被加载到缓存中的数据可能没有被使用，另一方面会导致热点数据被清理。进而导致反复加载。所以InnDB 设置了两片区域，Young&#x2F;Old，LPU 优先使用Old区的缓存进行汰换，页面从Old区移动到Young区需要被使用并且满足<strong>时间间隔条件。</strong></p>
+<h3 id="Buffer-Pool污染"><a href="#Buffer-Pool污染" class="headerlink" title="Buffer Pool污染"></a>Buffer Pool污染</h3><p>对于模糊搜索，会导致数据库进行页遍历操作，这时随着页的加载，LPU会逐渐清理掉链表中的页信息，最终导致这些临时的表信息挤压了热点页信息，优化方法是在Old区设置页被加载到页被使用的时间区间，当小于1000ms(可配置)就被使用的页结构， 不会被加载到Young区</p>
+<h2 id="缓存中页查询过程"><a href="#缓存中页查询过程" class="headerlink" title="缓存中页查询过程"></a>缓存中页查询过程</h2><p>在缓存中，当页被加载到内存后，会将该页按表空间号和页号 进行哈希计算，存储到对应的桶结构中，查询时， 同样通过哈希向桶结构中查询，对应的页号信息。之后再在该页中使用槽位信息，进行二分查找，最终再目标组中使用遍历查询最终的行信息。</p>
+<h3 id="1-Buffer-Pool层面-哈希定位页面"><a href="#1-Buffer-Pool层面-哈希定位页面" class="headerlink" title="1. Buffer Pool层面 - 哈希定位页面"></a><strong>1. Buffer Pool层面 - 哈希定位页面</strong></h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs cpp">*<span class="hljs-comment">// 第一步：在Buffer Pool中找到页面*</span><br><span class="hljs-type">uint32_t</span> hash = (space_id &lt;&lt; <span class="hljs-number">20</span>) ^ page_no;     *<span class="hljs-comment">// 哈希计算*</span><br><span class="hljs-type">uint32_t</span> bucket = hash % hash_table_size;       *<span class="hljs-comment">// 确定桶号*</span><br>HashBucket* target_bucket = &amp;hash_buckets[bucket];<br><br>*<span class="hljs-comment">// 在桶的链表中查找目标页面*</span><br><span class="hljs-keyword">for</span> (BufferBlock* block = target_bucket-&gt;first_block; block; block = block-&gt;hash_next) &#123;<br>    <span class="hljs-keyword">if</span> (block-&gt;space_id == space_id &amp;&amp; block-&gt;page_no == page_no) &#123;<br>        <span class="hljs-keyword">return</span> block;  *<span class="hljs-comment">// 找到页面！*</span><br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="2-Page页面层面-槽位二分查找"><a href="#2-Page页面层面-槽位二分查找" class="headerlink" title="2. Page页面层面 - 槽位二分查找"></a><strong>2. Page页面层面 - 槽位二分查找</strong></h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs cpp">*<span class="hljs-comment">// 第二步：在页面内通过页面目录定位记录组*</span><br><span class="hljs-function">Record* <span class="hljs-title">find_record_in_page</span><span class="hljs-params">(Page* page, <span class="hljs-type">uint32_t</span> search_key)</span> </span>&#123;<br>    *<span class="hljs-comment">// 在页面目录中二分查找槽位*</span><br>    <span class="hljs-type">int</span> left = <span class="hljs-number">0</span>, right = page-&gt;slot_count - <span class="hljs-number">1</span>;<br>    <span class="hljs-type">int</span> target_slot = <span class="hljs-number">-1</span>;<br>    <br>    <span class="hljs-keyword">while</span> (left &lt;= right) &#123;<br>        <span class="hljs-type">int</span> mid = (left + right) / <span class="hljs-number">2</span>;<br>        <span class="hljs-type">uint32_t</span> slot_min_key = page-&gt;slots[mid].min_key;<br>        <span class="hljs-type">uint32_t</span> slot_max_key = page-&gt;slots[mid].max_key;<br>        <br>        <span class="hljs-keyword">if</span> (search_key &gt;= slot_min_key &amp;&amp; search_key &lt;= slot_max_key) &#123;<br>            target_slot = mid;  *<span class="hljs-comment">// 找到目标槽位！*</span><br>            <span class="hljs-keyword">break</span>;<br>        &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (search_key &lt; slot_min_key) &#123;<br>            right = mid - <span class="hljs-number">1</span>;<br>        &#125; <span class="hljs-keyword">else</span> &#123;<br>            left = mid + <span class="hljs-number">1</span>;<br>        &#125;<br>    &#125;<br>    <br>    *<span class="hljs-comment">// 第三步：在槽位指向的记录组中遍历查找*</span><br>    <span class="hljs-keyword">return</span> <span class="hljs-built_in">linear_search_in_group</span>(page-&gt;slots[target_slot], search_key);<br>&#125;<br></code></pre></td></tr></table></figure>
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/MySQL/" class="category-chain-item">MySQL</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E5%AD%98%E5%82%A8/" class="print-no-link">#存储</a>
+      
+        <a href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/" class="print-no-link">#数据库</a>
+      
+        <a href="/tags/%E4%B8%AD%E9%97%B4%E4%BB%B6/" class="print-no-link">#中间件</a>
+      
+        <a href="/tags/MySQL/" class="print-no-link">#MySQL</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>MySQL InnoDB存储引擎</div>
+      <div>http://gadoid.io/2025/09/05/MySQL-InnoDB存储引擎/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Codfish</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年9月5日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/09/05/MySQL-%E7%B4%A2%E5%BC%95/" title="MySQL 索引类型">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">MySQL 索引类型</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/09/05/MySQL-%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%9F%BA%E7%A1%80/" title="MySQL 命令行基础">
+                        <span class="hidden-mobile">MySQL 命令行基础</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"lQzCvqmOtewLtpMfvfxKLomU-MdYXbMMI","appKey":"daMNlw5XcjN8TelT6GCHh8RF","path":"window.location.pathname","placeholder":"让灵感在这里发生","avatar":"monsterid","meta":["nick","mail"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":true,"recordIP":true,"serverURLs":"https://lQzCvqmO.api.lncldglobal.com","emojiCDN":null,"emojiMaps":null,"enableQQ":false,"enable":true,"visitor":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      &copy; 2025 - 2025 <a target="_blank" rel="noopener" href="https://github.com/username">CODFISH</a>
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+<!-- hexo injector body_end start --><script src="/js/chatbot-loader.js" defer></script><!-- hexo injector body_end end --></body>
+</html>
