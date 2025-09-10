@@ -1,0 +1,772 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/%5Bobject%20Object%5D">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Codfish">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="数据的组织线性表线性表指的是数据的组织是线性有序的，结构在一定的规则下“顺序”存储，中间不存在为空的元素。 随机访问与数组通过一个确定的地址+地址偏移量完成对其他元素的访问。数组是这种思想的最直观例子，当我们定义了一个数组后，通过偏移量，完成对后续数组中的元素进行访问。 1234567int array[] &#x3D; &#123;1,2,3,4,5,6&#125; ; &#x2F;&#x2F; 定义数组printf(&amp;qu">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数据结构 表基础与构造">
+<meta property="og:url" content="http://gadoid.io/2025/09/11/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E8%A1%A8%E5%9F%BA%E7%A1%80%E4%B8%8E%E6%9E%84%E9%80%A0/index.html">
+<meta property="og:site_name" content="西北有高楼">
+<meta property="og:description" content="数据的组织线性表线性表指的是数据的组织是线性有序的，结构在一定的规则下“顺序”存储，中间不存在为空的元素。 随机访问与数组通过一个确定的地址+地址偏移量完成对其他元素的访问。数组是这种思想的最直观例子，当我们定义了一个数组后，通过偏移量，完成对后续数组中的元素进行访问。 1234567int array[] &#x3D; &#123;1,2,3,4,5,6&#125; ; &#x2F;&#x2F; 定义数组printf(&amp;qu">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://gadoid.io/bg/img/p12.jpg">
+<meta property="article:published_time" content="2025-09-10T16:03:25.000Z">
+<meta property="article:modified_time" content="2025-09-10T16:13:39.317Z">
+<meta property="article:author" content="Codfish">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://gadoid.io/bg/img/p12.jpg">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>数据结构 表基础与构造 - 西北有高楼</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"gadoid.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 80vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>西北有高楼</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/downloads" target="_self">
+                
+                <span>资源下载</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/bg/img/p12.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="数据结构 表基础与构造"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-09-11 00:03" pubdate>
+          2025年9月11日 凌晨
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.3k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          20 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+        <div class="scroll-down-bar">
+          <i class="iconfont icon-arrowdown"></i>
+        </div>
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">数据结构 表基础与构造</h1>
+            
+              <p id="updated-time" class="note note-info" style="">
+                
+                  
+                    本文最后更新于 2025年9月11日 凌晨
+                  
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="数据的组织"><a href="#数据的组织" class="headerlink" title="数据的组织"></a>数据的组织</h1><h2 id="线性表"><a href="#线性表" class="headerlink" title="线性表"></a>线性表</h2><p>线性表指的是数据的组织是线性有序的，结构在一定的规则下“顺序”存储，中间不存在为空的元素。</p>
+<h3 id="随机访问与数组"><a href="#随机访问与数组" class="headerlink" title="随机访问与数组"></a><strong>随机访问与数组</strong></h3><p>通过一个确定的地址+地址偏移量完成对其他元素的访问。数组是这种思想的最直观例子，当我们定义了一个数组后，通过偏移量，完成对后续数组中的元素进行访问。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> <span class="hljs-built_in">array</span>[] = &#123;<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,<span class="hljs-number">4</span>,<span class="hljs-number">5</span>,<span class="hljs-number">6</span>&#125; ; <span class="hljs-comment">// 定义数组</span><br><span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%d&quot;</span>, <span class="hljs-built_in">array</span>[<span class="hljs-number">3</span>]) ; <span class="hljs-comment">// 打印由数组起始地址偏移3个整型长度地址的对象</span><br>/ * <br><span class="hljs-number">1.</span> 找到<span class="hljs-built_in">array</span>的存储地址<br><span class="hljs-number">2.</span> 偏移对应类型长度* 偏移量的字节<br><span class="hljs-number">3.</span> 找到该内存地址，从该地址取<span class="hljs-number">4</span>个字节，交给CPU执行打印<br>*/<br></code></pre></td></tr></table></figure>
+
+<p>通过确定的地址和偏移量信息，完成了对其他元素的查找。除此之外，C语言中的结构体定义，也是在内存中紧密排列的（绝大部分，某些定义中会进行字节对齐）。通过这种手段，可以使用确定的偏移量获取到其中的某一段数据，并通过强制转换的方式，将对应的这段数据转换为预先定义好的结构体，交给后续的函数处理。很多基于C的系统就是通过这样的偏移+强制转换的方式完成的数据处理</p>
+<h3 id="指针与链表"><a href="#指针与链表" class="headerlink" title="指针与链表"></a><strong>指针与链表</strong></h3><p>指针是一个占用4字节内存地址的结构，在该段内存中，存储了另一个内存地址。当我们定义了一个指针时，就通过一个指针存储了目标结构的地址信息</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> a = <span class="hljs-number">3</span> ;        <span class="hljs-comment">// 初始化了一个整型结构a</span><br><span class="hljs-type">int</span> *p = &amp;a ;      <span class="hljs-comment">// 初始化一个指针指向a的内存地址</span><br><span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%d&quot;</span>, *p);<br><span class="hljs-comment">/*</span><br><span class="hljs-comment">1. 当前的指针p 指向 a的内存地址</span><br><span class="hljs-comment">2. 对p 进行解引用，即读取指针中的内存地址信息，查询对应的内存地址</span><br><span class="hljs-comment">3. 指针类型为int，则读取该内存地址四个字节的内存，将其以整数形式进行读取</span><br><span class="hljs-comment">*/</span><br></code></pre></td></tr></table></figure>
+
+<p>我们可以看到，在指针定义时，p表示的是该指针在内存中的起始地址，当我们进行解引用时，通过该指针结构查询到实际结构的内存地址，并且根据类型从实际结构的内存地址中获取数据，最终得到a的值。通过这种方式，我们可以更加灵活的记录和访问数据。而链表就是依赖于指针技术实现的线性表技术。它通过定义一系列的函数，完成结构的添加&#x2F;删除&#x2F;遍历过程。达到以一种灵活有序的结构管理数据的目的。</p>
+<h3 id="单链表实现"><a href="#单链表实现" class="headerlink" title="单链表实现"></a>单链表实现</h3><p>一个最简单的单链表需要具备以下结构</p>
+<p>对于链表来说： 仅需要存储指向头节点的指针</p>
+<p>对于中间节点来说： 需要定义存储的值和指向下一个节点的指针</p>
+<p><strong>函数签名：</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdbool.h&gt;</span>  </span><br><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> _<span class="hljs-title">node</span> &#123;</span>  <span class="hljs-comment">// 定义node结构，作为链表中的节点信息 </span><br>    <span class="hljs-type">int</span> value;<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> _<span class="hljs-title">node</span>* <span class="hljs-title">next</span>;</span>  <span class="hljs-comment">//  定义指向下一个node的指针信息</span><br>&#125; node;<br><br><span class="hljs-comment">// 链表结构体</span><br><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> _<span class="hljs-title">linkedlist</span> &#123;</span><br>    node* head;     <span class="hljs-comment">// 头节点指针</span><br>&#125; linkedlist;<br><br><span class="hljs-comment">// 函数声明</span><br><span class="hljs-type">void</span> <span class="hljs-title function_">add</span><span class="hljs-params">(linkedlist* lt, <span class="hljs-type">int</span> value)</span>;  <span class="hljs-comment">// 向链表中添加元素</span><br><span class="hljs-type">bool</span> <span class="hljs-title function_">remove_by_value</span><span class="hljs-params">(linkedlist* lt, <span class="hljs-type">int</span> value)</span>; <span class="hljs-comment">// 从链表中删除元素</span><br><span class="hljs-type">bool</span> <span class="hljs-title function_">has_next</span><span class="hljs-params">( node* current)</span>;  <span class="hljs-comment">// 检查后续是否还存在元素</span><br>node* <span class="hljs-title function_">get_next</span><span class="hljs-params">(node* current)</span>;  <span class="hljs-comment">// 获取下一个节点元素</span><br><span class="hljs-type">void</span> <span class="hljs-title function_">init_list</span><span class="hljs-params">(linkedlist* lt)</span>; <span class="hljs-comment">// 初始化链表，将链表中的元素初始化</span><br><br></code></pre></td></tr></table></figure>
+
+<p><strong>实现：</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdbool.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdlib.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;linklist.h&quot;</span></span><br><br><span class="hljs-type">void</span> <span class="hljs-title function_">init_list</span><span class="hljs-params">(linkedlist* lt)</span>&#123;   <span class="hljs-comment">//定义初始化过程，将head设置为空，</span><br>    lt-&gt;head = <span class="hljs-literal">NULL</span> ;<br>&#125;;<br><br><span class="hljs-type">void</span> <span class="hljs-title function_">add</span><span class="hljs-params">(linkedlist* lt , <span class="hljs-type">int</span> value)</span>&#123;<br>    node* new_node = (node*)<span class="hljs-built_in">malloc</span>(<span class="hljs-keyword">sizeof</span>(node));  <span class="hljs-comment">// 动态申请内存创建新的节点</span><br>    new_node-&gt;value = value;  <span class="hljs-comment">// 初始化节点</span><br>    new_node-&gt;next = <span class="hljs-literal">NULL</span> ;<br>    <span class="hljs-keyword">if</span>(lt-&gt;head == <span class="hljs-literal">NULL</span>)&#123;   <span class="hljs-comment">// 判断当前链表是否为空</span><br>       lt-&gt;head = new_node ;  <span class="hljs-comment">// 如果为空，则将新节点设置为链表的head</span><br>    &#125;<span class="hljs-keyword">else</span>&#123;<br>       node* current = lt-&gt;head;   <span class="hljs-comment">// 否则获取到头节点开始遍历</span><br>       <span class="hljs-keyword">while</span>(has_next(current))&#123;<br>          current = get_next(current);<br>       &#125;<br>       current-&gt;next = new_node ;  <span class="hljs-comment">// 将新节点添加到末尾</span><br>    &#125;<br>&#125;;<br><br><span class="hljs-type">bool</span> <span class="hljs-title function_">remove_by_value</span><span class="hljs-params">(linkedlist* lt , <span class="hljs-type">int</span> value)</span>&#123;  <br>     node* current = lt-&gt;head;  <span class="hljs-comment">// 设置当前节点</span><br>     <span class="hljs-keyword">if</span>(current == <span class="hljs-literal">NULL</span>)&#123;  <br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span> ;<br>     &#125;<br>     <span class="hljs-keyword">if</span>(current-&gt;value == value)&#123;<br>        lt-&gt;head = current-&gt;next ;<br>        <span class="hljs-built_in">free</span>(current);<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span> ;<br>     &#125;                              <span class="hljs-comment">// 处理头节点删除过程</span><br>     <span class="hljs-keyword">while</span>(has_next(current))&#123;<br>        <span class="hljs-keyword">if</span>(current-&gt;next-&gt;value == value)&#123;<br>          node* temp = current-&gt;next ;<br>          current-&gt;next = temp-&gt;next ;<br>          <span class="hljs-built_in">free</span>(temp);<br>          <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span> ;<br>        &#125;<span class="hljs-keyword">else</span> &#123;<br>          current = current-&gt;next;<br>        &#125;                           <span class="hljs-comment">// 从头节点开始遍历，判断下一个节点的值是否与待删除值相等</span><br>                                    <span class="hljs-comment">// 相等则删除，将下一个节点删除，并将指针指向下下个节点</span><br>     &#125;<br>     <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span> ;<br>&#125;<br><br><span class="hljs-type">bool</span> <span class="hljs-title function_">has_next</span><span class="hljs-params">(node* current)</span>&#123;<br>     <span class="hljs-keyword">if</span>(current == <span class="hljs-literal">NULL</span>)&#123;<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>     &#125;<br>     <span class="hljs-keyword">return</span> current-&gt;next != <span class="hljs-literal">NULL</span>;<br>&#125;<br><br>node* <span class="hljs-title function_">get_next</span><span class="hljs-params">(node* current)</span>&#123;<br>     <span class="hljs-keyword">if</span>(current == <span class="hljs-literal">NULL</span>)&#123;<br>        <span class="hljs-keyword">return</span> current;<br>     &#125;<br>     <span class="hljs-keyword">return</span> current-&gt;next ;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="散列表"><a href="#散列表" class="headerlink" title="散列表"></a>散列表</h2><p>散列表指的是在存储上，结构的存储是无序的，结构与结构“之间”可能存在空的部分。</p>
+<h3 id="哈希计算与哈希集合"><a href="#哈希计算与哈希集合" class="headerlink" title="哈希计算与哈希集合"></a><strong>哈希计算与哈希集合</strong></h3><p>哈希本身是一种通过筛选进行的数据查询，通过一个哈希函数，我们可以得到某个结构的特征，最终可以获得该结构与存储位置的特征，存储&#x2F;读取时的哈希函数不会发生变化，那么通过这个函数维护的映射关系就是固定的，于是我们就可以通过这种关系，来完成结构的存储和查找。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> <span class="hljs-built_in">array</span>[<span class="hljs-number">9</span>] ;        <span class="hljs-comment">//  声明一个长度为9的数组</span><br><span class="hljs-type">int</span> a = <span class="hljs-number">26</span> ;          <span class="hljs-comment">//  初始化一个整型数据a,值为26</span><br><span class="hljs-type">int</span> posit = a%<span class="hljs-number">9</span> ;     <span class="hljs-comment">//  对a进行对9的取余</span><br><span class="hljs-built_in">array</span>[posit] = a ;    <span class="hljs-comment">//  将a存储到数组中的对应位置</span><br><span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%d&quot;</span>, <span class="hljs-built_in">array</span>[a%<span class="hljs-number">9</span>]); <span class="hljs-comment">// 查询a的位置获取a</span><br><span class="hljs-comment">/*</span><br><span class="hljs-comment">1. 这里是一个概念性的实现，即通过hash算法使用特征对数值进行存储</span><br><span class="hljs-comment">2. 在后续获取时就可以通过特征，将存储的结构取出</span><br><span class="hljs-comment">3. 实际实现中有更多实际问题的考量，比如hash的碰撞，以及扩容，以及散列的结构存储均匀性</span><br><span class="hljs-comment">*/</span><br></code></pre></td></tr></table></figure>
+
+<p>使用hash的一大优点是通过hash就可以直接从数组中取出值，其时间复杂度为O(1)。但是 hash的缺点是数据的存储过程是无序的，因为它是依照数据的特征进行的存储，而非按照存储的顺序完成的存储。但同时因为不需要顺序插入，就不再需要像链表一样遍历整个链表来决定插入位置，也不需要像数组那样需要提前获取偏移量信息，能够更便捷的访问到存储的数据。</p>
+<h2 id="表结构数据组织的局限性"><a href="#表结构数据组织的局限性" class="headerlink" title="表结构数据组织的局限性"></a>表结构数据组织的局限性</h2><h3 id="1-数组（Array）"><a href="#1-数组（Array）" class="headerlink" title="1. 数组（Array）"></a>1. 数组（Array）</h3><p> <strong>优势</strong> ：提供有序的逻辑存储，支持O(1)随机访问<br> <strong>局限</strong> ：存储布局与物理位置强耦合，插入&#x2F;删除操作需要大量元素移动</p>
+<ul>
+<li>插入操作最坏时间复杂度：O(n)</li>
+<li>根本原因：连续内存布局要求保持元素间的相对位置</li>
+</ul>
+<h3 id="2-链表（Linked-List）"><a href="#2-链表（Linked-List）" class="headerlink" title="2. 链表（Linked List）"></a>2. 链表（Linked List）</h3><p> <strong>优势</strong> ：保持插入顺序，通过指针灵活管理元素关联<br> <strong>局限</strong> ：存储位置与逻辑顺序分离，只能通过节点间链接进行顺序访问</p>
+<ul>
+<li>查询操作最坏时间复杂度：O(n)</li>
+<li>根本原因：缺乏随机访问能力，必须从头节点开始遍历</li>
+</ul>
+<h3 id="3-哈希表（Hash-Table）"><a href="#3-哈希表（Hash-Table）" class="headerlink" title="3. 哈希表（Hash Table）"></a>3. 哈希表（Hash Table）</h3><p> <strong>优势</strong> ：通过哈希函数映射实现O(1)平均查询效率<br> <strong>局限</strong> ：存储位置完全由哈希值决定，无法维护元素间的顺序关系</p>
+<ul>
+<li>遍历操作：无法保证有序性</li>
+<li>根本原因：哈希散列破坏了元素的原始顺序信息</li>
+</ul>
+<h3 id="局限性的本质"><a href="#局限性的本质" class="headerlink" title="局限性的本质"></a>局限性的本质</h3><p>这些权衡的根本原因在于： <strong>单一组织方式只能优化一个维度的性能</strong> 。每种结构的存储策略决定了其擅长的操作类型，同时也限制了其他方面的表现。</p>
+<h2 id="受限表结构"><a href="#受限表结构" class="headerlink" title="受限表结构"></a>受限表结构</h2><p>所谓受限表结构，就是对于表结构只提供了部分受限方法，来达成一些面向应用的处理过程</p>
+<h3 id="队列"><a href="#队列" class="headerlink" title="队列"></a>队列</h3><p>队列结构就是一种受限表结构，其提供的方法只允许数据依照LILO的方式被存储&#x2F;读取。</p>
+<p>队列在编程中存在广泛应用，它提供了一种手段用于数据的临时有序存储，经典的生产者&#x2F;消费者就是依赖于队列的数据结构，进行生产消费过程。作为一种消息中间件，解耦了生产者和消费者之间的强绑定关系</p>
+<h3 id="栈"><a href="#栈" class="headerlink" title="栈"></a>栈</h3><p>栈结构也是一种受限表结构，其提供的方法只允许数据依照LIFO的方式被存储&#x2F;读取。</p>
+<p>栈结构主要应用于函数栈&#x2F;运算&#x2F;以及存在嵌套执行的调用关系上，系统栈以及各种编程语言的本地方法栈都是通过栈结构完成的函数执行。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" class="category-chain-item">数据结构</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" class="print-no-link">#数据结构</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>数据结构 表基础与构造</div>
+      <div>http://gadoid.io/2025/09/11/数据结构-表基础与构造/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Codfish</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年9月11日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/09/10/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E5%AF%BC%E8%AE%BA/" title="数据结构 思想与角度">
+                        <span class="hidden-mobile">数据结构 思想与角度</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"lQzCvqmOtewLtpMfvfxKLomU-MdYXbMMI","appKey":"daMNlw5XcjN8TelT6GCHh8RF","path":"window.location.pathname","placeholder":"让灵感在这里发生","avatar":"monsterid","meta":["nick","mail","link"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":true,"recordIP":true,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false,"visitor":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      &copy; 2025 - 2025 <a target="_blank" rel="noopener" href="https://github.com/username">CODFISH</a>
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+<!-- hexo injector body_end start --><script src="/js/chatbot-loader.js" defer></script><!-- hexo injector body_end end --></body>
+</html>
