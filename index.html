@@ -197,7 +197,7 @@
   
 
 <div id="banner" class="banner" parallax=true
-     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+     style="background: url('/bg/img/ice.jpg') no-repeat center center; background-size: cover;">
   <div class="full-bg-img">
     <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
       <div class="banner-text text-center fade-in-up">
@@ -305,7 +305,13 @@
   <div class="row mx-auto index-card">
     
     
-    <article class="col-12 col-md-12 mx-auto index-info">
+      <div class="col-12 col-md-4 m-auto index-img">
+        <a href="/2025/08/02/JVM-%E7%B1%BB%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84/" target="_self">
+          <img src="/img/fish1.jpg" srcset="/img/loading.gif" lazyload alt="JVM类文件结构">
+        </a>
+      </div>
+    
+    <article class="col-12 col-md-8 mx-auto index-info">
       <h2 class="index-header">
         
         <a href="/2025/08/02/JVM-%E7%B1%BB%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84/" target="_self">
@@ -314,7 +320,7 @@
       </h2>
 
       
-      <a class="index-excerpt index-excerpt__noimg" href="/2025/08/02/JVM-%E7%B1%BB%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84/" target="_self">
+      <a class="index-excerpt " href="/2025/08/02/JVM-%E7%B1%BB%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84/" target="_self">
         <div>
           结构Class 文件是一组以8个字节为基础的二进制流，各个数据项目严格按照顺序紧凑地排列在文件之中，中间没有添加任何分隔符，这使得整个文件中存储的内容几乎全部是程序运行的必要数据，没有空隙存在。这种结构中主要使用了两种数据类型 无符号数 ： 无符号数属于基本数据类型，以u1,u2,u4,u8来分别代表1个字节，2个字节，4个字节和8个字节的无符号数，可以用来描述数字，索引引用，数量值或者以UT8-
         </div>
@@ -373,7 +379,13 @@
   <div class="row mx-auto index-card">
     
     
-    <article class="col-12 col-md-12 mx-auto index-info">
+      <div class="col-12 col-md-4 m-auto index-img">
+        <a href="/2025/07/31/JVM%E5%AF%B9%E8%B1%A1%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80/" target="_self">
+          <img src="/img/city1.jpg" srcset="/img/loading.gif" lazyload alt="JVM对象内存布局">
+        </a>
+      </div>
+    
+    <article class="col-12 col-md-8 mx-auto index-info">
       <h2 class="index-header">
         
         <a href="/2025/07/31/JVM%E5%AF%B9%E8%B1%A1%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80/" target="_self">
@@ -382,7 +394,7 @@
       </h2>
 
       
-      <a class="index-excerpt index-excerpt__noimg" href="/2025/07/31/JVM%E5%AF%B9%E8%B1%A1%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80/" target="_self">
+      <a class="index-excerpt " href="/2025/07/31/JVM%E5%AF%B9%E8%B1%A1%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80/" target="_self">
         <div>
           私有部分程序计数器 ： 通过改变这个计数器的值来选取下一条需要执行的字节码指令，存放在线程私有内存中。 Java虚拟机栈 ：它的生命周期与线程相同，虚拟机栈描述的是Java方法执行的线程内存模型，每个方法被执行的时候，Java虚拟机都会同步创建一个栈帧用于存储局部变量表，操作数栈，动态连接，方法出口等信息。每一个方法被调用直至执行完毕的过程，对应着一个栈帧在虚拟机栈中从入栈到出栈的过程。  局部
         </div>
