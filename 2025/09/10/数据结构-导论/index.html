@@ -19,13 +19,15 @@
   <meta name="author" content="Codfish">
   <meta name="keywords" content="">
   
-    <meta property="og:type" content="article">
-<meta property="og:title" content="数据结构">
-<meta property="og:url" content="http://gadoid.io/2025/04/15/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/index.html">
+    <meta name="description" content="什么是数据结构？数据结构是一种对数据在计算机中组织和访问方式的系统化描述。 数据类型与数据结构从广义上来说，基础数据类型也可以理解为”数据结构“，只不过它的组织方式相对简单。当我们声明基础类型变量并编译加载到内存后，这些声明就转化为具体的内存地址与偏移量信息。程序实际运行时，CPU根据这些地址信息定位到对应的内存段进行处理。 例如： 12345int a, b, c;a &#x3D; 5;b &#x3D; 3;c &#x3D;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数据结构 导论">
+<meta property="og:url" content="http://gadoid.io/2025/09/10/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E5%AF%BC%E8%AE%BA/index.html">
 <meta property="og:site_name" content="西北有高楼">
+<meta property="og:description" content="什么是数据结构？数据结构是一种对数据在计算机中组织和访问方式的系统化描述。 数据类型与数据结构从广义上来说，基础数据类型也可以理解为”数据结构“，只不过它的组织方式相对简单。当我们声明基础类型变量并编译加载到内存后，这些声明就转化为具体的内存地址与偏移量信息。程序实际运行时，CPU根据这些地址信息定位到对应的内存段进行处理。 例如： 12345int a, b, c;a &#x3D; 5;b &#x3D; 3;c &#x3D;">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2025-04-15T01:55:49.000Z">
-<meta property="article:modified_time" content="2025-04-15T01:58:48.509Z">
+<meta property="article:published_time" content="2025-09-10T07:48:43.000Z">
+<meta property="article:modified_time" content="2025-09-10T08:02:09.858Z">
 <meta property="article:author" content="Codfish">
 <meta property="article:tag" content="数据结构">
 <meta name="twitter:card" content="summary_large_image">
@@ -34,7 +36,7 @@
     <meta name="referrer" content="no-referrer-when-downgrade">
   
   
-  <title>数据结构 - 西北有高楼</title>
+  <title>数据结构 导论 - 西北有高楼</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -212,7 +214,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="数据结构"></span>
+            <span id="subtitle" data-typed-text="数据结构 导论"></span>
           
         </div>
 
@@ -223,8 +225,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2025-04-15 09:55" pubdate>
-          2025年4月15日 上午
+        <time datetime="2025-09-10 15:48" pubdate>
+          2025年9月10日 下午
         </time>
       </span>
     
@@ -235,7 +237,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          0 字
+          1.2k 字
         
       </span>
     
@@ -246,7 +248,7 @@
         
         
         
-          1 分钟
+          10 分钟
         
       </span>
     
@@ -283,12 +285,42 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">数据结构</h1>
+            <h1 id="seo-header">数据结构 导论</h1>
             
             
               <div class="markdown-body">
                 
-                
+                <h2 id="什么是数据结构？"><a href="#什么是数据结构？" class="headerlink" title="什么是数据结构？"></a>什么是数据结构？</h2><p>数据结构是一种对数据在计算机中组织和访问方式的系统化描述。</p>
+<h2 id="数据类型与数据结构"><a href="#数据类型与数据结构" class="headerlink" title="数据类型与数据结构"></a>数据类型与数据结构</h2><p>从广义上来说，基础数据类型也可以理解为”数据结构“，只不过它的组织方式相对简单。当我们声明基础类型变量并编译加载到内存后，这些声明就转化为具体的内存地址与偏移量信息。程序实际运行时，CPU根据这些地址信息定位到对应的内存段进行处理。</p>
+<p>例如：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> a, b, c;<br>a = <span class="hljs-number">5</span>;<br>b = <span class="hljs-number">3</span>;<br>c = a + b;<br><span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%d&quot;</span>, c);<br></code></pre></td></tr></table></figure>
+
+<p>编译器会将这些代码翻译为机器指令。运行时，CPU根据编译生成的地址通过寻址方式从内存中取出运算所需的数据<br>在这里，通过“起始地址”和“偏移量”两个要素，计算机就能完成对数据的定位与访问。这正是内存视角下数据结构的本质： <strong>通过明确的组织要素实现对数据的有效管理</strong> 。</p>
+<h2 id="声明结构与实际结构"><a href="#声明结构与实际结构" class="headerlink" title="声明结构与实际结构"></a>声明结构与实际结构</h2><p>在学习数据结构之前，我们需要认识到：程序中的结构声明，并不总是等同于数据在内存中的实际布局。</p>
+<p>在 C 语言中，声明与内存布局大部分情况下是一致的。例如：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> <span class="hljs-built_in">array</span>[] = &#123;<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,<span class="hljs-number">4</span>,<span class="hljs-number">5</span>,<span class="hljs-number">6</span>,<span class="hljs-number">7</span>,<span class="hljs-number">8</span>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>在内存中，这 8 个整数会连续存储，我们可以直接通过起始地址和偏移量访问任意元素。</p>
+<p>而在高级语言中情况更复杂。Python 中的：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs python">lst = [<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,<span class="hljs-number">4</span>,<span class="hljs-number">5</span>,<span class="hljs-number">6</span>,<span class="hljs-number">7</span>,<span class="hljs-number">8</span>]<br></code></pre></td></tr></table></figure>
+
+<p>或者 Java 中的：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">String</span> <span class="hljs-variable">s</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;codfish&quot;</span>;<br></code></pre></td></tr></table></figure>
+
+<p>它们的内存组织方式往往与声明形式差异很大。例如，Python 列表底层是动态数组，保存的是对象引用而非直接的整数；而 Java 的 String 实际上是对象，内部依赖字符数组存储，还包含对象头与方法表引用。</p>
+<p>这种差异是高级语言为了支持动态类型、垃圾回收等机制而作出的设计取舍。理解这一点，对我们选择合适的数据结构、避免性能陷阱非常重要。</p>
+<h2 id="结构与结构的关联"><a href="#结构与结构的关联" class="headerlink" title="结构与结构的关联"></a>结构与结构的关联</h2><p>除了数据的存储组织，我们还需要重点关注数据间的关联方式。CPU最终处理的是以特定编码形式存储在内存中的数据，这意味着我们设计数据结构时，需要同时解决两个核心问题：</p>
+<ol>
+<li><strong>结构中包含哪些元素</strong> - 定义数据的组织方式</li>
+<li><strong>结构中的数据如何关联</strong> - 定义查找、遍历、访问的方法</li>
+</ol>
+<p>通过精心设计这些关联方式，我们可以高效地在结构中定位下一个元素，或对整个结构进行遍历操作。</p>
+<h2 id="结构设计的最终目标"><a href="#结构设计的最终目标" class="headerlink" title="结构设计的最终目标"></a>结构设计的最终目标</h2><p>数据结构的根本目的是什么？是通过数据间结构化的高效关联，提升应用系统的查询和访问效率。</p>
+<p>恰当的数据结构能像扁担一样，让相同的操作效率倍增，合适的数据结构能显著提升整个系统的处理能力。在计算机系统中，CPU、内存、IO、网络构成了我们的主要资源。如何选择和设计恰当的数据结构来满足应用需求，充分利用这些系统资源，正是我们学习数据结构的最终目标。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>通过上述分析，我们可以看到，数据结构的学习实际上是一个从”理解底层”到”优化应用”的过程。</p>
+<p>从底层角度看，所有的数据结构最终都会映射到内存中的地址空间，通过”起始地址+偏移量”的方式进行访问。这是不变的底层规律。但在应用层面，我们需要在这个基础上构建更复杂、更高效的组织方式，来解决实际问题中的各种访问需求。</p>
+<p>当我们面对一个具体的应用场景时，选择数据结构的核心考量应该是： <strong>在给定的系统资源约束下，如何通过结构化的设计，最大化地提升目标操作的执行效率</strong> 。这可能意味着我们需要在时间复杂度与空间复杂度之间做权衡，在存储成本与访问速度之间找平衡，在实现复杂度与维护成本之间做选择。</p>
+
                 
               </div>
             
@@ -333,8 +365,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>数据结构</div>
-      <div>http://gadoid.io/2025/04/15/数据结构/</div>
+      <div>数据结构 导论</div>
+      <div>http://gadoid.io/2025/09/10/数据结构-导论/</div>
     </div>
     <div class="license-meta">
       
@@ -346,7 +378,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2025年4月15日</div>
+          <div>2025年9月10日</div>
         </div>
       
       
@@ -378,18 +410,12 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2025/04/15/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" title="操作系统">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">操作系统</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2025/04/14/Python%E7%BC%96%E7%A8%8B-I/" title="Python编程 I 基础">
-                        <span class="hidden-mobile">Python编程 I 基础</span>
+                      <a href="/2025/09/10/Redis-%E6%9E%B6%E6%9E%84%E4%B8%8E%E6%8C%81%E4%B9%85%E5%8C%96/" title="Redis 架构与持久化">
+                        <span class="hidden-mobile">Redis 架构与持久化</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
