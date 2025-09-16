@@ -1,0 +1,747 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/%5Bobject%20Object%5D">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Codfish">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="系统栈模型 在C语言中，主要分为编译时和运行时两个步骤，编译时完成数据的准备过程，运行时通过系统栈完成代码的执行过程  编译时 将C代码通过预处理（识别宏定义根据条件进行宏替换） 代码编译（将C文件编译为后缀为.s的汇编文件） 汇编（将汇编代码翻译为机器码，生成.o的机器码文件） 链接，整理多份文件，解决符号引用和地址定位信息，整理内存布局，生成可执行文件 加载 将可执行文件加载到内存中 执行 在">
+<meta property="og:type" content="article">
+<meta property="og:title" content="系统栈与高级语言栈的比较">
+<meta property="og:url" content="http://gadoid.io/2025/09/16/%E7%B3%BB%E7%BB%9F%E6%A0%88%E4%B8%8E%E9%AB%98%E7%BA%A7%E8%AF%AD%E8%A8%80%E6%A0%88%E7%9A%84%E6%AF%94%E8%BE%83/index.html">
+<meta property="og:site_name" content="西北有高楼">
+<meta property="og:description" content="系统栈模型 在C语言中，主要分为编译时和运行时两个步骤，编译时完成数据的准备过程，运行时通过系统栈完成代码的执行过程  编译时 将C代码通过预处理（识别宏定义根据条件进行宏替换） 代码编译（将C文件编译为后缀为.s的汇编文件） 汇编（将汇编代码翻译为机器码，生成.o的机器码文件） 链接，整理多份文件，解决符号引用和地址定位信息，整理内存布局，生成可执行文件 加载 将可执行文件加载到内存中 执行 在">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-09-16T04:53:41.000Z">
+<meta property="article:modified_time" content="2025-09-16T04:55:06.537Z">
+<meta property="article:author" content="Codfish">
+<meta property="article:tag" content="操作系统">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>系统栈与高级语言栈的比较 - 西北有高楼</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"gadoid.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 80vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>西北有高楼</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/downloads" target="_self">
+                
+                <span>资源下载</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/bg/img/ice.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="系统栈与高级语言栈的比较"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-09-16 12:53" pubdate>
+          2025年9月16日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          18 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+        <div class="scroll-down-bar">
+          <i class="iconfont icon-arrowdown"></i>
+        </div>
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">系统栈与高级语言栈的比较</h1>
+            
+              <p id="updated-time" class="note note-info" style="">
+                
+                  
+                    本文最后更新于 2025年9月16日 下午
+                  
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="系统栈模型"><a href="#系统栈模型" class="headerlink" title="系统栈模型"></a>系统栈模型</h1><blockquote>
+<p>在C语言中，主要分为编译时和运行时两个步骤，编译时完成数据的准备过程，运行时通过系统栈完成代码的执行过程</p>
+</blockquote>
+<h2 id="编译时"><a href="#编译时" class="headerlink" title="编译时"></a>编译时</h2><ul>
+<li>将C代码通过预处理（识别宏定义根据条件进行宏替换）</li>
+<li>代码编译（将C文件编译为后缀为.s的汇编文件）</li>
+<li>汇编（将汇编代码翻译为机器码，生成.o的机器码文件）</li>
+<li>链接，整理多份文件，解决符号引用和地址定位信息，整理内存布局，生成可执行文件</li>
+<li>加载 将可执行文件加载到内存中</li>
+<li>执行 在内存中找到入口方法，从入口方法启动执行</li>
+</ul>
+<h2 id="运行时"><a href="#运行时" class="headerlink" title="运行时"></a>运行时</h2><p>运行时的核心实现是通过  指令指针和栈指针以及寄存器的读写过程实现的。</p>
+<p>通过指令指针，查询需要执行的代码在代码段中存储的对应位置。</p>
+<p>通过栈指针，向栈中临时存储 数据结构，返回地址，基地址指针信息。</p>
+<p>通过寄存器，进行地址查询和数值计算。</p>
+<h2 id="栈执行"><a href="#栈执行" class="headerlink" title="栈执行"></a>栈执行</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br></pre></td><td class="code"><pre><code class="hljs c">示例C代码:<br><span class="hljs-type">int</span> <span class="hljs-title function_">add</span><span class="hljs-params">(<span class="hljs-type">int</span> a, <span class="hljs-type">int</span> b)</span> &#123;<br>    <span class="hljs-type">int</span> result = a + b;<br>    <span class="hljs-keyword">return</span> result;<br>&#125;<br><br><span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">()</span> &#123;<br>    <span class="hljs-type">int</span> x = <span class="hljs-number">5</span>, y = <span class="hljs-number">3</span>;<br>    <span class="hljs-type">int</span> sum = add(x, y);<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br><br>执行过程栈变化:<br><br><span class="hljs-number">1.</span> 程序启动 - main函数开始<br>┌─────────────────┐  ← 高地址 (栈底)<br>│                 │<br>│   (栈空间)      │<br>│                 │<br>│                 │<br>└─────────────────┘  ← 低地址 (栈顶) SP指向这里<br>系统启动后，由内核分配栈空间，以及栈空间起始地址。<br>数据加载向低地址延申<br><br><span class="hljs-number">2.</span> main函数栈帧建立<br>┌─────────────────┐  ← 高地址<br>│                 │<br>│  返回地址(OS)   │  ← main的返回地址<br>├─────────────────┤<br>│  旧的BP值       │  ← 保存的基址指针<br>├─────────────────┤  ← BP指向这里<br>│  <span class="hljs-type">int</span> x = <span class="hljs-number">5</span>      │  ← 局部变量x<br>├─────────────────┤<br>│  <span class="hljs-type">int</span> y = <span class="hljs-number">3</span>      │  ← 局部变量y<br>├─────────────────┤<br>│  <span class="hljs-type">int</span> sum        │  ← 局部变量sum(未初始化)<br>└─────────────────┘  ← SP指向这里<br>CPU通过读取机器码，创建数据存储在栈空间<br><br><span class="hljs-number">3.</span> 调用add(x, y) - 参数压栈<br>┌─────────────────┐  ← 高地址<br>│                 │<br>│  返回地址(OS)   │<br>├─────────────────┤<br>│  旧的BP值       │<br>├─────────────────┤  <br>│  <span class="hljs-type">int</span> x = <span class="hljs-number">5</span>      │<br>├─────────────────┤<br>│  <span class="hljs-type">int</span> y = <span class="hljs-number">3</span>      │<br>├─────────────────┤<br>│  <span class="hljs-type">int</span> sum        │<br>├─────────────────┤<br>│  参数b = <span class="hljs-number">3</span>      │  ← add函数的参数b<br>├─────────────────┤<br>│  参数a = <span class="hljs-number">5</span>      │  ← add函数的参数a<br>├─────────────────┤<br>│  返回地址       │  ← add函数执行完后的返回地址<br>└─────────────────┘  ← SP指向这里<br>加载add函数，参数值在编译时的已经通过偏移确定<br>将参数值，返回地址，main BP一起压入操作栈中<br><br><span class="hljs-number">4.</span> add函数栈帧建立<br>┌─────────────────┐  ← 高地址<br>│                 │<br>│  返回地址(OS)   │<br>├─────────────────┤<br>│  旧的BP值       │<br>├─────────────────┤  <br>│  <span class="hljs-type">int</span> x = <span class="hljs-number">5</span>      │<br>├─────────────────┤<br>│  <span class="hljs-type">int</span> y = <span class="hljs-number">3</span>      │<br>├─────────────────┤<br>│  <span class="hljs-type">int</span> sum        │<br>├─────────────────┤<br>│  参数b = <span class="hljs-number">3</span>      │<br>├─────────────────┤<br>│  参数a = <span class="hljs-number">5</span>      │<br>├─────────────────┤<br>│  返回地址       │<br>├─────────────────┤<br>│  旧的BP值       │  ← 保存main的BP<br>├─────────────────┤  ← BP指向这里(add的栈帧开始)<br>│  <span class="hljs-type">int</span> result = <span class="hljs-number">8</span> │  ← add函数的局部变量<br>└─────────────────┘  ← SP指向这里<br>寄存器通过机器码直接读取参数值进行运算，将结果压入栈中<br><br><span class="hljs-number">5.</span> add函数执行 - 计算过程<br>┌──────────────────────────┐<br>│                          │<br>│ CPU寄存器操作过程:       │<br>│                          │<br>│  EAX ← [BP+<span class="hljs-number">8</span>]            │  <span class="hljs-comment">// 加载参数a到寄存器EAX</span><br>│  EBX ← [BP+<span class="hljs-number">12</span>]           │  <span class="hljs-comment">// 加载参数b到寄存器EBX  </span><br>│  EAX ← EAX + EBX         │  <span class="hljs-comment">// 寄存器中执行加法运算</span><br>│  [BP<span class="hljs-number">-4</span>] ← EAX            │  <span class="hljs-comment">// 将结果存储到result变量</span><br>│                          │<br>└──────────────────────────┘<br><br>栈中数据不变，计算在寄存器中完成:<br>┌─────────────────┐  <br>│  ...main栈帧... │<br>├─────────────────┤<br>│  参数b = <span class="hljs-number">3</span>      │<br>├─────────────────┤<br>│  参数a = <span class="hljs-number">5</span>      │<br>├─────────────────┤<br>│  返回地址       │<br>├─────────────────┤<br>│  旧的BP值       │<br>├─────────────────┤  ← BP<br>│  <span class="hljs-type">int</span> result = <span class="hljs-number">8</span> │  ← 计算结果存储在这里<br>└─────────────────┘  ← SP<br><br><span class="hljs-number">6.</span> add函数返回 - 栈帧清理<br>┌─────────────────┐  <br>│  ...main栈帧... │<br>├─────────────────┤<br>│  参数b = <span class="hljs-number">3</span>      │  ← 这些会被清理<br>├─────────────────┤<br>│  参数a = <span class="hljs-number">5</span>      │  ← 这些会被清理<br>├─────────────────┤<br>│  返回地址       │  ← 弹出到PC寄存器<br>├─────────────────┤<br>│ (已清理的数据)  │<br>├─────────────────┤<br>│ (已清理的数据)  │<br>└─────────────────┘  ← SP回到这里<br>add函数运算结束，进行函数栈清理，返回main函数栈底<br><br>返回值通过EAX寄存器传递: EAX = <span class="hljs-number">8</span><br><br><span class="hljs-number">7.</span> 回到main函数 - 接收返回值<br>┌─────────────────┐  ← 高地址<br>│                 │<br>│  返回地址(OS)   │<br>├─────────────────┤<br>│  旧的BP值       │<br>├─────────────────┤  ← BP恢复到main的栈帧<br>│  <span class="hljs-type">int</span> x = <span class="hljs-number">5</span>      │<br>├─────────────────┤<br>│  <span class="hljs-type">int</span> y = <span class="hljs-number">3</span>      │<br>├─────────────────┤<br>│  <span class="hljs-type">int</span> sum = <span class="hljs-number">8</span>    │  ← EAX寄存器的值赋给sum<br>└─────────────────┘  ← SP指向这里<br>将返回值存储到sum变量中<br><br>指针寄存器状态:<br>══════════════════<br>PC (程序计数器):  指向当前执行的指令地址<br>SP (栈指针):      指向栈顶<br>BP (基址指针):    指向当前函数栈帧的底部<br>EAX/EBX/... :     通用寄存器，用于计算和数据传递<br></code></pre></td></tr></table></figure>
+
+<h1 id="高级语言栈模型（双栈结构）"><a href="#高级语言栈模型（双栈结构）" class="headerlink" title="高级语言栈模型（双栈结构）"></a>高级语言栈模型（双栈结构）</h1><blockquote>
+<p>以Java实现为例，在Java中，代码执行通常被分为3个阶段，编译时，主要进行Java字节码文件的准备过程，类加载时，这是一个宽泛的过程主要是JVM的启动，准备，从入口函数启动Java程序，发生类调用时，查询类，查询类加载器，完成类加载的增量过程，运行时，JVM解释器解释字节码交给系统栈执行的过程，可以看出类加载和运行是混杂进行的。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br></pre></td><td class="code"><pre><code class="hljs java">Java程序执行时的栈处理过程<br>═══════════════════════════════════════════════════════════════<br><br>示例Java代码:<br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Example</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">add</span><span class="hljs-params">(<span class="hljs-type">int</span> a, <span class="hljs-type">int</span> b)</span> &#123;<br>        <span class="hljs-type">int</span> <span class="hljs-variable">result</span> <span class="hljs-operator">=</span> a + b;<br>        <span class="hljs-keyword">return</span> result;<br>    &#125;<br>  <br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> &#123;<br>        <span class="hljs-type">int</span> <span class="hljs-variable">x</span> <span class="hljs-operator">=</span> <span class="hljs-number">5</span>, y = <span class="hljs-number">3</span>;<br>        <span class="hljs-type">int</span> <span class="hljs-variable">sum</span> <span class="hljs-operator">=</span> add(x, y);<br>        System.out.println(sum);<br>    &#125;<br>&#125;<br><br>Java执行的双层栈结构:<br>═══════════════════════<br><br>第一层: JVM虚拟栈 (栈帧结构)<br>第二层: 系统栈 (JVM运行在其上)<br><br>详细执行过程:<br><br><span class="hljs-number">1.</span> JVM启动 - main方法字节码加载<br>┌─────────────────────────────────┐  JVM虚拟栈<br>│                                 │<br>│        (空栈)                   │<br>│                                 │<br>└─────────────────────────────────┘<br>┌─────────────────────────────────┐  系统栈<br>│    JVM进程栈空间                │<br>│    (C/C++实现的JVM代码)         │<br>└─────────────────────────────────┘<br><br><span class="hljs-number">2.</span> main方法栈帧建立<br>JVM虚拟栈:<br>┌─────────────────────────────────┐  ← 高地址<br>│  main方法栈帧:                  │<br>│  ┌─────────────────────────────┐│<br>│  │ 操作数栈: (空)              ││<br>│  ├─────────────────────────────┤│<br>│  │ 局部变量表:                 ││<br>│  │ [<span class="hljs-number">0</span>] args: String[]          ││  ← 方法参数<br>│  │ [<span class="hljs-number">1</span>] x: <span class="hljs-type">int</span> = <span class="hljs-number">5</span>              ││  ← 局部变量插槽<span class="hljs-number">1</span><br>│  │ [<span class="hljs-number">2</span>] y: <span class="hljs-type">int</span> = <span class="hljs-number">3</span>              ││  ← 局部变量插槽<span class="hljs-number">2</span>  <br>│  │ [<span class="hljs-number">3</span>] sum: <span class="hljs-type">int</span> (未初始化)     ││  ← 局部变量插槽<span class="hljs-number">3</span><br>│  ├─────────────────────────────┤│<br>│  │ 方法信息:                   ││<br>│  │ - 常量池引用                ││<br>│  │ - 方法元数据                ││<br>│  └─────────────────────────────┘│<br>└─────────────────────────────────┘<br><br>系统栈 (JVM解释器的C代码):<br>┌─────────────────────────────────┐<br>│  JVM解释器栈帧:                 │<br>│  - 当前执行的字节码指令指针     │<br>│  - JVM栈指针                    │<br>│  - 局部变量表指针               │<br>└─────────────────────────────────┘<br><br><span class="hljs-number">3.</span> 执行 add(x, y) 调用 - 字节码指令序列<br><br>字节码指令:<br>iload_1     <span class="hljs-comment">// 加载局部变量x到操作数栈</span><br>iload_2     <span class="hljs-comment">// 加载局部变量y到操作数栈  </span><br>invokestatic Example.add(II)I  <span class="hljs-comment">// 调用static方法</span><br><br>JVM虚拟栈状态变化:<br><br>3a. iload_1 执行后:<br>┌─────────────────────────────────┐<br>│  main方法栈帧:                  │<br>│  ┌─────────────────────────────┐│<br>│  │ 操作数栈:                   ││<br>│  │ [top] <span class="hljs-number">5</span> (x的值)             ││  ← 栈顶<br>│  ├─────────────────────────────┤│<br>│  │ 局部变量表: (不变)          ││<br>│  │ [<span class="hljs-number">0</span>] args [<span class="hljs-number">1</span>] x=<span class="hljs-number">5</span> [<span class="hljs-number">2</span>] y=<span class="hljs-number">3</span>    ││<br>│  │ [<span class="hljs-number">3</span>] sum                     ││<br>│  └─────────────────────────────┘│<br>└─────────────────────────────────┘<br><br>3b. iload_2 执行后:  <br>┌─────────────────────────────────┐<br>│  main方法栈帧:                  │<br>│  ┌─────────────────────────────┐│<br>│  │ 操作数栈:                   ││<br>│  │ [top] <span class="hljs-number">3</span> (y的值)             ││  ← 栈顶<br>│  │ [   ] <span class="hljs-number">5</span> (x的值)             ││<br>│  ├─────────────────────────────┤│<br>│  │ 局部变量表: (不变)          ││<br>│  └─────────────────────────────┘│<br>└─────────────────────────────────┘<br><br><span class="hljs-number">4.</span> add方法栈帧建立 (invokestatic执行)<br>JVM虚拟栈:<br>┌─────────────────────────────────┐  ← 高地址<br>│  add方法栈帧:                   │  ← 新栈帧<br>│  ┌─────────────────────────────┐│<br>│  │ 操作数栈: (空)              ││<br>│  ├─────────────────────────────┤│<br>│  │ 局部变量表:                 ││<br>│  │ [<span class="hljs-number">0</span>] a: <span class="hljs-type">int</span> = <span class="hljs-number">5</span>              ││  ← 参数从操作数栈传递<br>│  │ [<span class="hljs-number">1</span>] b: <span class="hljs-type">int</span> = <span class="hljs-number">3</span>              ││  ← 参数从操作数栈传递<br>│  │ [<span class="hljs-number">2</span>] result: <span class="hljs-type">int</span> (未初始化)  ││  ← 局部变量插槽<br>│  ├─────────────────────────────┤│<br>│  │ 返回地址: main方法PC+<span class="hljs-number">1</span>      ││<br>│  └─────────────────────────────┘│<br>├─────────────────────────────────┤<br>│  main方法栈帧:                  │<br>│  ┌─────────────────────────────┐│<br>│  │ 操作数栈: (清空)            ││  ← 参数已传递给add<br>│  ├─────────────────────────────┤│<br>│  │ 局部变量表: (不变)          ││<br>│  │ [<span class="hljs-number">0</span>] args [<span class="hljs-number">1</span>] x=<span class="hljs-number">5</span> [<span class="hljs-number">2</span>] y=<span class="hljs-number">3</span>    ││<br>│  │ [<span class="hljs-number">3</span>] sum                     ││<br>│  └─────────────────────────────┘│<br>└─────────────────────────────────┘<br><br><span class="hljs-number">5.</span> add方法执行 - 字节码指令处理<br><br>字节码序列:<br>iload_0     <span class="hljs-comment">// 加载参数a到操作数栈</span><br>iload_1     <span class="hljs-comment">// 加载参数b到操作数栈</span><br>iadd        <span class="hljs-comment">// 弹出两个数，相加，结果压栈</span><br>istore_2    <span class="hljs-comment">// 弹出结果，存储到局部变量result</span><br>iload_2     <span class="hljs-comment">// 加载result到操作数栈(准备返回)</span><br>ireturn     <span class="hljs-comment">// 返回int值</span><br><br>5a. iload_0, iload_1, iadd执行后:<br>┌─────────────────────────────────┐<br>│  add方法栈帧:                   │<br>│  ┌─────────────────────────────┐│<br>│  │ 操作数栈:                   ││<br>│  │ [top] <span class="hljs-number">8</span> (<span class="hljs-number">5</span>+<span class="hljs-number">3</span>的结果)         ││  ← iadd计算结果<br>│  ├─────────────────────────────┤│<br>│  │ 局部变量表:                 ││<br>│  │ [<span class="hljs-number">0</span>] a=<span class="hljs-number">5</span> [<span class="hljs-number">1</span>] b=<span class="hljs-number">3</span> [<span class="hljs-number">2</span>] result  ││<br>│  └─────────────────────────────┘│<br>└─────────────────────────────────┘<br><br>5b. istore_2执行后:<br>┌─────────────────────────────────┐<br>│  add方法栈帧:                   │<br>│  ┌─────────────────────────────┐│<br>│  │ 操作数栈: (空)              ││<br>│  ├─────────────────────────────┤│<br>│  │ 局部变量表:                 ││<br>│  │ [<span class="hljs-number">0</span>] a=<span class="hljs-number">5</span> [<span class="hljs-number">1</span>] b=<span class="hljs-number">3</span>             ││<br>│  │ [<span class="hljs-number">2</span>] result=<span class="hljs-number">8</span>                ││  ← 计算结果存储<br>│  └─────────────────────────────┘│<br>└─────────────────────────────────┘<br><br><span class="hljs-number">6.</span> 方法返回 (iload_2, ireturn执行)<br>┌─────────────────────────────────┐<br>│  main方法栈帧: (add栈帧已清理)  │<br>│  ┌─────────────────────────────┐│<br>│  │ 操作数栈:                   ││<br>│  │ [top] <span class="hljs-number">8</span> (返回值)            ││  ← add方法的返回值<br>│  ├─────────────────────────────┤│<br>│  │ 局部变量表:                 ││<br>│  │ [<span class="hljs-number">0</span>] args [<span class="hljs-number">1</span>] x=<span class="hljs-number">5</span> [<span class="hljs-number">2</span>] y=<span class="hljs-number">3</span>    ││<br>│  │ [<span class="hljs-number">3</span>] sum                     ││<br>│  └─────────────────────────────┘│<br>└─────────────────────────────────┘<br><br><span class="hljs-number">7.</span> 接收返回值 (istore_3执行)<br>┌─────────────────────────────────┐<br>│  main方法栈帧:                  │<br>│  ┌─────────────────────────────┐│<br>│  │ 操作数栈: (空)              ││<br>│  ├─────────────────────────────┤│<br>│  │ 局部变量表:                 ││<br>│  │ [<span class="hljs-number">0</span>] args [<span class="hljs-number">1</span>] x=<span class="hljs-number">5</span> [<span class="hljs-number">2</span>] y=<span class="hljs-number">3</span>    ││<br>│  │ [<span class="hljs-number">3</span>] sum=<span class="hljs-number">8</span>                   ││  ← 返回值存储完成<br>│  └─────────────────────────────┘│<br>└─────────────────────────────────┘<br><br>JVM解释器在系统栈中的实现 (简化的C代码逻辑):<br>═══════════════════════════════════════════════════════<br><br>系统栈中JVM解释器的处理过程:<br><br><span class="hljs-keyword">void</span> <span class="hljs-title function_">execute_bytecode</span><span class="hljs-params">()</span> &#123;<br>    <span class="hljs-comment">// 系统栈帧中的局部变量</span><br>    unsigned <span class="hljs-type">char</span>* pc;           <span class="hljs-comment">// 字节码程序计数器</span><br>    StackFrame* current_frame;   <span class="hljs-comment">// 当前JVM栈帧指针</span><br>    <span class="hljs-type">int</span>* operand_stack;          <span class="hljs-comment">// 操作数栈指针</span><br>    Object** local_vars;         <span class="hljs-comment">// 局部变量表指针</span><br>  <br>    <span class="hljs-keyword">while</span> (<span class="hljs-literal">true</span>) &#123;<br>        <span class="hljs-keyword">switch</span> (*pc) &#123;<br>            <span class="hljs-keyword">case</span> ILOAD_1:<br>                <span class="hljs-comment">// 从局部变量表加载到操作数栈</span><br>                push_operand(local_vars[<span class="hljs-number">1</span>]);<br>                pc++;<br>                <span class="hljs-keyword">break</span>;<br>            <br>            <span class="hljs-keyword">case</span> IADD:<br>                <span class="hljs-comment">// 从操作数栈弹出两个数相加</span><br>                <span class="hljs-type">int</span> <span class="hljs-variable">b</span> <span class="hljs-operator">=</span> pop_operand();<br>                <span class="hljs-type">int</span> <span class="hljs-variable">a</span> <span class="hljs-operator">=</span> pop_operand();  <br>                push_operand(a + b);<br>                pc++;<br>                <span class="hljs-keyword">break</span>;<br>            <br>            <span class="hljs-keyword">case</span> INVOKESTATIC:<br>                <span class="hljs-comment">// 创建新栈帧，参数传递</span><br>                create_new_frame();<br>                transfer_parameters();<br>                pc = method_entry_point;<br>                <span class="hljs-keyword">break</span>;<br>            <br>            <span class="hljs-keyword">case</span> IRETURN:<br>                <span class="hljs-comment">// 清理当前栈帧，返回值传递</span><br>                <span class="hljs-type">int</span> <span class="hljs-variable">return_value</span> <span class="hljs-operator">=</span> pop_operand();<br>                destroy_current_frame();<br>                push_operand_to_caller(return_value);<br>                pc = return_address;<br>                <span class="hljs-keyword">break</span>;<br>        &#125;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" class="category-chain-item">操作系统</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" class="print-no-link">#操作系统</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>系统栈与高级语言栈的比较</div>
+      <div>http://gadoid.io/2025/09/16/系统栈与高级语言栈的比较/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Codfish</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年9月16日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/09/15/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E6%A0%91%E4%B8%8E%E6%A0%91%E7%BB%93%E6%9E%84%E7%9A%84%E6%89%A9%E5%B1%95/" title="数据结构 树与树结构的扩展">
+                        <span class="hidden-mobile">数据结构 树与树结构的扩展</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"lQzCvqmOtewLtpMfvfxKLomU-MdYXbMMI","appKey":"daMNlw5XcjN8TelT6GCHh8RF","path":"window.location.pathname","placeholder":"让灵感在这里发生","avatar":"monsterid","meta":["nick","mail","link"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":true,"recordIP":true,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false,"visitor":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      &copy; 2025 - 2025 <a target="_blank" rel="noopener" href="https://github.com/username">CODFISH</a>
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+<!-- hexo injector body_end start --><script src="/js/chatbot-loader.js" defer></script><!-- hexo injector body_end end --></body>
+</html>
